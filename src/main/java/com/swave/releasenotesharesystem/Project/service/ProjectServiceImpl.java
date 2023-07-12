@@ -3,8 +3,8 @@ package com.swave.releasenotesharesystem.Project.service;
 import com.swave.releasenotesharesystem.Project.domain.Project;
 import com.swave.releasenotesharesystem.Project.repository.ProjectRepository;
 import com.swave.releasenotesharesystem.Project.requestDto.ProjectRequestDto;
-import com.swave.releasenotesharesystem.Project.responseDto.loadAllProjectDto;
-import com.swave.releasenotesharesystem.Project.responseDto.loadOneProjectDto;
+import com.swave.releasenotesharesystem.Project.responseDto.loadAllProjectResponseDto;
+import com.swave.releasenotesharesystem.Project.responseDto.loadOneProjectResponseDto;
 import com.swave.releasenotesharesystem.User.domain.User;
 import com.swave.releasenotesharesystem.User.domain.UserInProject;
 import com.swave.releasenotesharesystem.User.repository.UserInProjectRepository;
@@ -149,14 +149,14 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     @Override
-    public List<loadAllProjectDto> loadProjectList(Long userId) {
+    public List<loadAllProjectResponseDto> loadProjectList(Long userId) {
         //여기 DTO 왜 못쓰냐 쓰쥬?
-        List<loadAllProjectDto> projectList = new ArrayList<>();
+        List<loadAllProjectResponseDto> projectList = new ArrayList<>();
         List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id(userId);
         for(UserInProject userInProject: userInProjectList){
             Project project = projectRepository.findById(userInProject.getProject().getId())
                     .orElseThrow(NoSuchFieldError::new);
-            projectList.add(new loadAllProjectDto(project.getId(),userInProject.getRole(),project.getName(),project.getDescription(),project.getCreateDate()));
+            projectList.add(new loadAllProjectResponseDto(project.getId(),userInProject.getRole(),project.getName(),project.getDescription(),project.getCreateDate()));
         }
         /*
         List<ProjectRequestDto> loadAll = new ArrayList<>();
@@ -168,8 +168,8 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     @Override
-    public loadOneProjectDto loadProject(Long projectId) {
-        loadOneProjectDto getproject = new loadOneProjectDto();
+    public loadOneProjectResponseDto loadProject(Long projectId) {
+        loadOneProjectResponseDto getproject = new loadOneProjectResponseDto();
         Project project = projectRepository.findById(projectId).get();
         getproject.setId(project.getId());
         getproject.setName(project.getName());

@@ -1,7 +1,5 @@
 package com.swave.releasenotesharesystem.Project.responseDto;
 
-import com.swave.releasenotesharesystem.Util.type.UserRole;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +9,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class loadOneProjectDto {
+public class loadOneProjectResponseDto {
     Long id;
     String name;
     String description;
