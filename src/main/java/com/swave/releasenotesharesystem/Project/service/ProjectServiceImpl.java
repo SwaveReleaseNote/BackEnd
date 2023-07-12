@@ -5,11 +5,14 @@ import com.swave.releasenotesharesystem.Project.repository.ProjectRepository;
 import com.swave.releasenotesharesystem.Project.requestDto.ProjectRequestDto;
 import com.swave.releasenotesharesystem.Project.responseDto.loadAllProjectResponseDto;
 import com.swave.releasenotesharesystem.Project.responseDto.loadOneProjectResponseDto;
+import com.swave.releasenotesharesystem.ReleaseNote.domain.ReleaseNote;
+import com.swave.releasenotesharesystem.ReleaseNote.repository.ReleaseNoteRepository;
 import com.swave.releasenotesharesystem.User.domain.User;
 import com.swave.releasenotesharesystem.User.domain.UserInProject;
 import com.swave.releasenotesharesystem.User.repository.UserInProjectRepository;
 import com.swave.releasenotesharesystem.User.repository.UserRepository;
 import com.swave.releasenotesharesystem.Util.type.UserRole;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,29 +20,30 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 ;
 
 //0710 확인 CR
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService{
 
-    @Autowired
-    private ProjectRepository projectRepository;
+    private final ProjectRepository projectRepository;
 
-    @Autowired
-    private UserInProjectRepository userInProjectRepository;
+    private final UserInProjectRepository userInProjectRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    private final ReleaseNoteRepository releaseNoteRepository;
+
 
 
 
     @Override
     public String createProject(ProjectRequestDto projectRequestDto) {
         //빌더로 프로젝트생성
-        //todo : 빌더를 잘 만지면 한줄로 가능하다.
         Project project = Project.builder()
                 .name(projectRequestDto.getName())
                 .description(projectRequestDto.getDescription())
@@ -68,7 +72,6 @@ public class ProjectServiceImpl implements ProjectService{
         ArrayList<UserInProject> list = new ArrayList<>(user.getUserInProjectList());
 
         //현재 프로젝트 추가
-        //todo : 따로 만든 이유가?
         list.add(userInProject);
         user.setUserInProjectList(list);
 
@@ -81,8 +84,10 @@ public class ProjectServiceImpl implements ProjectService{
         //저장하고
         Project saveProject = projectRepository.save(project);
 
-        for(Long userId : projectRequestDto.getUsers())
-            {
+        UserInProject saveUserInProject = userInProjectRepository.save(userInProject);
+
+        if(projectRequestDto.getUsers().size()>=1) {
+            for (Long userId : projectRequestDto.getUsers()) {
                 //유저인 프로젝트 생성
                 UserInProject userInProject1 = new UserInProject();
                 userInProject1.setRole(UserRole.Developer);
@@ -92,7 +97,7 @@ public class ProjectServiceImpl implements ProjectService{
                 //User user1 = userRepository.findById(userInProject1.getId()).get();
                 userInProject1.setUser(user1);
                 userInProjectRepository.save(userInProject1);
-                
+
                 //유저생성
                 List<UserInProject> userInProjectList = user.getUserInProjectList();
                 userInProjectList.add(userInProject);
@@ -103,9 +108,9 @@ public class ProjectServiceImpl implements ProjectService{
 
                 project.getUserInProjectList().add(userInProject);
             }
+        }
         //저장하고
         User saveUser = userRepository.save(user);
-        UserInProject saveUserInProject = userInProjectRepository.save(userInProject);
         //flush로 반영한다.
         userRepository.flush();
         projectRepository.flush();
@@ -148,15 +153,22 @@ public class ProjectServiceImpl implements ProjectService{
         return null;
     }
 
+    //최신 릴리즈노트 이름 가져오기
     @Override
     public List<loadAllProjectResponseDto> loadProjectList(Long userId) {
-        //여기 DTO 왜 못쓰냐 쓰쥬?
         List<loadAllProjectResponseDto> projectList = new ArrayList<>();
         List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id(userId);
+
         for(UserInProject userInProject: userInProjectList){
             Project project = projectRepository.findById(userInProject.getProject().getId())
                     .orElseThrow(NoSuchFieldError::new);
-            projectList.add(new loadAllProjectResponseDto(project.getId(),userInProject.getRole(),project.getName(),project.getDescription(),project.getCreateDate()));
+            List<ReleaseNote> releaseNoteList = releaseNoteRepository.findByProject_Id(project.getId());
+            //이게 말이안되네
+            //Long latestreleaseNoteId = releaseNoteList.get(releaseNoteList.size()).getId();
+            //ReleaseNote releaseNote = releaseNoteRepository.findById(latestreleaseNoteId).orElseThrow(null);
+            int count = projectRepository.countMember(project.getId());
+            //log.info((String)count);
+            projectList.add(new loadAllProjectResponseDto(project.getId(),userInProject.getRole(),project.getName(),project.getDescription(),project.getCreateDate(),count));
         }
         /*
         List<ProjectRequestDto> loadAll = new ArrayList<>();
@@ -183,6 +195,7 @@ public class ProjectServiceImpl implements ProjectService{
         }*/
         return getproject;
     }
+
 
 
 }
