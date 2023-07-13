@@ -2,10 +2,13 @@ package com.swave.releasenotesharesystem.Project.repository;
 
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.swave.releasenotesharesystem.Util.type.UserRole;
+
 import static com.swave.releasenotesharesystem.User.domain.QUserInProject.userInProject;
 
 
 import javax.persistence.EntityManager;
+import java.util.List;
 
 public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
 
@@ -16,13 +19,5 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
     }
 
 
-    @Override
-    public Integer countMember(Long projectId) {
-        return Math.toIntExact(queryFactory
-                .select(userInProject.count())
-                .from(userInProject)
-                .where(userInProject.project.id.eq(projectId))
-                .fetchOne());
 
-    }
 }

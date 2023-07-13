@@ -2,9 +2,10 @@ package com.swave.releasenotesharesystem.Project.service;
 
 import com.swave.releasenotesharesystem.Project.domain.Project;
 import com.swave.releasenotesharesystem.Project.repository.ProjectRepository;
-import com.swave.releasenotesharesystem.Project.requestDto.ProjectRequestDto;
-import com.swave.releasenotesharesystem.Project.responseDto.loadAllProjectResponseDto;
-import com.swave.releasenotesharesystem.Project.responseDto.loadOneProjectResponseDto;
+import com.swave.releasenotesharesystem.Project.requestDto.ProjectCreateRequestDto;
+import com.swave.releasenotesharesystem.Project.requestDto.ProjectUpdateRequestDto;
+import com.swave.releasenotesharesystem.Project.responseDto.LoadAllProjectResponseDto;
+import com.swave.releasenotesharesystem.Project.responseDto.LoadOneProjectResponseDto;
 import com.swave.releasenotesharesystem.ReleaseNote.domain.ReleaseNote;
 import com.swave.releasenotesharesystem.ReleaseNote.repository.ReleaseNoteRepository;
 import com.swave.releasenotesharesystem.User.domain.User;
@@ -13,14 +14,16 @@ import com.swave.releasenotesharesystem.User.repository.UserInProjectRepository;
 import com.swave.releasenotesharesystem.User.repository.UserRepository;
 import com.swave.releasenotesharesystem.Util.type.UserRole;
 import lombok.RequiredArgsConstructor;
+import com.swave.releasenotesharesystem.Util.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 ;
 
@@ -37,25 +40,24 @@ public class ProjectServiceImpl implements ProjectService{
     private final UserRepository userRepository;
 
     private final ReleaseNoteRepository releaseNoteRepository;
-
-
-
-
+    
     @Override
-    public String createProject(ProjectRequestDto projectRequestDto) {
+    public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDto projectCreateRequestDto) {
         //빌더로 프로젝트생성
         Project project = Project.builder()
-                .name(projectRequestDto.getName())
-                .description(projectRequestDto.getDescription())
+                .name(projectCreateRequestDto.getName())
+                .description(projectCreateRequestDto.getDescription())
                 .createDate(new Date())
                 .build();
 
+        log.info(request.toString());
         log.info(project.getDescription().toString());
 
         //유저리스트 받아서 설정
         project.setUserInProjectList(new ArrayList<>());
-        log.info(projectRequestDto.getUserId().toString());
-        User user = userRepository.findById(projectRequestDto.getUserId()).orElse(null);
+        log.info(projectCreateRequestDto.getUserId().toString());
+        //projectRequestDto.getUserId()
+        User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
         //UserInProject.setUserInProject(new ArrayList<>());
         //builder를 이용한 userInProject 생성
 
@@ -86,8 +88,8 @@ public class ProjectServiceImpl implements ProjectService{
 
         UserInProject saveUserInProject = userInProjectRepository.save(userInProject);
 
-        if(projectRequestDto.getUsers().size()>=1) {
-            for (Long userId : projectRequestDto.getUsers()) {
+        if(projectCreateRequestDto.getUsers().size()>=1) {
+            for (Long userId : projectCreateRequestDto.getUsers()) {
                 //유저인 프로젝트 생성
                 UserInProject userInProject1 = new UserInProject();
                 userInProject1.setRole(UserRole.Developer);
@@ -117,10 +119,16 @@ public class ProjectServiceImpl implements ProjectService{
         userInProjectRepository.flush();
 
 
-        return project.toString();
+        //return project.toString();
+        return HttpResponse.builder()
+                .message("Project Created")
+                .description("Project Id "+ project.getId()+" created")
+                .build();
     }
 
-    @Override
+    //requestGetAttribute 
+    //서블렛
+    /*@Override
     public String updateUsers(ProjectRequestDto projectRequestDto) {
         //프로젝트를 불러와서
         //리스트 받아서
@@ -128,7 +136,7 @@ public class ProjectServiceImpl implements ProjectService{
         //유저에 매핑
 
         //모든객체 싹다 호출
-        Project project = projectRepository.findById(projectRequestDto.getId()).orElse(null);
+        //Project project = projectRepository.findById(projectRequestDto.getId()).orElse(null);
         //List<UserInProject> teamMembers = new ArrayList<>(project.getUserInProjectList());
 
 
@@ -151,24 +159,22 @@ public class ProjectServiceImpl implements ProjectService{
         }
         projectRepository.flush();
         return null;
-    }
+    }*/
 
     //최신 릴리즈노트 이름 가져오기
     @Override
-    public List<loadAllProjectResponseDto> loadProjectList(Long userId) {
-        List<loadAllProjectResponseDto> projectList = new ArrayList<>();
-        List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id(userId);
+    public List<LoadAllProjectResponseDto> loadProjectList(HttpServletRequest request) {
+        List<LoadAllProjectResponseDto> projectList = new ArrayList<>();
+        List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id((Long)request.getAttribute("id"));
 
         for(UserInProject userInProject: userInProjectList){
             Project project = projectRepository.findById(userInProject.getProject().getId())
                     .orElseThrow(NoSuchFieldError::new);
             List<ReleaseNote> releaseNoteList = releaseNoteRepository.findByProject_Id(project.getId());
-            //이게 말이안되네
-            //Long latestreleaseNoteId = releaseNoteList.get(releaseNoteList.size()).getId();
-            //ReleaseNote releaseNote = releaseNoteRepository.findById(latestreleaseNoteId).orElseThrow(null);
-            int count = projectRepository.countMember(project.getId());
+            int count = userInProjectRepository.countMember(project.getId());
+            String version = releaseNoteRepository.latestReleseNote((Long)request.getAttribute("id"),project.getId());
             //log.info((String)count);
-            projectList.add(new loadAllProjectResponseDto(project.getId(),userInProject.getRole(),project.getName(),project.getDescription(),project.getCreateDate(),count));
+            projectList.add(new LoadAllProjectResponseDto(project.getId(),userInProject.getRole(),project.getName(),project.getDescription(),project.getCreateDate(),count,version));
         }
         /*
         List<ProjectRequestDto> loadAll = new ArrayList<>();
@@ -180,8 +186,8 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     @Override
-    public loadOneProjectResponseDto loadProject(Long projectId) {
-        loadOneProjectResponseDto getproject = new loadOneProjectResponseDto();
+    public LoadOneProjectResponseDto loadProject(Long projectId) {
+        LoadOneProjectResponseDto getproject = new LoadOneProjectResponseDto();
         Project project = projectRepository.findById(projectId).get();
         getproject.setId(project.getId());
         getproject.setName(project.getName());
@@ -196,6 +202,47 @@ public class ProjectServiceImpl implements ProjectService{
         return getproject;
     }
 
+    @Override
+    @Transactional
+    public ProjectUpdateRequestDto updateProject(ProjectUpdateRequestDto projectUpdateRequestDto) {
+
+        Project project = projectRepository.findById(projectUpdateRequestDto.getId()).orElseThrow(null);
+
+        project.setName(projectUpdateRequestDto.getName());
+        project.setDescription(projectUpdateRequestDto.getDescription());
+        //project.setUserInProjectList(projectUpdateRequestDto.getUsers());
+        //기존에있는 리스트를 가져와서
+        //프로젝트에 있는 유저리스트를 불러와서 삭제
+        //querydsl 사용하기
+
+
+        for (Long deleteUserId : projectUpdateRequestDto.getDeleteUsers()){
+            int delete = userInProjectRepository.deleteUser(projectUpdateRequestDto.getId(),deleteUserId);
+            userInProjectRepository.flush();
+        }
+
+        for (Long userId : projectUpdateRequestDto.getUpdateUsers()){
+            UserInProject userInProject = new UserInProject();
+            userInProject.setRole(UserRole.Developer);
+            userInProject.setProject(project);
+
+            User user = userRepository.findById(userId).get();
+            userInProject.setUser(user);
+            userInProjectRepository.save(userInProject);
+
+            List<UserInProject> userInProjectList = user.getUserInProjectList();
+            userInProjectList.add(userInProject);
+            user.setUserInProjectList(userInProjectList);
+            userRepository.flush();
+            userInProjectRepository.flush();
+            project.getUserInProjectList().add(userInProject);
+        }
+        projectRepository.flush();
+        userInProjectRepository.flush();
+
+        return projectUpdateRequestDto;
+    }
+    //삭제 소프트들리트를 믿어보자
 
 
 }

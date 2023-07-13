@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface UserInProjectRepository extends JpaRepository<UserInProject, Long> {
+public interface UserInProjectRepository extends JpaRepository<UserInProject, Long>,UserInProjectCustomRepository {
 
     List<UserInProject> findByUser_Id(Long Id);
     List<UserInProject> findByProject_Id(Long Id);

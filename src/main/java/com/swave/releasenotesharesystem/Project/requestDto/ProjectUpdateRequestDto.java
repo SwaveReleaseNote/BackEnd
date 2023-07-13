@@ -1,34 +1,25 @@
 package com.swave.releasenotesharesystem.Project.requestDto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
-
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class ProjectRequestDto {
+public class ProjectUpdateRequestDto {
     Long id;
     String name;
     String description;
-    Date createDate;
+    List<Long> deleteUsers;
+    List<Long> updateUsers;
 
-    //managerID
-    Long userId;
-    List<Long> users;
-
-
-    public ProjectRequestDto(Long id, String name, String description, Date createDate) {
+    public ProjectUpdateRequestDto(Long id, String name, String description, List<Long> deleteUsers, List<Long> updateUsers) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.createDate = createDate;
-
+        this.deleteUsers = deleteUsers;
+        this.updateUsers = updateUsers;
     }
-
-
 }

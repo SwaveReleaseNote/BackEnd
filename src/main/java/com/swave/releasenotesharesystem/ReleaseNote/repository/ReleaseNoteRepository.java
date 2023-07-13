@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface ReleaseNoteRepository extends JpaRepository<ReleaseNote, Long> {
+public interface ReleaseNoteRepository extends JpaRepository<ReleaseNote, Long>,ReleaseNoteCustomRepository {
     List<ReleaseNote> findByProject_Id(Long Id);
 }

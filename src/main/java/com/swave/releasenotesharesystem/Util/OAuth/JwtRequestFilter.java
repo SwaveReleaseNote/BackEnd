@@ -29,7 +29,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 
     // 인증에서 제외할 url
-    private static final String Exclude_url="/api/test,/login/createUser,/login/checkValidId,/login/login,/api/project/**,"+ChatGPTConfig.URL;
+    //,/api/project/**
+    private static final String Exclude_url="/api/test,/login/createUser,/login/checkValidId,/login/login,"+ChatGPTConfig.URL;
 
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
