@@ -45,7 +45,7 @@ public class ProjectServiceImpl implements ProjectService{
     public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto) {
         //빌더로 프로젝트생성
         Project project = Project.builder()
-                .name(projectCreateRequestDto.getName())
+                .name(projectCreateRequestDto.getProjectName())
                 .description(projectCreateRequestDto.getDescription())
                 .createDate(new Date())
                 .build();

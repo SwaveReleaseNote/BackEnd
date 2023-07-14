@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProjectCreateRequestDTO {
-    String name;
+    String projectName;
     String description;
     Date createDate;
 
@@ -21,9 +21,9 @@ public class ProjectCreateRequestDTO {
     List<Long> users;
 
 
-    public ProjectCreateRequestDTO(String name, String description, Date createDate) {
+    public ProjectCreateRequestDTO(String projectName, String description, Date createDate) {
 
-        this.name = name;
+        this.projectName = projectName;
         this.description = description;
         this.createDate = createDate;
 

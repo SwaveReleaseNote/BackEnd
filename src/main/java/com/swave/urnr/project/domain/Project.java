@@ -35,7 +35,7 @@ public class Project {
     private Date createDate;
 
     // Project 와 userInProject mapping
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY,cascade = {CascadeType.ALL},orphanRemoval = true)
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY,orphanRemoval = true)
     @Column(name = "user_in_project_id")
     private List<UserInProject> userInProjectList;
 
