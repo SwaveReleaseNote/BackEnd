@@ -40,7 +40,7 @@ public class Project {
     private List<UserInProject> userInProjectList;
 
     // project 와 release note mapping
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY,cascade = {CascadeType.ALL},orphanRemoval = true)
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY,orphanRemoval = true)
     @Column(name = "release_note_id")
     private List<ReleaseNote> releaseNoteList;
 
