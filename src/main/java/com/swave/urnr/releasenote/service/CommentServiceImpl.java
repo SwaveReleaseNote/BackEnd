@@ -9,7 +9,7 @@ import com.swave.urnr.releasenote.responsedto.CommentContentResponseDTO;
 import com.swave.urnr.releasenote.responsedto.CommentContentListResponseDTO;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.repository.UserRepository;
-import com.swave.urnr.Util.http.HttpResponse;
+import com.swave.urnr.util.http.HttpResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -70,7 +70,7 @@ public class CommentServiceImpl implements CommentService {
         for(Comment comment : comments) {
             CommentContentResponseDTO commentContentResponseDTO = new CommentContentResponseDTO();
 
-            commentContentResponseDTO.setName(comment.getUser().getName());
+            commentContentResponseDTO.setName(comment.getUser().getUsername());
             commentContentResponseDTO.setContext(comment.getCommentContext());
             commentContentResponseDTO.setLastModifiedDate(comment.getLastModifiedDate());
 

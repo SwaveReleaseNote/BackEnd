@@ -1,6 +1,6 @@
 package com.swave.urnr.chatgpt.requestdto;
 
-import com.swave.urnr.Util.gpt.Message;
+import com.swave.urnr.util.gpt.Message;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

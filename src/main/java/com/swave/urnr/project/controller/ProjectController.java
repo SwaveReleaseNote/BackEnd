@@ -7,7 +7,7 @@ import com.swave.urnr.project.responsedto.ProjectListResponseDTO;
 
 import com.swave.urnr.project.service.ProjectService;
 import lombok.RequiredArgsConstructor;
-import com.swave.urnr.Util.http.HttpResponse;
+import com.swave.urnr.util.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 

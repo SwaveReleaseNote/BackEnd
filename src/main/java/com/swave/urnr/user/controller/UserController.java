@@ -1,140 +1,96 @@
 package com.swave.urnr.user.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.swave.urnr.user.domain.User;
-import com.swave.urnr.user.domain.UserUpdateRequest;
+import com.swave.urnr.util.common.response.ResponseDto;
 import com.swave.urnr.user.exception.UserNotFoundException;
-import com.swave.urnr.user.repository.UserRepository;
-import com.swave.urnr.user.request.*;
-import com.swave.urnr.user.response.EmailCheckResponseDto;
-import com.swave.urnr.user.response.LoginResponseDTO;
+import com.swave.urnr.user.requestdto.*;
 import com.swave.urnr.user.service.UserService;
 import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-
-/*
-TODO LIST: 1. mail validation system
-           2. login full implementation
-           3. Code cleaning
-
- */
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 @Api(tags = "UserController")
 @RestController
+@Validated
 @RequiredArgsConstructor
 @Slf4j
+@RequestMapping("/api/user")
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 public class UserController {
 
-    private final UserService userService; //(2)
+    private final UserService userService;
 
-    private final UserRepository userRepository;
-
-    /*
-    Test code to show how api works, and how can derive header from it.
-    Both codes do simple function: returns header and body.
-     */
-//    @PostMapping(value = "/api/test")
-//    public String temp(HttpServletRequest request, @RequestBody UserRegisterRequestDto pageRequest) throws InvalidIdException, UnknownHostException {
-//        log.info("PR :  "+String.valueOf(pageRequest));
-//        log.info("request :  "+String.valueOf(request));
-//        userServiceImpl.test(request, pageRequest);
-//        Enumeration<String> headerNames = request.getHeaderNames();
-//        while (headerNames.hasMoreElements()) {
-//            log.info("Header  " + headerNames.nextElement());
-//            log.info("Value  " + request.getHeader(headerNames.nextElement()));
-//
-//        }
-//        return "Test Complete"+String.valueOf(pageRequest)+" "+String.valueOf(request);
-//    }
-
-//    @GetMapping(value = "/api/testGET")
-//    public String testGET(HttpServletRequest request, @RequestBody UserRegisterRequestDto pageRequest) throws InvalidIdException, UnknownHostException {
-//        log.info("PR :  "+String.valueOf(pageRequest));
-//        log.info("request :  "+String.valueOf(request));
-//        userServiceImpl.testGET(request, pageRequest);
-//        Enumeration<String> headerNames = request.getHeaderNames();
-//        String Temp = "";
-//        while (headerNames.hasMoreElements()) {
-//            log.info("Header  " + headerNames.nextElement());
-//            log.info("Value  " + request.getHeader(headerNames.nextElement()));
-//        }
-//        return "Test Complete " + String.valueOf(pageRequest) + " " + String.valueOf(request);
-//    }
-
-    @PostMapping("/login/createUser")
-    public String createUser(@RequestBody @Validated RegisterRequestDto request) {
-        log.info(request.toString());
-        userService.createUser(request);
-        return "Created " + request.toString();
+    @Operation(summary="유저 계정 생성", description="유저 정보를 생성합니다.")
+    @PostMapping("/prelogin/create")
+    public ResponseEntity<ResponseDto> createAccountByServer(@RequestBody @Valid UserRegisterRequestDto request) {
+        return userService.createAccountByServer(request);
     }
 
-    @GetMapping("/login/checkValidId")
-    public EmailCheckResponseDto checkValidEmail(@RequestBody EmailCheckRequestDto request) {
-        return userService.checkEmailBody(request);
-    }
-
-    @PostMapping("/login/updateUser")
-    public String updateUser(HttpServletRequest request, @RequestBody UpdateUserDto requestDto) throws UserNotFoundException {
-        userService.updateUser(request, requestDto);
-        return "updated";
+    @Operation(summary="인증 이메일 전송", description="받은 이메일 주소로 난수가 포함된 이메일을 보내며, 난수를 반환합니다.")
+    @PostMapping("/prelogin/sendmail")
+    public ResponseEntity<String> validateByEmail(@RequestBody @Valid UserValidateEmailDTO request) throws Exception {
+        return userService.getValidationCode(request);
     }
 
 
-    @GetMapping("/login/login")
-    public LoginResponseDTO login(HttpServletRequest request, @RequestBody LoginRequestDTO requestDto) throws UserNotFoundException {
-
-        return userService.userLogin(request, requestDto);
+    @Operation(summary="임시 비밀번호 발급", description="받은 이메일 주소로 임시 비밀번호가 포함된 이메일을 보냅니다.")
+    @PostMapping("/prelogin/get-temporary-email")
+    public ResponseEntity<String> getTemporaryEmail(@RequestBody @Valid UserValidateEmailDTO request) throws Exception {
+        return userService.setTemporaryPassword(request);
     }
 
-    /*
-    TODO: Avoid 500 ERROR
-     */
-    @GetMapping("/login/deleteAccount")
-    public void deleteUser(HttpServletRequest request, @RequestBody DeleteUserDto requestDTO) throws UserNotFoundException {
-        userService.deleteUser(request, requestDTO);
-
-
+    @Operation(summary="사용자 계정 수정", description="로그인한 사용자로부터 받은 정보로 사용자의 계정 정보를 수정합니다.")
+    @PutMapping("/update")
+    @SecurityRequirement(name = "Authorization")
+    public  ResponseEntity<ResponseDto> updateUser(HttpServletRequest request, @RequestBody UserUpdateAccountRequestDto requestDto) throws UserNotFoundException {
+        return userService.updateUser(request, requestDto);
     }
 
 
-    @PostMapping("/oauth/token")
-    public ResponseEntity getLogin (@RequestParam("code") String code, @RequestParam("provider") String provider) throws
-            JsonProcessingException {
-        return userService.getLogin(code, provider);
+    @Operation(summary="사용자 소속 등록", description="로그인한 사용자로부터 받은 정보로 사용자의 계정 정보를 수정합니다.")
+    @PatchMapping("/updateDepartment")
+    @SecurityRequirement(name = "JWT 토큰")
+    public String initDepartment(HttpServletRequest request, @RequestBody Map<String, Object> requestBody) throws UserNotFoundException {
+        return userService.initDepartment(request, (String) requestBody.get("department"));
+    }
+    @Operation(summary="일반 로그인", description="입력된 계정과 비밀번호가 동일하면 토큰값을 반환합니다.")
+    @PostMapping("/prelogin/login-by-server")
+    public String getTokenByLogin(HttpServletRequest request, @RequestBody UserLoginServerRequestDTO requestDto) throws UserNotFoundException {
+        return userService.getTokenByLogin(request, requestDto);
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<Object> getCurrentUser (HttpServletRequest request) throws Exception { //(1)
-        return userService.getCurrentUser(request);
+    @Operation(summary="사용자 계정 삭제", description="사용자의 계정을 삭제합니다.")
+    @DeleteMapping("/delete")
+    public void deleteUser(HttpServletRequest request) throws UserNotFoundException {
+        userService.deleteUser(request);
     }
 
-
-    @PostMapping("/updatepage")
-    public String updateMyPage (HttpServletRequest request, @RequestBody UserUpdateRequest user) throws Exception
-    { //(1)
-        return userService.updateMyPage(request, user);
+    @Operation(summary="oAuth 로그인", description="Oauth 기능을 기반으로 사용자의 계정을 로그인합니다.")
+    @PostMapping("/prelogin/login-by-oauth")
+    public ResponseEntity getTokenByOauth(@RequestParam("code") String code, @RequestParam("provider") String provider) throws JsonProcessingException {
+        return userService.getTokenByOauth(code, provider);
     }
 
-
-    @GetMapping("/TestForLogin")
-    public String loginTest(HttpServletRequest request){
-        Long Id = (Long) request.getAttribute("id");
-        User user = userRepository.findById(Id).get();
-
-        log.info(" ID : "+Id + " name :"+user.getName());
-
-        return "SUCUESS";
+    @Operation(summary="사용자 리스트 반환", description="사용자 리스트를 반환합니다.")
+    @GetMapping("/prelogin/getuserlist")
+    public List getUserInformationList() {
+        return userService.getUserInformationList();
     }
-    @GetMapping("/api/MappingTest")
-    public String testController() {
-return "conffirmed";
+
+    @Operation(summary="사용자 계정 확인", description="사용자의 계정 정보를 반환합니다.")
+    @GetMapping("/getuser")
+    public ResponseEntity<Object> getCurrentUserInformation(HttpServletRequest request) throws Exception {
+        return userService.getCurrentUserInformation(request);
     }
+
 }

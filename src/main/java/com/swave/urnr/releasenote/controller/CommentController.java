@@ -3,7 +3,7 @@ package com.swave.urnr.releasenote.controller;
 import com.swave.urnr.releasenote.requestdto.CommentCreateRequestDTO;
 import com.swave.urnr.releasenote.responsedto.CommentContentListResponseDTO;
 import com.swave.urnr.releasenote.service.CommentService;
-import com.swave.urnr.Util.http.HttpResponse;
+import com.swave.urnr.util.http.HttpResponse;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

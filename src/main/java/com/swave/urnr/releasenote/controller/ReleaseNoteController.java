@@ -4,7 +4,7 @@ import com.swave.urnr.releasenote.requestdto.ReleaseNoteCreateRequestDTO;
 import com.swave.urnr.releasenote.requestdto.ReleaseNoteUpdateRequestDTO;
 import com.swave.urnr.releasenote.responsedto.*;
 import com.swave.urnr.releasenote.service.ReleaseNoteServiceImpl;
-import com.swave.urnr.Util.http.HttpResponse;
+import com.swave.urnr.util.http.HttpResponse;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.*;

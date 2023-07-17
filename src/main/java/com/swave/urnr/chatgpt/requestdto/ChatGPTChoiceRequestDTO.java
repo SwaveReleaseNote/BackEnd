@@ -2,7 +2,7 @@ package com.swave.urnr.chatgpt.requestdto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.swave.urnr.Util.gpt.Message;
+import com.swave.urnr.util.gpt.Message;
 import lombok.*;
 import springfox.documentation.annotations.ApiIgnore;
 

@@ -1,43 +1,40 @@
 package com.swave.urnr.user.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.swave.urnr.util.common.response.ResponseDto;
+import com.swave.urnr.util.exception.InvalidTokenException;
 import com.swave.urnr.user.domain.User;
-import com.swave.urnr.user.domain.UserUpdateRequest;
-import com.swave.urnr.user.exception.InvalidIdException;
 import com.swave.urnr.user.exception.UserNotFoundException;
-import com.swave.urnr.user.request.*;
-import com.swave.urnr.user.response.EmailCheckResponseDto;
-import com.swave.urnr.user.response.LoginResponseDTO;
-import com.swave.urnr.Util.exception.InvalidTokenException;
+import com.swave.urnr.user.requestdto.*;
 import org.springframework.http.ResponseEntity;
 
-
 import javax.servlet.http.HttpServletRequest;
-import java.net.UnknownHostException;
+import java.util.List;
 
 
 public interface UserService {
-    void test(HttpServletRequest request, RegisterRequestDto userRequest) throws InvalidIdException, UnknownHostException;
 
-    void testGET(HttpServletRequest request, RegisterRequestDto userRequest) throws InvalidIdException, UnknownHostException;
+    ResponseEntity<ResponseDto> createAccountByServer(UserRegisterRequestDto request);
 
-    void createUser(RegisterRequestDto request);
+    ResponseEntity<String> getValidationCode(UserValidateEmailDTO request) throws Exception;
 
-     EmailCheckResponseDto checkEmailBody(EmailCheckRequestDto request);
+    ResponseEntity<ResponseDto> updateUser(HttpServletRequest request, UserUpdateAccountRequestDto requestDto) throws UserNotFoundException;
 
-    String checkEmailString(String request ) throws  UserNotFoundException;
-    void updateUser(HttpServletRequest request,UpdateUserDto requestDto) throws UserNotFoundException;
+    String initDepartment(HttpServletRequest request, String requestDto) throws UserNotFoundException;
 
-    LoginResponseDTO userLogin(HttpServletRequest request, LoginRequestDTO requestDto) throws UserNotFoundException;
+    String getTokenByLogin(HttpServletRequest request, UserLoginServerRequestDTO requestDto) throws UserNotFoundException;
 
-      void deleteUser (HttpServletRequest request, DeleteUserDto requestDTO) throws UserNotFoundException;
+    ResponseEntity<String> setTemporaryPassword(UserValidateEmailDTO request) throws Exception;
 
-      User getUser(HttpServletRequest request) throws UserNotFoundException;
-      ResponseEntity<Object> getCurrentUser(HttpServletRequest request) throws InvalidTokenException, UserNotFoundException;
+    void deleteUser(HttpServletRequest request) throws UserNotFoundException;
 
-      ResponseEntity getLogin(String code,String provider) throws JsonProcessingException ;
-      String updateMyPage(HttpServletRequest request, UserUpdateRequest userUpdateRequest) throws Exception;
+    User getUser(HttpServletRequest request) throws UserNotFoundException;
 
-      void checkInvalidToken(HttpServletRequest request) throws InvalidTokenException;
+    ResponseEntity<Object> getCurrentUserInformation(HttpServletRequest request) throws InvalidTokenException, UserNotFoundException;
 
+    ResponseEntity getTokenByOauth(String code, String provider) throws JsonProcessingException;
+
+    void checkInvalidToken(HttpServletRequest request) throws InvalidTokenException;
+
+    List getUserInformationList();
 }

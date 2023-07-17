@@ -16,8 +16,8 @@ import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.repository.UserInProjectRepository;
 import com.swave.urnr.user.repository.UserRepository;
-import com.swave.urnr.Util.http.HttpResponse;
-import com.swave.urnr.Util.type.UserRole;
+import com.swave.urnr.util.http.HttpResponse;
+import com.swave.urnr.util.type.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -114,7 +114,7 @@ public class ReleaseNoteServiceImpl implements NoteBlockService, ReleaseNoteServ
 
         for(Comment comment : commentList){
             CommentContentResponseDTO commentContentResponseDTO = new CommentContentResponseDTO();
-            commentContentResponseDTO.setName(comment.getUser().getName());
+            commentContentResponseDTO.setName(comment.getUser().getUsername());
             commentContentResponseDTO.setContext(comment.getCommentContext());
             commentContentResponseDTO.setLastModifiedDate(comment.getLastModifiedDate());
 

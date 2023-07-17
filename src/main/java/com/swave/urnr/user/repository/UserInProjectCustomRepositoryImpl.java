@@ -1,7 +1,7 @@
 package com.swave.urnr.user.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.swave.urnr.Util.type.UserRole;
+import com.swave.urnr.util.type.UserRole;
 
 import javax.persistence.EntityManager;
 

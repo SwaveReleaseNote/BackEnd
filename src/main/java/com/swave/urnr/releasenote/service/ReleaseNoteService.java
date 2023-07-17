@@ -5,7 +5,7 @@ import com.swave.urnr.releasenote.requestdto.ReleaseNoteUpdateRequestDTO;
 import com.swave.urnr.releasenote.responsedto.ReleaseNoteContentResponseDTO;
 import com.swave.urnr.releasenote.responsedto.ReleaseNoteContentListResponseDTO;
 import com.swave.urnr.releasenote.responsedto.ReleaseNoteVersionListResponseDTO;
-import com.swave.urnr.Util.http.HttpResponse;
+import com.swave.urnr.util.http.HttpResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;

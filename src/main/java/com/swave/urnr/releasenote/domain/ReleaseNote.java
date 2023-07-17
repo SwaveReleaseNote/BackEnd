@@ -85,7 +85,7 @@ public class ReleaseNote {
             noteBlockContentList.add(noteblock.getNoteBlockContext());
         }
 
-        releaseNoteContentResponseDTO.setCreator(this.user.getName());
+        releaseNoteContentResponseDTO.setCreator(this.user.getUsername());
         releaseNoteContentResponseDTO.setVersion(this.version);
         releaseNoteContentResponseDTO.setLastModified(this.lastModifiedDate);
         releaseNoteContentResponseDTO.setReleaseDate(this.releaseDate);
@@ -100,7 +100,7 @@ public class ReleaseNote {
     public ReleaseNoteContentListResponseDTO makeReleaseNoteContentListDTO(){
         ReleaseNoteContentListResponseDTO releaseNoteContentListResponseDTO = new ReleaseNoteContentListResponseDTO();
 
-        releaseNoteContentListResponseDTO.setCreator(this.user.getName());
+        releaseNoteContentListResponseDTO.setCreator(this.user.getUsername());
         releaseNoteContentListResponseDTO.setReleaseDate(this.releaseDate);
         releaseNoteContentListResponseDTO.setLastModified(this.lastModifiedDate);
         releaseNoteContentListResponseDTO.setVersion(this.version);

@@ -1,6 +1,6 @@
 package com.swave.urnr.project.responsedto;
 
-import com.swave.urnr.Util.type.UserRole;
+import com.swave.urnr.util.type.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

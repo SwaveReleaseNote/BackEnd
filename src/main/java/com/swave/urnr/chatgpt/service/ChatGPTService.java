@@ -1,7 +1,7 @@
 package com.swave.urnr.chatgpt.service;
 
 
-import com.swave.urnr.Util.gpt.Message;
+import com.swave.urnr.util.gpt.Message;
 import com.swave.urnr.chatgpt.config.ChatGPTConfig;
 import com.swave.urnr.chatgpt.requestdto.*;
 import com.swave.urnr.chatgpt.responsedto.ChatGPTResultResponseDTO;

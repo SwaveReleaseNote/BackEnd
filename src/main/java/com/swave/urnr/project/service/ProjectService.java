@@ -6,7 +6,7 @@ import com.swave.urnr.project.responsedto.ProjectListResponseDTO;
 import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
 
 import javax.servlet.http.HttpServletRequest;
-import com.swave.urnr.Util.http.HttpResponse;
+import com.swave.urnr.util.http.HttpResponse;
 import java.util.List;
 
 public interface ProjectService {

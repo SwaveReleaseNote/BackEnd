@@ -1,18 +1,14 @@
 package com.swave.urnr.user.service;
 
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swave.urnr.util.oauth.OauthToken;
+import com.swave.urnr.util.oauth.kakao.KakaoProfile;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.repository.UserRepository;
-import com.swave.urnr.Util.OAuth.JwtProperties;
-import com.swave.urnr.Util.OAuth.OauthToken;
-import com.swave.urnr.Util.OAuth.kakao.KakaoProfile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,15 +18,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthService {
 
     private final UserRepository userRepository;
-    public OauthToken getAccessToken(String code, String provider) throws JsonProcessingException {
+    private final TokenService tokenService;
+    public OauthToken getOauthAccessToken(String code, String provider) throws JsonProcessingException {
         RestTemplate rt = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
@@ -44,8 +39,7 @@ public class OAuthService {
             clientId = "4646a32b25c060e42407ceb8c13ef14a";
             clientSecret = "AWyAH1M24R9EYfUjJ1KCxcsh3DwvK8F7";
             redirectUri = "http://127.0.0.1:5173/oauth/callback/kakao";
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Invalid Provider: " + provider);
         }
 
@@ -112,14 +106,13 @@ public class OAuthService {
     }
 
 
-
-    public String SaveUserAndGetToken(String token, String provider){
+    public String getTokenByOauth(String token, String provider) {
         if (provider.equals("kakao")) {
             KakaoProfile profile = findKakaoProfile(token);
 
             //회원 정보 조회 by Email
 //            User user = userRepository.findByEmail(profile.getKakao_account().getEmail());
-            User user = userRepository.findByEmailAndProvider(profile.getKakao_account().getEmail(),provider);
+            User user = userRepository.findByEmailAndProvider(profile.getKakao_account().getEmail(), provider);
             if (user == null) {
                 user = User.builder()
                         .name(profile.getKakao_account().getProfile().getNickname())
@@ -128,27 +121,17 @@ public class OAuthService {
 //                        .userRole("ROLE_USER").build();
 
                 userRepository.save(user);
-            } else if ( provider.equals("local") ) {
+            } else if (provider.equals("server")) {
 
             } else {
                 log.info("기존 회원 -> 회원 가입 건너 뜀");
             }
-            return createToken(user);
+            return   tokenService.createToken(user);
         } else {
             throw new RuntimeException("Unsupported provider: " + provider);
         }
     }
 
-    public String createToken(User user) {
 
-        String jwtToken = JWT.create()
-                .withSubject(user.getEmail())
-                .withExpiresAt(new Date(System.currentTimeMillis()+ JwtProperties.EXPIRATION_TIME))
-                .withClaim("id", user.getId())
-                .withClaim("name", user.getName())
-                .sign(Algorithm.HMAC512(JwtProperties.SECRET));
-
-        return jwtToken;
-    }
 
 }
