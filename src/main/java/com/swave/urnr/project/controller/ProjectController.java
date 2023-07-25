@@ -6,6 +6,7 @@ import com.swave.urnr.project.responsedto.ProjectContentResponseDTO;
 import com.swave.urnr.project.responsedto.ProjectListResponseDTO;
 
 import com.swave.urnr.project.responsedto.ProjectManagementContentResponseDTO;
+import com.swave.urnr.project.responsedto.ProjectUserCheckDTO;
 import com.swave.urnr.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -80,6 +81,10 @@ public class ProjectController {
     }
 
 
+    @GetMapping("/dashboard/meberStatus/{projectId}")
+    public List<ProjectUserCheckDTO> userCheck(@PathVariable Long projectId){
+        return projectService.checkUser(projectId);
+    }
 
 
     //검색

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @Api(tags = "UserController")
 @RestController
@@ -91,5 +92,10 @@ public class UserController {
     @GetMapping("/getuser")
     public ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request)  {
         return userService.getCurrentUserInformation(request);
+    }
+
+    @PatchMapping("/updateStatus")
+    public boolean updateStatus(HttpServletRequest request,  @RequestBody Map<String, Object> requestBody) throws UserNotFoundException {
+        return userService.updateLoginState(request, (boolean) requestBody.get("loginState"));
     }
 }

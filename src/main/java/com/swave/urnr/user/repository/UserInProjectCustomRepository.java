@@ -15,5 +15,5 @@ public interface UserInProjectCustomRepository {
 
     Integer dropProject(Long userId, Long projectId);
 
-
+    List<UserMemberInfoResponseDTO> getLoginMembers(Long projectId);
 }

@@ -251,6 +251,25 @@ return userListResponseDTO;
         }
     }
 
+    @Override
+    public boolean updateLoginState(HttpServletRequest request, boolean loginState) throws UserNotFoundException {
+
+        Long id = (Long) request.getAttribute("id");
+        Optional<User> optionalUser = userRepository.findById(id);
+
+        if (optionalUser.isPresent()) {
+            log.info("Sucussed for Filt but fail here. " + loginState);
+            User user = optionalUser.get();
+            user.setLoginState(loginState);
+            log.info("Final : " + user);
+            userRepository.save(user);
+            userRepository.flush();
+        } else {
+            throw new UserNotFoundException();
+
+        }
+        return loginState;
+    }
 
 
 

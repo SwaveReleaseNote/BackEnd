@@ -8,6 +8,7 @@ import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
 import com.swave.urnr.project.responsedto.ProjectListResponseDTO;
 import com.swave.urnr.project.responsedto.ProjectContentResponseDTO;
 import com.swave.urnr.project.responsedto.ProjectManagementContentResponseDTO;
+import com.swave.urnr.project.responsedto.ProjectUserCheckDTO;
 import com.swave.urnr.releasenote.domain.ReleaseNote;
 import com.swave.urnr.releasenote.repository.ReleaseNoteRepository;
 import com.swave.urnr.user.domain.User;
@@ -102,7 +103,7 @@ public class ProjectServiceImpl implements ProjectService {
                 userInProject1.setRole(UserRole.Developer);
                 userInProject1.setProject(project);
 
-                User user1 = userRepository.findById(userId).get();
+                User user1 = userRepository.findById((Long) request.getAttribute("id")).get();
                 //User user1 = userRepository.findById(userInProject1.getId()).get();
                 userInProject1.setUser(user1);
                 userInProjectRepository.save(userInProject1);
@@ -298,7 +299,23 @@ public class ProjectServiceImpl implements ProjectService {
 
     }
 
+    @Override
+    public List<ProjectUserCheckDTO> checkUser(Long projectId){
+        List<ProjectUserCheckDTO> projectUserCheckList = new ArrayList<>();
+        List<UserMemberInfoResponseDTO> getMemberLists = userInProjectRepository.getLoginMembers(projectId);
+        log.info(String.valueOf(getMemberLists.get(0)));
+        for(UserMemberInfoResponseDTO getMember : getMemberLists){
+            User user = userRepository.getReferenceById(getMember.getUser_Id());
+            ProjectUserCheckDTO projectUserCheck = ProjectUserCheckDTO.builder()
+                    .memberId(user.getId())
+                    .memberName(user.getUsername())
+                    .status(user.isLoginState())
+                    .build();
+            projectUserCheckList.add(projectUserCheck);
 
+        }
+        return projectUserCheckList;
+    }
 
 
 }

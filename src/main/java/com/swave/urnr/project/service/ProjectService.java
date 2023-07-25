@@ -8,6 +8,7 @@ import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
 import javax.servlet.http.HttpServletRequest;
 
 import com.swave.urnr.project.responsedto.ProjectManagementContentResponseDTO;
+import com.swave.urnr.project.responsedto.ProjectUserCheckDTO;
 import com.swave.urnr.util.http.HttpResponse;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public interface ProjectService {
 
     HttpResponse deleteProject(Long projectId);
 
+    List<ProjectUserCheckDTO> checkUser(Long projectId);
 
     //String updateUsers(ProjectRequestDto project);
 

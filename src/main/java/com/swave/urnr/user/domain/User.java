@@ -32,6 +32,8 @@ public class User {
     private String username;
     @Column(name = "provider")
     private String provider;
+    @Column(name= "loginState")
+    private boolean loginState=false;
 
     @Column(name = "is_deleted")
     private boolean isDeleted = Boolean.FALSE;

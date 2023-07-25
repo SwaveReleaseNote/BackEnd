@@ -58,4 +58,5 @@ public class Project {
         this.createDate = createDate;
         this.userInProjectList = userInProjectList;
     }
+
 }
