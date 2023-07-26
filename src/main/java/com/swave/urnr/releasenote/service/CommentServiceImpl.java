@@ -10,7 +10,6 @@ import com.swave.urnr.releasenote.responsedto.CommentContentListResponseDTO;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.util.http.HttpResponse;
-import groovy.lang.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 
 @Service
 @RequiredArgsConstructor
@@ -50,13 +48,10 @@ public class CommentServiceImpl implements CommentService {
                 .lastModifiedDate(new Date())
                 .build();
 
+        commentRepository.saveAndFlush(comment);
+
         releaseNote.getCommentList().add(comment);
-
-        commentRepository.save(comment);
         releaseNoteRepository.save(releaseNote);
-
-        commentRepository.flush();
-        releaseNoteRepository.flush();
 
         return HttpResponse.builder()
                 .message("Comment Created")
@@ -64,6 +59,7 @@ public class CommentServiceImpl implements CommentService {
                 .build();
     }
 
+    @Override
     public CommentContentListResponseDTO loadRecentComment(Long projectId){
         CommentContentListResponseDTO commentContentListResponseDTO = new CommentContentListResponseDTO(new ArrayList<>());
         List<CommentContentResponseDTO> comments = commentRepository.findTop5RecentComment(projectId);
@@ -84,5 +80,22 @@ public class CommentServiceImpl implements CommentService {
                 .message("Comment Deleted")
                 .description("Comment ID : " + commentId + " Deleted")
                 .build();
+    }
+
+    @Override
+    public ArrayList<CommentContentResponseDTO> loadCommentList(Long releaseNoteId){
+        ArrayList<Comment> commentList = commentRepository.findByReleaseNote_Id(releaseNoteId);
+        ArrayList<CommentContentResponseDTO> commentContentList = new ArrayList<>();
+
+        for(Comment comment : commentList){
+            CommentContentResponseDTO commentContentResponseDTO = new CommentContentResponseDTO();
+            commentContentResponseDTO.setName(comment.getUser().getUsername());
+            commentContentResponseDTO.setContext(comment.getCommentContext());
+            commentContentResponseDTO.setLastModifiedDate(comment.getLastModifiedDate());
+
+            commentContentList.add((commentContentResponseDTO));
+        }
+
+        return commentContentList;
     }
 }

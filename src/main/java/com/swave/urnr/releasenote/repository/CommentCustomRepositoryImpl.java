@@ -1,15 +1,12 @@
 package com.swave.urnr.releasenote.repository;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.swave.urnr.releasenote.responsedto.CommentContentResponseDTO;
-import io.swagger.annotations.ApiModelProperty;
 
 import static com.swave.urnr.releasenote.domain.QComment.comment;
 import static com.swave.urnr.releasenote.domain.QReleaseNote.releaseNote;
 
-import java.util.Date;
 import java.util.List;
 
 public class CommentCustomRepositoryImpl implements CommentCustomRepository {
@@ -30,7 +27,8 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                                 releaseNote.id.as("releaseNoteId")))
                 .from(comment)
                 .join(releaseNote).on(releaseNote.id.eq(comment.releaseNote.id))
-                .where(releaseNote.project.id.eq(projectId))
+                .where(releaseNote.project.id.eq(projectId),
+                        releaseNote.isDeleted.eq(false))
                 .orderBy(comment.lastModifiedDate.desc())
                 .limit(5)
                 .fetch();

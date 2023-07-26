@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface NoteBlockRepository extends JpaRepository<NoteBlock, Long> {
+public interface NoteBlockRepository extends JpaRepository<NoteBlock, Long> , NoteBlockCustomRepository {
     List<NoteBlock> findByReleaseNote_Id(Long Id);
 }

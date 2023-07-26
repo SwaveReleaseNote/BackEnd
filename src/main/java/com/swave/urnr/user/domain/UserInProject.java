@@ -2,6 +2,7 @@ package com.swave.urnr.user.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.swave.urnr.project.domain.Project;
+import com.swave.urnr.releasenote.responsedto.ReleaseNoteVersionListResponseDTO;
 import com.swave.urnr.util.type.UserRole;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,6 +48,18 @@ public class UserInProject {
         this.user = user;
         this.project = project;
     }
+
+    public ReleaseNoteVersionListResponseDTO makeReleaseNoteVersionListResponseDTO(){
+        ReleaseNoteVersionListResponseDTO releaseNoteVersionListResponseDTO = new ReleaseNoteVersionListResponseDTO();
+
+        releaseNoteVersionListResponseDTO.setProjectId(this.getProject().getId());
+        releaseNoteVersionListResponseDTO.setProjectName(this.getProject().getName());
+        releaseNoteVersionListResponseDTO.setSubscribe(UserRole.Subscriber == this.getRole());
+
+        return releaseNoteVersionListResponseDTO;
+    }
+
+
 
 
 }

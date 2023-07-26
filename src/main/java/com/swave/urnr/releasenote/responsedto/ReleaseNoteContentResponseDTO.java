@@ -34,4 +34,6 @@ public class ReleaseNoteContentResponseDTO {
     private int count;
     @ApiModelProperty(value="좋아요 수", example = "-1", required = true)
     private int liked;
+    @ApiModelProperty(value="릴리즈 노트 ID", example = "1", required = true)
+    private Long releaseNoteId;
 }

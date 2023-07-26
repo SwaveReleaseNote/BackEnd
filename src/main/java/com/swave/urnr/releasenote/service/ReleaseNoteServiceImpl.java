@@ -1,6 +1,5 @@
 package com.swave.urnr.releasenote.service;
 
-import com.swave.urnr.chatgpt.responsedto.ChatGPTResultResponseDTO;
 import com.swave.urnr.chatgpt.service.ChatGPTService;
 import com.swave.urnr.project.domain.Project;
 import com.swave.urnr.project.repository.ProjectRepository;
@@ -16,12 +15,10 @@ import com.swave.urnr.util.http.HttpResponse;
 import com.swave.urnr.util.type.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.*;
@@ -30,19 +27,22 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @EnableTransactionManagement
-public class ReleaseNoteServiceImpl implements NoteBlockService, ReleaseNoteService{
-
-    private final CommentRepository commentRepository;
-    private final NoteBlockRepository noteBlockRepository;
-    private final BlockContextRepository blockContextRepository;
+public class ReleaseNoteServiceImpl implements ReleaseNoteService{
     private final ReleaseNoteRepository releaseNoteRepository;
+
+
+    private final NoteBlockService noteBlockService;
+    private final BlockContextService blockContextService;
+    private final ChatGPTService chatGPTService;
+    private final SeenCheckService seenCheckService;
+    private final CommentService commentService;
+
+
+    //todo 나중에 다른 쪽에서 구현이 끝나면 service로 갈아 끼울것
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final UserInProjectRepository userInProjectRepository;
-    private final ChatGPTService chatGPTService;
-    private final SeenCheckRepository seenCheckRepository;
 
-    private final EntityManager em;
 
     @Override
     @Transactional
@@ -74,35 +74,19 @@ public class ReleaseNoteServiceImpl implements NoteBlockService, ReleaseNoteServ
         List<NoteBlock> noteBlockList = new ArrayList<>();
 
         for(NoteBlockCreateRequestDTO noteBlockCreateRequestDTO : releaseNoteCreateRequestDTO.getBlocks()){
-            NoteBlock noteBlock = NoteBlock.builder()
-                    .label(noteBlockCreateRequestDTO.getLabel())
-                    .releaseNote(releaseNote)
-                    .build();
-
-            noteBlockRepository.save(noteBlock);
+            NoteBlock noteBlock = noteBlockService.createNoteBlock(noteBlockCreateRequestDTO, releaseNote);
 
             List<BlockContext> blockContextList = new ArrayList<>();
-
             for (BlockContextCreateRequestDTO blockContextCreateRequestDTO : noteBlockCreateRequestDTO.getContexts()){
-                BlockContext blockContext = BlockContext.builder()
-                        .context(blockContextCreateRequestDTO.getContext())
-                        .tag(blockContextCreateRequestDTO.getTag())
-                        .index(blockContextCreateRequestDTO.getIndex())
-                        .noteBlock(noteBlock)
-                        .build();
+                BlockContext blockContext = blockContextService.createBlockContext(blockContextCreateRequestDTO, noteBlock);
+
                 content.append(blockContext.getContext());
-
-                blockContextRepository.save(blockContext);
-
                 blockContextList.add(blockContext);
             }
-            blockContextRepository.flush();
 
             noteBlock.setBlockContextList(blockContextList);
-
             noteBlockList.add(noteBlock);
         }
-        blockContextRepository.flush();
 
 //        ChatGPTResultDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
 //                new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
@@ -143,23 +127,15 @@ public class ReleaseNoteServiceImpl implements NoteBlockService, ReleaseNoteServ
         ReleaseNote releaseNote = releaseNoteRepository.findById(releaseNoteId)
                 .orElseThrow(NoSuchElementException::new);
 
-        ArrayList<Comment> commentList = commentRepository.findByReleaseNote_Id(releaseNoteId);
-        ArrayList<CommentContentResponseDTO> commentContentList = new ArrayList<>();
-
-        for(Comment comment : commentList){
-            CommentContentResponseDTO commentContentResponseDTO = new CommentContentResponseDTO();
-            commentContentResponseDTO.setName(comment.getUser().getUsername());
-            commentContentResponseDTO.setContext(comment.getCommentContext());
-            commentContentResponseDTO.setLastModifiedDate(comment.getLastModifiedDate());
-
-            commentContentList.add((commentContentResponseDTO));
-        }
+        ArrayList<CommentContentResponseDTO> commentContentList = commentService.loadCommentList(releaseNoteId);
 
         ReleaseNoteContentResponseDTO releaseNoteContentResponseDTO = releaseNote.makeReleaseNoteContentDTO();
         releaseNoteContentResponseDTO.setComment(commentContentList);
 
-        increaseViewCount(releaseNoteId);
-        seenCheck(request, releaseNote, userInProject);
+        releaseNote.addViewCount();
+        releaseNoteRepository.flush();
+
+        seenCheckService.createSeenCheck((String) request.getAttribute("username"), releaseNote, userInProject);
 
         return releaseNoteContentResponseDTO;
     }
@@ -174,7 +150,7 @@ public class ReleaseNoteServiceImpl implements NoteBlockService, ReleaseNoteServ
                 .orElseThrow(NoSuchElementException::new);
 
         for(NoteBlock noteBlock : releaseNote.getNoteBlockList()){
-            noteBlockRepository.deleteById(noteBlock.getId());
+            noteBlockService.deleteNoteBlock(noteBlock.getId());
         }
 
         releaseNote.getNoteBlockList().clear();
@@ -183,40 +159,23 @@ public class ReleaseNoteServiceImpl implements NoteBlockService, ReleaseNoteServ
         List<NoteBlock> noteBlockList = new ArrayList<>();
 
         for(NoteBlockUpdateRequestDTO noteBlockUpdateRequestDTO : releaseNoteUpdateRequestDTO.getBlocks()){
-            NoteBlock noteBlock = NoteBlock.builder()
-                    .label(noteBlockUpdateRequestDTO.getLabel())
-                    .releaseNote(releaseNote)
-                    .build();
-
-            noteBlockRepository.save(noteBlock);
+            NoteBlock noteBlock = noteBlockService.updateNoteBlock(noteBlockUpdateRequestDTO, releaseNote);
 
             List<BlockContext> blockContextList = new ArrayList<>();
 
             for (BlockContextUpdateRequestDTO blockContextUpdateRequestDTO : noteBlockUpdateRequestDTO.getContexts()){
-                BlockContext blockContext = BlockContext.builder()
-                        .context(blockContextUpdateRequestDTO.getContext())
-                        .tag(blockContextUpdateRequestDTO.getTag())
-                        .index(blockContextUpdateRequestDTO.getIndex())
-                        .noteBlock(noteBlock)
-                        .build();
+                BlockContext blockContext = blockContextService.updateBlockContext(blockContextUpdateRequestDTO, noteBlock);
+
                 content.append(blockContext.getContext());
-
-                blockContextRepository.save(blockContext);
-
                 blockContextList.add(blockContext);
             }
-            blockContextRepository.flush();
 
             noteBlock.setBlockContextList(blockContextList);
-
             noteBlockList.add(noteBlock);
         }
-        blockContextRepository.flush();
-
 
 //        ChatGPTResultDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
 //                new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
-
 
         releaseNote.setVersion(releaseNoteUpdateRequestDTO.getVersion());
         releaseNote.setReleaseDate(releaseNoteUpdateRequestDTO.getReleaseDate());
@@ -239,22 +198,12 @@ public class ReleaseNoteServiceImpl implements NoteBlockService, ReleaseNoteServ
         List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id((Long) request.getAttribute("id"));
 
         for(UserInProject userInProject : userInProjectList){
-            ReleaseNoteVersionListResponseDTO releaseNoteVersionListResponseDTO = new ReleaseNoteVersionListResponseDTO();
-
-            releaseNoteVersionListResponseDTO.setProjectId(userInProject.getProject().getId());
-            releaseNoteVersionListResponseDTO.setProjectName(userInProject.getProject().getName());
-            releaseNoteVersionListResponseDTO.setSubscribe(UserRole.Subscriber == userInProject.getRole());
+            ReleaseNoteVersionListResponseDTO releaseNoteVersionListResponseDTO = userInProject.makeReleaseNoteVersionListResponseDTO();
 
             List<ReleaseNote> releaseNoteList = userInProject.getProject().getReleaseNoteList();
             ArrayList<ReleaseNoteVersionResponseDTO> releaseNoteVersionListDTOListResponse = new ArrayList<>();
-
             for(ReleaseNote releaseNote : releaseNoteList){
-                ReleaseNoteVersionResponseDTO releaseNoteVersionResponseDTO = new ReleaseNoteVersionResponseDTO();
-
-                releaseNoteVersionResponseDTO.setReleaseNoteId(releaseNote.getId());
-                releaseNoteVersionResponseDTO.setVersion(releaseNote.getVersion());
-
-                releaseNoteVersionListDTOListResponse.add(releaseNoteVersionResponseDTO);
+                releaseNoteVersionListDTOListResponse.add(releaseNote.makeReleaseNoteVersionResponseDTO());
             }
             releaseNoteVersionListResponseDTO.setReleaseNoteVersionList(releaseNoteVersionListDTOListResponse);
 
@@ -276,33 +225,6 @@ public class ReleaseNoteServiceImpl implements NoteBlockService, ReleaseNoteServ
 
     @Override
     public ReleaseNoteContentResponseDTO loadRecentReleaseNote(HttpServletRequest request){
-        ReleaseNote releaseNote = releaseNoteRepository.findMostRecentReleaseNote((Long) request.getAttribute("id"));
-
-        return releaseNote.makeReleaseNoteContentDTO();
-    }
-
-    @Override
-    public void increaseViewCount(Long releaseNoteId){
-        ReleaseNote releaseNote = releaseNoteRepository.findById(releaseNoteId)
-                .orElseThrow(NoSuchElementException::new);
-        releaseNote.addViewCount();
-        releaseNoteRepository.flush();
-    }
-
-    @Override
-    @Transactional
-    public void seenCheck(HttpServletRequest request, ReleaseNote releaseNote, UserInProject userInProject){
-        if(seenCheckRepository.findByUserInProjectIdAndReleaseNoteId(userInProject.getId(), releaseNote.getId()) != null) {
-            return;
-        }
-
-        SeenCheck seenCheck = SeenCheck.builder()
-                .userName((String) request.getAttribute("username"))
-                .releaseNote(releaseNote)
-                .userInProject(userInProject)
-                .build();
-
-        seenCheckRepository.save(seenCheck);
-        seenCheckRepository.flush();
+        return releaseNoteRepository.findMostRecentReleaseNote((Long) request.getAttribute("id")).makeReleaseNoteContentDTO();
     }
 }

@@ -60,8 +60,6 @@ class ReleaseNoteServiceImplTest {
     private ReleaseNoteRepository releaseNoteRepository;
     @Autowired
     private SeenCheckRepository seenCheckRepository;
-    @Autowired
-    private BlockContextRepository blockContextRepository;
 
     private MockHttpServletRequest request;
 
@@ -254,6 +252,17 @@ class ReleaseNoteServiceImplTest {
     @Transactional
     @DisplayName("릴리즈 노트 수정 테스트")
     void updateReleaseNote() {
+        User user = User.builder()
+                .email("test@gmail.com")
+                .name("Kim")
+                .password("1q2w3e4r5t")
+                .provider("local")
+                .build();
+
+        userRepository.saveAndFlush(user);
+
+        request.setAttribute("id", user.getId());
+
         NoteBlock noteBlock = NoteBlock.builder()
                 .label("new")
                 .build();
