@@ -1,5 +1,6 @@
 package com.swave.urnr.user.service;
 
+import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserListResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
 import com.swave.urnr.util.common.ResponseDTO;
@@ -46,10 +47,7 @@ public class UserServiceImpl implements UserService {
         log.info("Email : ", request.getEmail());
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            testDto= ResponseDTO.builder()
-                    .status(409)
-                    .data("The mail already exists")
-                    .build();
+            testDto= new ResponseDTO(409,"The mail already exists");
             log.info("Email already exists");
             return ResponseEntity.status(409).body(testDto);
         }
@@ -64,10 +62,8 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
         userRepository.flush();
-        testDto= ResponseDTO.builder()
-                .status(201)
-                .data("User created")
-                .build();
+
+        testDto= new ResponseDTO(201,"User created");
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
         return ResponseEntity.created(location).body(testDto);
 
@@ -76,17 +72,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<ResponseDTO> initDepartment(HttpServletRequest request, UserDepartmentRequestDTO requestDto)  {
 
-
-
         Long id = (Long) request.getAttribute("id");
         log.info(id.toString());
 
         ResponseDTO responseDto;
         if (!userRepository.findById(id).isPresent()) {
-            responseDto= ResponseDTO.builder()
-                    .status(409)
-                    .data("The account does not exists")
-                    .build();
+            responseDto= new ResponseDTO(409,"The account does not exists.");
             return ResponseEntity.status(409).body(responseDto);
         }
         User user = userRepository.findById(id).get();
@@ -95,13 +86,10 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             userRepository.flush();
 
-            responseDto= ResponseDTO.builder()
-                    .status(200)
-                    .data(user.getDepartment())
-                    .build();
+            responseDto= new ResponseDTO(200,user.getDepartment());
             return ResponseEntity.status(200).body(responseDto);
-    }
 
+    }
 
     @Override
     public ResponseEntity<String> getValidationCode(UserValidateEmailDTO request)  {
@@ -116,20 +104,15 @@ public class UserServiceImpl implements UserService {
         return ResponseEntity.ok().body(code);
     }
 
-
     @Override
     public UserResponseDTO getUser(HttpServletRequest request) throws UserNotFoundException {
         Long userCode = (Long) request.getAttribute("id");
         User user = userRepository.findById(userCode).orElseThrow(UserNotFoundException::new);
-        UserResponseDTO result = UserResponseDTO.builder()
-                .department(user.getDepartment())
-                .isDeleted(user.isDeleted())
-                .username(user.getUsername())
-                .id(user.getId())
-                .email(user.getEmail())
-                .provider(user.getProvider())
-                .password(user.getPassword())
-                .build();
+        UserResponseDTO result = new UserResponseDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getDepartment(),
+                user.getUsername());
         return result;
     }
 
@@ -158,14 +141,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserListResponseDTO>  getUserInformationList(){
+    public ManagerResponseDTO getUserInformationList(HttpServletRequest request) throws UserNotFoundException{
+
+        Long userCode = (Long) request.getAttribute("id");
+        User user = userRepository.findById(userCode).orElseThrow(UserNotFoundException::new);
+
+
+
         List<UserListResponseDTO> result =  userRepository.findAll().stream().map(
-User -> {
-    UserListResponseDTO userListResponseDTO = new UserListResponseDTO(User.getId(), User.getUsername(), User.getDepartment());
-return userListResponseDTO;
-}
-).collect(Collectors.toList());
-        return result;
+            User -> {
+                UserListResponseDTO userListResponseDTO = new UserListResponseDTO(User.getId(), User.getUsername(), User.getDepartment());
+                return userListResponseDTO;
+            }
+        ).collect(Collectors.toList());
+        return new ManagerResponseDTO(user.getId(),user.getUsername(),user.getDepartment(),result);
 
     }
 

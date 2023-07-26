@@ -3,16 +3,12 @@ package com.swave.urnr.user.requestdto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
 @ApiModel(value = "로그인 요청용 DTO")
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Getter
 public class UserLoginServerRequestDTO {
 
     @ApiModelProperty(value="사용자 이메일", example = "artisheep@naver.com", required = true)

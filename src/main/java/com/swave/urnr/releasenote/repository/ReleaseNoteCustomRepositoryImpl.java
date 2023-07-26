@@ -22,10 +22,10 @@ public class ReleaseNoteCustomRepositoryImpl implements ReleaseNoteCustomReposit
                 .select(releaseNote)
                 .from(userInProject)
                 .join(project).on(userInProject.project.id.eq(project.id))
-                .join(releaseNote).on(project.id.eq(releaseNote.project.id),
+                .join(releaseNote).on(project.id.eq(releaseNote.project.id))
+                .where(userInProject.user.id.eq(userId),
                         project.isDeleted.eq(false),
                         releaseNote.isDeleted.eq(false))
-                .where(userInProject.user.id.eq(userId))
                 .orderBy(releaseNote.lastModifiedDate.desc())
                 .fetchFirst();
 

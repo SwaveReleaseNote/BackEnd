@@ -4,16 +4,11 @@
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
- @Data
-@ApiModel(value = "응답 전송용 DTO")
+ @ApiModel(value = "응답 전송용 DTO")
 @AllArgsConstructor
- @Builder
-@NoArgsConstructor
+@Getter
 public class ResponseDTO<T> {
 
     @ApiModelProperty(value="HTTP 상태 코드", example = "404", required = true)

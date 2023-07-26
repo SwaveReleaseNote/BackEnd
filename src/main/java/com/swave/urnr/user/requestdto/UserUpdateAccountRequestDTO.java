@@ -3,15 +3,12 @@ package com.swave.urnr.user.requestdto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 @ApiModel(value = "사용자 정보 업데이트 요청용 DTO")
-@Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class UserUpdateAccountRequestDTO {
 
     @ApiModelProperty(value="사용자 비밀번호", example = "1q2w3e4r!", required = true)

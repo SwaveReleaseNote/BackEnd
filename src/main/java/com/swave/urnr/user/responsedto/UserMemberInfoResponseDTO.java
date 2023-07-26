@@ -7,25 +7,30 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @ApiModel(value = "유저 멤버 정보 응답 DTO")
 @Data
+@NoArgsConstructor
 public class UserMemberInfoResponseDTO {
 
     @ApiModelProperty(value = "유저(멤버) ID", example = "1", required = true)
-    Long user_Id;
+    Long userId;
 
     @ApiModelProperty(value="유저(멤버) 이름", example = "전강훈", required = true)
     String username;
 
     @ApiModelProperty(value="유저(멤버) 소속", example = "가천대학교", required = true)
-    String user_Department;
+    String userDepartment;
+
+
 
     @QueryProjection
-    public UserMemberInfoResponseDTO(Long user_Id, String username, String user_Department) {
-        this.user_Id = user_Id;
+
+    public UserMemberInfoResponseDTO(Long userId, String username, String userDepartment) {
+        this.userId = userId;
         this.username = username;
-        this.user_Department = user_Department;
+        this.userDepartment = userDepartment;
     }
 }

@@ -3,26 +3,18 @@ package com.swave.urnr.user.requestdto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-/*
-TODO: Find how to implement NOTNULL VALIDATE without hardcoding, also need to find Email validation system with RNG
-
- */
-@Data
 @ApiModel(value = "회원가입 요청용 DTO")
 @Validated
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class UserRegisterRequestDTO {
     @NotNull
     @Email

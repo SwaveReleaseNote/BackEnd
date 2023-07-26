@@ -66,7 +66,7 @@ class NoteBlockControllerTest {
         given(noteBlockService.countLabel(1L))
                 .willReturn(releaseNoteLabelCountResponseDTOList);
 
-        mvc.perform(get("/api/project/1/release/label/count")
+        mvc.perform(get("/api/project/1/release-note/label/count")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .accept(MediaType.APPLICATION_JSON))
@@ -91,7 +91,7 @@ class NoteBlockControllerTest {
         given(noteBlockService.filterByLabel(1L))
                 .willReturn(releaseNoteLabelContentResponseDTOList);
 
-        mvc.perform(get("/api/project/1/release/label/filter")
+        mvc.perform(get("/api/project/1/release-note/label/filter")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .accept(MediaType.APPLICATION_JSON))

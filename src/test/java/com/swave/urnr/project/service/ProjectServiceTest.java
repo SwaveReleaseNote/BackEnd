@@ -7,6 +7,7 @@ import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
 import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
 import com.swave.urnr.project.responsedto.ProjectContentResponseDTO;
 import com.swave.urnr.project.responsedto.ProjectListResponseDTO;
+import com.swave.urnr.releasenote.domain.ReleaseNote;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.exception.UserNotFoundException;
@@ -78,9 +79,8 @@ class ProjectServiceTest {
                 .build();
         userRepository.save(user);
 
-        UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO();
-        userLoginServerRequestDTO.setEmail(user.getEmail());
-        userLoginServerRequestDTO.setPassword(user.getPassword());
+        UserLoginServerRequestDTO userLoginServerRequestDTO =  new UserLoginServerRequestDTO(user.getEmail(),user.getPassword());
+
         //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
 
         User user2 = User.builder()
@@ -148,10 +148,8 @@ class ProjectServiceTest {
 
         //projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
+
         HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
-
-
-        assertEquals(httpResponse.getDescription(),"Project Id 10 created");
 
         Pattern pattern = Pattern.compile("\\d+"); // Matches one or more digits
         Matcher matcher = pattern.matcher(httpResponse.getDescription());
@@ -160,11 +158,11 @@ class ProjectServiceTest {
             long number = Long.parseLong(numberString); // Convert the string to an integer
 
             Project project = projectRepository.findById(number).get();
-            //assertEquals(project.getId(),"9");
+            //ReleaseNote releaseNote = releaseNoteRepository.findById(Long.parseLong(httpResponse.getDescription().substring(18,21).replace(" ","").replace("C", ""))).orElse(null);
+
+            assertEquals(httpResponse.getDescription(),"Project Id "+number+" created");
             assertEquals(project.getName(),"SwaveForm");
             assertEquals(project.getDescription(),"굳잡");
-            //assertEquals(project.getId(),"8");
-            
             //assertEquals(number,"8");
         }
 
@@ -173,11 +171,48 @@ class ProjectServiceTest {
 
     @Test
     void loadProjectList() {
-        List<ProjectListResponseDTO> projectListResponseDTOList = projectService.loadProjectList(request);
+
+
+        System.out.println("시작");
+        ProjectCreateRequestDTO projectCreateRequestDTO = ProjectCreateRequestDTO.builder()
+                .projectName("SwaveForm")
+                .description("굳잡")
+                .build();
+
+        List<Long> users = new ArrayList<>(){
+            {
+                add(2L);
+                add(3L);
+                add(4L);
+            }
+        };
+        projectCreateRequestDTO.setUsers(users);
+
+        HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
         
-        assertEquals(projectListResponseDTOList.get(0).getName(),"니거무라");
-        assertEquals(projectListResponseDTOList.get(0).getDescription(),"이거도");
-        assertEquals(projectListResponseDTOList.get(0).getId(),3L);
+        List<ProjectListResponseDTO> projectListResponseDTOList = projectService.loadProjectList(request);
+
+
+
+
+        Pattern pattern = Pattern.compile("\\d+"); // Matches one or more digits
+        Matcher matcher = pattern.matcher(httpResponse.getDescription());
+        if (matcher.find()) {
+            String numberString = matcher.group(); // Extract the matched digits as a string
+            long number = Long.parseLong(numberString); // Convert the string to an integer
+
+            Project project = projectRepository.findById(number).get();
+            //ReleaseNote releaseNote = releaseNoteRepository.findById(Long.parseLong(httpResponse.getDescription().substring(18,21).replace(" ","").replace("C", ""))).orElse(null);
+
+            assertEquals(httpResponse.getDescription(),"Project Id "+number+" created");
+            assertEquals(project.getName(),"SwaveForm");
+            assertEquals(project.getDescription(),"굳잡");
+            //assertEquals(number,"8");
+        }
+
+        assertEquals(projectListResponseDTOList.get(0).getName(),"가나");
+        assertEquals(projectListResponseDTOList.get(0).getDescription(),"안정");
+        assertEquals(projectListResponseDTOList.get(0).getId(),2L);
     }
 
     @Test

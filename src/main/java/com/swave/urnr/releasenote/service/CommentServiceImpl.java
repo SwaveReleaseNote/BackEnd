@@ -88,11 +88,7 @@ public class CommentServiceImpl implements CommentService {
         ArrayList<CommentContentResponseDTO> commentContentList = new ArrayList<>();
 
         for(Comment comment : commentList){
-            CommentContentResponseDTO commentContentResponseDTO = new CommentContentResponseDTO();
-            commentContentResponseDTO.setName(comment.getUser().getUsername());
-            commentContentResponseDTO.setContext(comment.getCommentContext());
-            commentContentResponseDTO.setLastModifiedDate(comment.getLastModifiedDate());
-
+            CommentContentResponseDTO commentContentResponseDTO = comment.makeCommentContentResponseDTO();
             commentContentList.add((commentContentResponseDTO));
         }
 

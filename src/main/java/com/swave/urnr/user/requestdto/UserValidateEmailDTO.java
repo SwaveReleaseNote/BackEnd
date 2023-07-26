@@ -3,10 +3,7 @@ package com.swave.urnr.user.requestdto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Email;
@@ -17,12 +14,11 @@ import javax.validation.constraints.Email;
  TODO : Email이 valid한지 알아보아야 하므로 유효성 검사를 위해 남길지, 또는 유효성 검사를 포기하고 사용자를 신뢰하여 String 형태로 구현할지 결정필요
  현재 상황으로는 임시로 이메일만 남김.
  */
-@Data
 @ApiModel(value = "이메일 인증번호 전송용 DTO")
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @Validated
-@Builder
 public class UserValidateEmailDTO {
     @Email
     @ApiModelProperty(value="사용자 이메일", example = "artisheep@naver.com", required = true)

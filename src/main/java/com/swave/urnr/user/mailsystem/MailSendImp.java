@@ -24,12 +24,7 @@ public class MailSendImp implements MailServiceInter {
     // 메일 내용 작성
     @Override
     public MimeMessage createMessage(String to) throws  MessagingException, UnsupportedEncodingException {
-        /*
-        TODO: Change name
-        sendSimpleMessage가 무슨 역할을 맡고 있는지,
-왜 이 친구가 임시 패스워드를 반환하는지 잘 모르겠습니다.
-더 좋은 작명이 필요해 보입니다.
-         */
+
 		System.out.println("보내는 대상 : " + to);
 		System.out.println("인증 번호 : " + ePw);
 
@@ -88,10 +83,6 @@ public class MailSendImp implements MailServiceInter {
         return key.toString();
     }
 
-    // 메일 발송
-    // sendSimpleMessage 의 매개변수로 들어온 to 는 곧 이메일 주소가 되고,
-    // MimeMessage 객체 안에 내가 전송할 메일의 내용을 담는다.
-    // 그리고 bean 으로 등록해둔 javaMail 객체를 사용해서 이메일 send!!
     @Override
     public String sendCodeMessage(String to) throws RuntimeException {
 

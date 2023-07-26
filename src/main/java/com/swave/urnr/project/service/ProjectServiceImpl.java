@@ -4,12 +4,17 @@ package com.swave.urnr.project.service;
 import com.swave.urnr.project.domain.Project;
 import com.swave.urnr.project.repository.ProjectRepository;
 import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
+import com.swave.urnr.project.requestdto.ProjectKeywordRequestContentDTO;
 import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
+
 import com.swave.urnr.project.responsedto.ProjectListResponseDTO;
 import com.swave.urnr.project.responsedto.ProjectContentResponseDTO;
 import com.swave.urnr.project.responsedto.ProjectManagementContentResponseDTO;
 import com.swave.urnr.project.responsedto.ProjectUserCheckDTO;
 import com.swave.urnr.releasenote.domain.ReleaseNote;
+
+import com.swave.urnr.project.responsedto.*;
+
 import com.swave.urnr.releasenote.repository.ReleaseNoteRepository;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.domain.UserInProject;
@@ -25,11 +30,14 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
-;
+;import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
+import static com.swave.urnr.util.type.UserRole.Manager;
 
 //0710 확인 CR
 @Service
@@ -71,7 +79,7 @@ public class ProjectServiceImpl implements ProjectService {
         //유저인 프로젝트 생성
         //todo:워너비는 유저인 프로젝트를 크리에이트 하는 것이 아닌 프로젝트 생성시 자동으로 생성되게 하는 것이 아닌지?
         UserInProject userInProject = UserInProject.builder()
-                .role(UserRole.Manager)
+                .role(Manager)
                 .user(user)
                 .project(project)
                 .build();
@@ -225,6 +233,8 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(projectId).get();
         User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
         List<UserMemberInfoResponseDTO> getMembers = userInProjectRepository.getMembers(projectId);
+        log.info(getMembers.toString());
+        System.out.println(getMembers);
 
         //널에러 즉 팀원이 없을 때 해결하기
         //log.info(getMembers.get(0).getUser_Name());
@@ -244,6 +254,35 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId){
+        Project project = projectRepository.findById(projectId).get();
+        User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
+        List<UserMemberInfoResponseDTO> getMembers  = new ArrayList<>();
+
+        for(UserInProject userInProject:project.getUserInProjectList()){
+            UserMemberInfoResponseDTO userMemberInfoResponseDTO = new UserMemberInfoResponseDTO();
+            userMemberInfoResponseDTO.setUserId(userInProject.getId());
+            userMemberInfoResponseDTO.setUsername(userInProject.getUser().getUsername());
+            userMemberInfoResponseDTO.setUserDepartment(userInProject.getUser().getDepartment());
+            getMembers.add(userMemberInfoResponseDTO);
+            //getMembers.add(userInProject.getId(),userInProject.getUser().getUsername(),userInProject.getUser().getDepartment());
+        }
+        ProjectManagementContentResponseDTO projectManagementContentResponseDTO = ProjectManagementContentResponseDTO.builder()
+                .id(project.getId())
+                .name(project.getName())
+                .description(project.getDescription())
+                .createDate(project.getCreateDate())
+                .managerId((Long)request.getAttribute("id"))
+                .managerName(user.getUsername())
+                .managerDepartment(user.getDepartment())
+                .teamMembers(getMembers)
+                .build();
+        return projectManagementContentResponseDTO;
+    }
+
+
+    //관리자 변경하기 의외로 쉽게 될수도?
+    @Override
     @Transactional
     public ProjectUpdateRequestDTO updateProject(Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) {
 
@@ -252,6 +291,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         project.setName(projectUpdateRequestDto.getName());
         project.setDescription(projectUpdateRequestDto.getDescription());
+        
+        //dto에 유저 추가하면 되는데 관리자를 개발자리스트나 구독자에선 빼야함
+
         //project.setUserInProjectList(projectUpdateRequestDto.getUsers());
         //기존에있는 리스트를 가져와서
         //프로젝트에 있는 유저리스트를 불러와서 삭제
@@ -315,7 +357,34 @@ public class ProjectServiceImpl implements ProjectService {
 
         }
         return projectUserCheckList;
+
+    public ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException {
+        String keyword = projectKeywordRequestContentDTO.getKeyword();
+        ProjectSearchResultListResponseDTO projectSearchResultListResponseDTO = new ProjectSearchResultListResponseDTO();
+
+        //제목 검색
+        List<ProjectSearchListResponseDTO> projectSearchByNameListResponseDTOList = projectRepository.searchProjectByName(keyword);
+        projectSearchResultListResponseDTO.setTitleSearch(makeProjectSearchListResponseDTOList(projectSearchByNameListResponseDTOList));
+
+        //descriprion 검색
+        List<ProjectSearchListResponseDTO> projectSearchByDescriptionListResponseDTOList = projectRepository.searchProjectByDescription(keyword);
+        projectSearchResultListResponseDTO.setDescriptionSearch(makeProjectSearchListResponseDTOList(projectSearchByDescriptionListResponseDTOList));
+
+
+        //Manager 검색
+        List<ProjectSearchListResponseDTO> projectSearchByManagerListResponseDTOList = projectRepository.searchProjectByManager(keyword);
+        projectSearchResultListResponseDTO.setManagerSearch(makeProjectSearchListResponseDTOList(projectSearchByManagerListResponseDTOList));
+
+
+        //Developer
+        List<ProjectSearchListResponseDTO> projectSearchByDeveloperListResponseDTOList = projectRepository.searchProjectByDeveloper(keyword);
+        projectSearchResultListResponseDTO.setDeveloperSearch(makeProjectSearchListResponseDTOList(projectSearchByDeveloperListResponseDTOList));
+
+        return projectSearchResultListResponseDTO;
+
     }
 
 
 }
+
+

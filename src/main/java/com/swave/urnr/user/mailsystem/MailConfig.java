@@ -11,7 +11,6 @@ import java.util.Properties;
 
 
 @Configuration
-@Slf4j
 public class MailConfig {
 
     @Bean
@@ -20,9 +19,7 @@ public class MailConfig {
 
         javaMailSender.setHost("smtp.naver.com"); // 메인 도메인 서버 주소 => 정확히는 smtp 서버 주소
         javaMailSender.setUsername("artisheep"); // 네이버 아이디
-        javaMailSender.setPassword("Enter EPW here"); // 네이버 비밀번호
-        log.info(javaMailSender.getUsername());
-        log.info(javaMailSender.getPassword());
+        javaMailSender.setPassword("EMAIL PW HERE"); // 네이버 비밀번호
         javaMailSender.setPort(465); // 메일 인증서버 포트
 
         javaMailSender.setJavaMailProperties(getMailProperties()); // 메일 인증서버 정보 가져오기

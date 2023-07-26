@@ -107,6 +107,15 @@ public class ReleaseNote {
         releaseNoteContentResponseDTO.setBlocks(noteBlockContentList);
         releaseNoteContentResponseDTO.setCount(this.count);
         releaseNoteContentResponseDTO.setSummary(this.summary);
+
+        ArrayList<CommentContentResponseDTO> commentContentList = new ArrayList<>();
+
+        for(Comment comment : this.commentList){
+            CommentContentResponseDTO commentContentResponseDTO = comment.makeCommentContentResponseDTO();
+            commentContentList.add((commentContentResponseDTO));
+        }
+
+        releaseNoteContentResponseDTO.setComment(commentContentList);
         //releaseNoteContentDTO.setLiked(this);
 
         return releaseNoteContentResponseDTO;

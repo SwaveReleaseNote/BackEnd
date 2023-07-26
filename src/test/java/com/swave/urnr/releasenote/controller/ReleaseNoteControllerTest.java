@@ -84,7 +84,7 @@ class ReleaseNoteControllerTest {
         given(releaseNoteService.createReleaseNote(any(HttpServletRequest.class),eq(1L),any(ReleaseNoteCreateRequestDTO.class)))
                 .willReturn(httpResponse);
 
-        mvc.perform(post("/api/project/1/release/create")
+        mvc.perform(post("/api/project/1/release-note")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .content(objectMapper.writeValueAsString(releaseNoteCreateRequestDTO))
@@ -127,7 +127,7 @@ class ReleaseNoteControllerTest {
         given(releaseNoteService.updateReleaseNote(any(HttpServletRequest.class),eq(1L),any(ReleaseNoteUpdateRequestDTO.class)))
                 .willReturn(httpResponse);
 
-        mvc.perform(patch("/api/project/release/1/update")
+        mvc.perform(patch("/api/project/release-note/1")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .content(objectMapper.writeValueAsString(releaseNoteUpdateRequestDTO))
@@ -155,7 +155,7 @@ class ReleaseNoteControllerTest {
         given(releaseNoteService.loadReleaseNote(any(HttpServletRequest.class),eq(1L)))
                 .willReturn(releaseNoteContentResponseDTO);
 
-        mvc.perform(get("/api/project/release/load/1")
+        mvc.perform(get("/api/project/release-note/1")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +182,7 @@ class ReleaseNoteControllerTest {
         given(releaseNoteService.loadReleaseNoteList(eq(1L)))
                 .willReturn(releaseNoteContentListResponseDTOList);
 
-        mvc.perform(get("/api/project/1/release/load_all")
+        mvc.perform(get("/api/project/1/release-notes")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -209,7 +209,7 @@ class ReleaseNoteControllerTest {
         given(releaseNoteService.loadProjectVersionList(any(HttpServletRequest.class)))
                 .willReturn(releaseNoteVersionListResponseDTOList);
 
-        mvc.perform(get("/api/project/release/version_list")
+        mvc.perform(get("/api/project/release-note/version-list")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -230,7 +230,7 @@ class ReleaseNoteControllerTest {
         given(releaseNoteService.deleteReleaseNote(eq(1L)))
                 .willReturn(httpResponse);
 
-        mvc.perform(delete("/api/project/release/delete/1")
+        mvc.perform(delete("/api/project/release-note/1")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -257,7 +257,7 @@ class ReleaseNoteControllerTest {
         given(releaseNoteService.loadRecentReleaseNote(any(HttpServletRequest.class)))
                 .willReturn(releaseNoteContentResponseDTO);
 
-        mvc.perform(get("/api/project/release/load_recent")
+        mvc.perform(get("/api/project/release-note/recent-release-note")
                         .requestAttr("id", 1L)
                         .requestAttr("username", "Kim")
                         .contentType(MediaType.APPLICATION_JSON)

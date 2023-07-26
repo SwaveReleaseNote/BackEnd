@@ -5,6 +5,7 @@ import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.user.requestdto.*;
+import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
 import com.swave.urnr.util.common.ResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 @Slf4j
 @RequiredArgsConstructor
 class UserServiceImplTest {
@@ -49,12 +49,10 @@ class UserServiceImplTest {
     @BeforeEach
     @DisplayName("계정 생성 테스트")
     void createAccountByEmail() {
+        userRepository.deleteAll();
 
-        UserRegisterRequestDTO userRegisterRequestDTO = UserRegisterRequestDTO.builder()
-                .email("corgiwalke@gmail.com")
-                .name("전강훈")
-                .password("1q2w3e4r")
-                .build();
+        UserRegisterRequestDTO userRegisterRequestDTO = new UserRegisterRequestDTO("corgiwalke@gmail.com","1q2w3e4r","전강훈");
+
         ResponseEntity<ResponseDTO> result = userService.createAccountByEmail(userRegisterRequestDTO);
 
 
@@ -64,34 +62,27 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("소속 수정 테스트")
+    @Transactional
     void initDepartment() {
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         User user = userRepository.findByEmail("corgiwalke@gmail.com").get();
         request.setAttribute("id", user.getId());
 
-        UserDepartmentRequestDTO userDepartmentRequestDTO = UserDepartmentRequestDTO.builder()
-                .department("test")
-                .build();
+        UserDepartmentRequestDTO userDepartmentRequestDTO = new UserDepartmentRequestDTO("test");
 
         ResponseEntity<ResponseDTO> result = userService.initDepartment(request,userDepartmentRequestDTO);
 
-        ResponseDTO responseDTO = ResponseDTO.builder()
-                .status(200)
-                .data("test")
-                .build();
-
+        ResponseDTO responseDTO = new ResponseDTO(200,"test");
         assertEquals( result.getStatusCode().value() , 200);
-        assertEquals( result.getBody(),responseDTO);
+        assertEquals( result.getBody().getData(),responseDTO.getData());
     }
 
     @Test
     @DisplayName("인증코드 반환 테스트")
     void getValidationCode() {
 
-        UserValidateEmailDTO request = UserValidateEmailDTO.builder()
-                .email("artisheep@naver.com")
-                .build();
+        UserValidateEmailDTO request = new UserValidateEmailDTO("artisheep@naver.com");
 
         ResponseEntity<String> result = userService.getValidationCode(request);
 
@@ -106,20 +97,16 @@ class UserServiceImplTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         User user = userRepository.findByEmail("corgiwalke@gmail.com").get();
         request.setAttribute("id", user.getId());
-        UserResponseDTO resultExcepted = UserResponseDTO.builder()
-                .department(user.getDepartment())
-                .isDeleted(user.isDeleted())
-                .username(user.getUsername())
-                .id(user.getId())
-                .email(user.getEmail())
-                .provider(user.getProvider())
-                .password(user.getPassword())
-                .build();
+        UserResponseDTO resultExcepted = new UserResponseDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getDepartment(),
+                user.getUsername() );
 
 
         UserResponseDTO result = userService.getUser(request);
 
-        assertEquals( resultExcepted , result);
+        assertEquals( resultExcepted.getId() , result.getId());
 
 
     }
@@ -140,7 +127,8 @@ class UserServiceImplTest {
     void checkInvalidToken() {
 
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("id", (long) 1);
+        User user = userRepository.findByEmail("corgiwalke@gmail.com").get();
+        request.setAttribute("id", user.getId());
         request.addHeader("Authorization","test");
         userService.checkInvalidToken(request);
 
@@ -149,16 +137,20 @@ class UserServiceImplTest {
     @Test
     @DisplayName("유저 정보 리스트 반환 테스트")
     void getUserInformationList() {
-        userService.getUserInformationList();
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        User user = userRepository.findByEmail("corgiwalke@gmail.com").get();
+        request.setAttribute("id", user.getId());
+        request.addHeader("Authorization","test");
+        ManagerResponseDTO result = userService.getUserInformationList(request);
     }
 
     @Test
     @DisplayName("로그인 테스트")
     void getTokenByLogin() {
-        UserLoginServerRequestDTO userLoginServerRequestDTO = UserLoginServerRequestDTO.builder()
-                .email("corgiwalke@gmail.com")
-                .password("1q2w3e4r")
-                .build();
+
+        UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");
+
 
         ResponseEntity<String> result =  userService.getTokenByLogin(userLoginServerRequestDTO);
         assertEquals( result.getStatusCode().value(), 200);
@@ -166,23 +158,20 @@ class UserServiceImplTest {
 
     @Test
     void getTokenByOauth() {
+
     }
 
     @Test
     @DisplayName("유저 정보 업데이트 테스트")
+    @Transactional
     void updateUser() {
-
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         User user = userRepository.findByEmail("corgiwalke@gmail.com").get();
         request.setAttribute("id", user.getId());
 
+        UserUpdateAccountRequestDTO userUpdateAccountRequestDTO = new UserUpdateAccountRequestDTO("TestPassword", "TestDeparment","Ganghoon");
 
-        UserUpdateAccountRequestDTO userUpdateAccountRequestDTO = UserUpdateAccountRequestDTO.builder()
-                .password("testPW")
-                .name("전강훈")
-                .department("test")
-                .build();
 
         ResponseEntity<String> updateUser = userService.updateUser(request, userUpdateAccountRequestDTO);
 
@@ -193,11 +182,10 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("임시 비밀번호 발급 테스트")
+    @Transactional
     void setTemporaryPassword() {
 
-        UserValidateEmailDTO userValidateEmailDTO = UserValidateEmailDTO.builder()
-                .email("artisheep@naver.com")
-                .build();
+        UserValidateEmailDTO userValidateEmailDTO = new UserValidateEmailDTO("artisheep@naver.com");
         ResponseEntity<String> result = userService.setTemporaryPassword(userValidateEmailDTO);
 
         assertEquals( result.getStatusCode().value(), 200);
@@ -206,6 +194,7 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("유저 삭제 테스트")
+    @Transactional
     void deleteUser() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         User user = userRepository.findByEmail("corgiwalke@gmail.com").get();

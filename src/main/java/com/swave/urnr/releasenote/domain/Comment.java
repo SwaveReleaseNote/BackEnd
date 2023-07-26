@@ -1,5 +1,6 @@
 package com.swave.urnr.releasenote.domain;
 
+import com.swave.urnr.releasenote.responsedto.CommentContentResponseDTO;
 import com.swave.urnr.user.domain.User;
 import lombok.Builder;
 import lombok.Data;
@@ -48,4 +49,16 @@ public class Comment {
         this.releaseNote = releaseNote;
         this.user = user;
     }
+
+    public CommentContentResponseDTO makeCommentContentResponseDTO(){
+        CommentContentResponseDTO commentContentResponseDTO = new CommentContentResponseDTO();
+        commentContentResponseDTO.setName(this.getUser().getUsername());
+        commentContentResponseDTO.setContext(this.getCommentContext());
+        commentContentResponseDTO.setLastModifiedDate(this.getLastModifiedDate());
+        commentContentResponseDTO.setVersion(this.releaseNote.getVersion());
+        commentContentResponseDTO.setReleaseNoteId(this.releaseNote.getId());
+
+        return commentContentResponseDTO;
+    }
 }
+

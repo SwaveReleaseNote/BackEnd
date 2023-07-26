@@ -49,8 +49,8 @@ public class UserInProjectCustomRepositoryImpl implements UserInProjectCustomRep
         return queryFactory
                 .select(Projections.constructor(UserMemberInfoResponseDTO.class, user.id, user.username, user.department))
                 .from(userInProject)
-                .join(user).on(userInProject.user.id.eq(user.user.id))
-                .where(userInProject.project.id.eq(projectId).and(userInProject.role.eq(UserRole.Developer)))
+                .join(user).on(userInProject.user.id.eq(user.id))
+                .where(userInProject.project.id.eq(projectId),(userInProject.role.eq(UserRole.Developer)),(user.isDeleted.eq(false)))
                 .fetch();
     }
 
