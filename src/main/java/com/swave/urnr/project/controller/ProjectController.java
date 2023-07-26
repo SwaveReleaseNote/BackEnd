@@ -60,7 +60,7 @@ public class ProjectController {
     }
 
     @Operation(summary="프로젝트 검색하기", description="프로젝트 검색결과를 표시합니다.")
-    @GetMapping("/project/search")
+    @PostMapping("/project/search")
     public ProjectSearchResultListResponseDTO searchProject(@RequestBody ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO)throws UnsupportedEncodingException {
         System.out.println(projectKeywordRequestContentDTO.getKeyword());
         return projectService.searchProject(projectKeywordRequestContentDTO);
