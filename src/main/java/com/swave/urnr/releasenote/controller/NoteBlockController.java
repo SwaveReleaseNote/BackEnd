@@ -18,7 +18,8 @@ import java.util.List;
 @Api(tags = "NoteBlockController")
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
+@
+        CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 public class NoteBlockController {
     private final NoteBlockService noteBlockService;
 
