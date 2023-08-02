@@ -1,6 +1,6 @@
 ---
-name: PR template
-about: Describe this issue template's purpose here.
+name: PULL_REQUEST_TEMPLATE
+about: pull request
 title: ''
 labels: ''
 assignees: ''
