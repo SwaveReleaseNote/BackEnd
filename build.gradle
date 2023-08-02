@@ -6,7 +6,8 @@ plugins {
 
     //queryDsl
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
-}
+
+    }
 
 group = 'com.swave'
 version = '0.0.1-SNAPSHOT'
@@ -76,6 +77,10 @@ dependencies {
 
     //mockito
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
+
+    //elastic Search
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
 }
 
 tasks.named('test') {
