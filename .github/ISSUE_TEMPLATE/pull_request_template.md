@@ -1,13 +1,4 @@
----
-name: PULL_REQUEST_TEMPLATE
-about: pull request
-title: ''
-labels: ''
-assignees: ''
-
----
-
-## PR Checklist
+## PR Checklist xxxx
 아래 요구사항을 만족하는지 체크:
 
 - [ ] 작성한 코드에 대한 테스트 코드 작성 (기능 추가 / 버그 개선)
