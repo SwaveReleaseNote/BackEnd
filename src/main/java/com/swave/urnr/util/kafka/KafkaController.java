@@ -19,12 +19,13 @@ public class KafkaController {
 
 
     @PostMapping("/produce/{topic}")
-    public void produceMessage(@RequestBody String message, @PathVariable String topic) {
-       kafkaService.produceMessage(message,topic);
+    public void produceMessage(@RequestBody NotificationDTO notificationDTO, @PathVariable String topic) {
+       kafkaService.produceMessage(notificationDTO,topic);
     }
     @PostMapping("/create-topic")
     public String createTopic(@RequestBody String topicName) {
         return kafkaService.createTopic(topicName);
     }
+
 
 }

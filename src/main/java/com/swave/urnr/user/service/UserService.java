@@ -37,4 +37,6 @@ public interface UserService {
     ManagerResponseDTO getUserInformationList(HttpServletRequest request);
 
     boolean updateLoginState(HttpServletRequest request, boolean requestDto) throws UserNotFoundException;
+
+    void createSampleAccount();
 }

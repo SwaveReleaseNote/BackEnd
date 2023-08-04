@@ -34,7 +34,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             "/swagger-resources/**,/configuration/security/**," +
             "/swagger-ui/**,/webjars/**,/swagger-ui.html," +
             "/api/subscribe/**," + "/api/publish/**,"
-            +"/api/kafka/**";
+            +"/api/kafka/**,"+"/api/user/sample";
 
 
     private static final String Exclude_post_url="/api/user,"+

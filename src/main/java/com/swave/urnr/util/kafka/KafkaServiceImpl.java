@@ -1,9 +1,12 @@
 package com.swave.urnr.util.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.DeleteTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 
 @Service
@@ -26,12 +30,6 @@ public class KafkaServiceImpl implements  KafkaService{
     // Replace with the topic name you want to produce messages to
 
     @Override
-    public void produceMessage(String message,  String topic) {
-        KafkaTemplate<String, String> temp = new KafkaTemplate<>(producerFactory());
-        temp.send(topic, message);
-    }
-
-    @Override
     public String createTopic(String topicName) {
         try {
             Properties properties = new Properties();
@@ -41,8 +39,7 @@ public class KafkaServiceImpl implements  KafkaService{
                 NewTopic newTopic = new NewTopic(topicName, 1, (short) 1);
                 adminClient.createTopics(Collections.singleton(newTopic));
 
-                // Send a temporary message to the newly created topic for verification
-                String message = "Hello, this is a temporary message to check the created topic!";
+               String message = "start";
                 KafkaTemplate<String, String> temp = new KafkaTemplate<>(producerFactory());
                 temp.send(topicName, message);
 
@@ -53,6 +50,41 @@ public class KafkaServiceImpl implements  KafkaService{
         }
     }
 
+
+ 
+
+
+    @Override
+    public void produceMessage(NotificationDTO notificationDTO, String topic) {
+        KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(producerFactory());
+        ObjectMapper objectMapper = new ObjectMapper();
+        log.info(notificationDTO.getContent().toString());
+        log.info(String.valueOf(notificationDTO.getId()));
+        log.info(notificationDTO.getDate().toString());
+        log.info(notificationDTO.getType().toString());
+
+        try {
+            String jsonMessage = objectMapper.writeValueAsString(notificationDTO);
+            kafkaTemplate.send(topic, jsonMessage);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private ProducerFactory<String, String> producerFactory() {
         Map<String, Object> configs = new HashMap<>();
 
@@ -62,4 +94,7 @@ public class KafkaServiceImpl implements  KafkaService{
 
         return new DefaultKafkaProducerFactory<>(configs);
     }
+
+
+
 }

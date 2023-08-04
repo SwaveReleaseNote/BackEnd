@@ -4,6 +4,7 @@ import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserListResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
 import com.swave.urnr.user.responsedto.UserEntityResponseDTO;
+import com.swave.urnr.util.kafka.KafkaService;
 import com.swave.urnr.util.oauth.JwtProperties;
 import com.swave.urnr.util.oauth.OauthToken;
 import com.swave.urnr.user.domain.User;
@@ -37,15 +38,16 @@ public class UserServiceImpl implements UserService {
     private final OAuthService oAuthService;
     private final MailSendImp mailSendImp;
     private final TokenService tokenService;
-
+    private final KafkaService kafkaService;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
     public PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-
     @Override
     public ResponseEntity<UserEntityResponseDTO> createAccountByEmail(UserRegisterRequestDTO request) {
+
+
 
         UserEntityResponseDTO userEntityResponseDTO;
         log.info("Email : ", request.getEmail());
@@ -66,6 +68,11 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
         userRepository.flush();
+
+        Long userId = userRepository.findByEmail(request.getEmail()).get().getId();
+        log.info("Excepted Topic : "+userId.toString());
+        kafkaService.createTopic(userId.toString());
+
 
         userEntityResponseDTO= new UserEntityResponseDTO(201,"User created");
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
@@ -110,6 +117,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO getUser(HttpServletRequest request) throws UserNotFoundException {
+
         Long userCode = (Long) request.getAttribute("id");
         User user = userRepository.findById(userCode).orElseThrow(UserNotFoundException::new);
         UserResponseDTO result = new UserResponseDTO(
@@ -117,7 +125,9 @@ public class UserServiceImpl implements UserService {
                 user.getEmail(),
                 user.getDepartment(),
                 user.getUsername());
+
         return result;
+
     }
 
 
@@ -126,14 +136,19 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request) throws  RuntimeException {
         UserResponseDTO user =null;
         try {
+
             checkInvalidToken(request);
              user = getUser(request);
+
         }catch(Exception e)
         {
+
             e.printStackTrace();
             log.info(e.toString());
+
         }
         return ResponseEntity.ok().body(user);
+
     }
 
 
@@ -149,8 +164,6 @@ public class UserServiceImpl implements UserService {
 
         Long userCode = (Long) request.getAttribute("id");
         User user = userRepository.findById(userCode).orElseThrow(UserNotFoundException::new);
-
-
 
         List<UserListResponseDTO> result =  userRepository.findAll().stream().map(
             User -> {
@@ -188,8 +201,6 @@ public class UserServiceImpl implements UserService {
         return ResponseEntity.ok().headers(headers).body("\"success\"");
     }
 
-
-
     @Override
     public ResponseEntity<String> updateUser(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
@@ -209,6 +220,7 @@ public class UserServiceImpl implements UserService {
         userRepository.flush();
 
         return ResponseEntity.status(204).body("Updated User data");
+
     }
 
     @Override
@@ -227,7 +239,9 @@ public class UserServiceImpl implements UserService {
         log.info("Final : " + user);
         userRepository.save(user);
         userRepository.flush();
+
         return ResponseEntity.ok().body(code);
+
     }
     @Override
     public ResponseEntity<String> deleteUser(HttpServletRequest request)  {
@@ -238,7 +252,6 @@ public class UserServiceImpl implements UserService {
         }
         else{
             return ResponseEntity.status(404).body("userid not found");
-
         }
     }
 
@@ -248,12 +261,14 @@ public class UserServiceImpl implements UserService {
         Optional<User> optionalUser = userRepository.findById(id);
 
         if (optionalUser.isPresent()) {
+
             log.info("Sucussed for Filt but fail here. " + loginState);
             User user = optionalUser.get();
             user.setOnline(loginState);
             log.info("Final : " + user);
             userRepository.save(user);
             userRepository.flush();
+
         } else {
             throw new UserNotFoundException();
 
@@ -262,4 +277,81 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public void createSampleAccount() {
+
+        User user = User.builder()
+                .email("rkdwnsgml@xptmxm.com")
+                .password(encoder.encode( "123456"))
+                .name("강준희")
+                .provider("email")
+                .build();
+
+        userRepository.save(user);
+        user = User.builder()
+                .email("rlarlgus@xptmxm.com")
+                .password(encoder.encode( "123456"))
+                .name("김기현")
+                .provider("email")
+                .build();
+
+        userRepository.save(user);
+
+        user = User.builder()
+                .email("wjsrkdgns@xptmxm.com")
+                .password(encoder.encode( "admin"))
+                .name("전강훈")
+                .provider("email")
+                .build();
+
+        userRepository.save(user);
+
+        user = User.builder()
+                .email("gkarjsdnr@xptmxm.com")
+                .password(encoder.encode( "admin"))
+                .name("함건욱")
+                .provider("email")
+                .build();
+
+        userRepository.save(user);
+
+
+        user = User.builder()
+                .email("rlatjdrnr@xptmxm.com")
+                .password(encoder.encode( "admin"))
+                .name("김성국")
+                .provider("email")
+                .build();
+
+        userRepository.save(user);
+
+        user = User.builder()
+                .email("dltmdtjq@xptmxm.com")
+                .password(encoder.encode( "admin"))
+                .name("이승섭")
+                .provider("email")
+                .build();
+
+        userRepository.save(user);
+        userRepository.flush();
+
+        Long userId = userRepository.findByEmail("rkdwnsgml@xptmxm.com").get().getId();
+        kafkaService.createTopic(userId.toString());
+
+        userId = userRepository.findByEmail("rlarlgus@xptmxm.com").get().getId();
+        kafkaService.createTopic(userId.toString());
+
+        userId = userRepository.findByEmail("rlatjdrnr@xptmxm.com").get().getId();
+        kafkaService.createTopic(userId.toString());
+
+        userId = userRepository.findByEmail("wjsrkdgns@xptmxm.com").get().getId();
+        kafkaService.createTopic(userId.toString());
+
+        userId = userRepository.findByEmail("dltmdtjq@xptmxm.com").get().getId();
+        kafkaService.createTopic(userId.toString());
+
+        userId = userRepository.findByEmail("gkarjsdnr@xptmxm.com").get().getId();
+        kafkaService.createTopic(userId.toString());
+
+    }
 }

@@ -6,6 +6,10 @@ public interface KafkaService {
 
     // Replace with the topic name you want to produce messages to
 
-    void produceMessage(String message,  String topic) ;
+
+    void produceMessage(NotificationDTO notificationDTO , String topic) ;
     String createTopic(String topicName) ;
+
+
+
 }

@@ -6,6 +6,7 @@ import com.swave.urnr.user.responsedto.UserEntityResponseDTO;
 import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.requestdto.*;
 import com.swave.urnr.user.service.UserService;
+import com.swave.urnr.util.kafka.KafkaService;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,6 +31,9 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+
+
+    private final KafkaService kafkaService;
 
     @Operation(summary="사용자 정보 리스트 반환", description="관리자의 정보와 사용자들의 정보 리스트를 반환합니다.")
     @GetMapping("/users")
@@ -100,6 +104,13 @@ public class UserController {
     @PatchMapping("/user/status")
     public boolean updateStatus(HttpServletRequest request,  @RequestBody Map<String, Object> requestBody) throws UserNotFoundException {
         return userService.updateLoginState(request, (Boolean) requestBody.get("loginState"));
+    }
+
+
+    @Operation(summary="샘플 계정 생성", description="(임시 프로토타입) 임시 사용자 계정 6개를 생성합니다. ")
+    @PostMapping("/user/sample")
+    public void createSampleAccount(){
+        userService.createSampleAccount();
     }
 
 }
