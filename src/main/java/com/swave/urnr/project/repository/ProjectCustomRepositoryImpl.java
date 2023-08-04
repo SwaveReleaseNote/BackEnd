@@ -5,11 +5,21 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.swave.urnr.project.domain.Project;
+import com.swave.urnr.project.domain.ProjectElasticsearch;
 import com.swave.urnr.project.responsedto.ProjectSearchListResponseDTO;
 
-import com.swave.urnr.user.domain.QUserInProject;
-import com.swave.urnr.user.responsedto.UserMemberInfoResponseDTO;
+import com.swave.urnr.user.domain.User;
+import com.swave.urnr.util.elasticSearch.ElasticsearchOperations;
 import com.swave.urnr.util.type.UserRole;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.SearchHits;
+
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.data.elasticsearch.core.query.Query;
 
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.types.Projections.list;
@@ -19,6 +29,7 @@ import static com.swave.urnr.user.domain.QUserInProject.userInProject;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.swave.urnr.project.domain.QProject.project;
 
@@ -26,8 +37,10 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    public ProjectCustomRepositoryImpl(EntityManager em){
+    private final ElasticsearchOperations elasticsearchOperations;
+    public ProjectCustomRepositoryImpl(EntityManager em, ElasticsearchOperations elasticsearchOperations){
         this.queryFactory = new JPAQueryFactory(em);
+        this.elasticsearchOperations = elasticsearchOperations;
     }
 
     //유저 삭제조건 추가
@@ -138,6 +151,18 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .join(user).on(userInProject.user.id.eq(user.id))
                 .where(project.id.in(projectIdsWithRole))
                 .fetch();
+    }
+
+    @Override
+    public List<ProjectElasticsearch> searchProject(String keyword, Pageable pageable) {
+        Criteria criteria = Criteria.where("name").contains(keyword);
+        Query query = new CriteriaQuery(criteria).setPageable(pageable);
+        SearchHits<ProjectElasticsearch> search = elasticsearchOperations.search(query, ProjectElasticsearch.class);
+
+        return search.getSearchHits()
+                .stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
     }
 
 

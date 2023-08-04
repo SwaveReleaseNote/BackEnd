@@ -214,7 +214,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
 
     @Override
     @Transactional
-    public HttpResponse deleteReleaseNote(Long releaseNoteId){
+    public HttpResponse deleteReleaseNote(Long releaseNoteId) {
         releaseNoteRepository.deleteById(releaseNoteId);
 
         return HttpResponse.builder()

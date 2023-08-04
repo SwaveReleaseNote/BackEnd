@@ -27,7 +27,6 @@ public class UserMemberInfoResponseDTO {
 
 
     @QueryProjection
-
     public UserMemberInfoResponseDTO(Long userId, String username, String userDepartment) {
         this.userId = userId;
         this.username = username;

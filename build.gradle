@@ -79,7 +79,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
 
     //elastic Search
-    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    implementation 'org.springframework.data:spring-data-elasticsearch:4.2.2'
 
 }
 
