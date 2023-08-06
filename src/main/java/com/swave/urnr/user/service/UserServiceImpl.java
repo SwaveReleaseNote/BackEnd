@@ -26,6 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -40,8 +41,6 @@ public class UserServiceImpl implements UserService {
     private final TokenService tokenService;
     private final KafkaService kafkaService;
 
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
     public PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Override
@@ -57,7 +56,6 @@ public class UserServiceImpl implements UserService {
             log.info("Email already exists");
             return ResponseEntity.status(409).body(userEntityResponseDTO);
         }
-        log.info("Email not already exists, builded it. ");
 
         User user = User.builder()
                 .email(request.getEmail())
@@ -73,6 +71,7 @@ public class UserServiceImpl implements UserService {
         log.info("Excepted Topic : "+userId.toString());
         kafkaService.createTopic(userId.toString());
 
+        log.info("made email and topic for that email.");
 
         userEntityResponseDTO= new UserEntityResponseDTO(201,"User created");
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
@@ -116,10 +115,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO getUser(HttpServletRequest request) throws UserNotFoundException {
+    public UserResponseDTO getUser(HttpServletRequest request)  {
 
         Long userCode = (Long) request.getAttribute("id");
-        User user = userRepository.findById(userCode).orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findById(userCode).orElseThrow(NoSuchElementException::new);
         UserResponseDTO result = new UserResponseDTO(
                 user.getId(),
                 user.getEmail(),
@@ -133,7 +132,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request) throws  RuntimeException {
+    public ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request)  {
         UserResponseDTO user =null;
         try {
 
@@ -153,14 +152,15 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public void checkInvalidToken(HttpServletRequest request) throws RuntimeException {
+    public void checkInvalidToken(HttpServletRequest request) {
         if (request.getHeader("Authorization") == null) {
-            throw new RuntimeException();
+            throw new NoSuchElementException("Authorization 토큰이 없습니다. ");
+
         }
     }
 
     @Override
-    public ManagerResponseDTO getUserInformationList(HttpServletRequest request) throws UserNotFoundException{
+    public ManagerResponseDTO getUserInformationList(HttpServletRequest request) {
 
         Long userCode = (Long) request.getAttribute("id");
         User user = userRepository.findById(userCode).orElseThrow(UserNotFoundException::new);
@@ -256,7 +256,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean updateLoginState(HttpServletRequest request, boolean loginState) throws UserNotFoundException {
+    public boolean updateLoginState(HttpServletRequest request, boolean loginState)  {
         Long id = (Long) request.getAttribute("id");
         Optional<User> optionalUser = userRepository.findById(id);
 

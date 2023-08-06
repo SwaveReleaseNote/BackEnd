@@ -88,29 +88,11 @@ public class MailSendImp implements MailServiceInter {
 
         ePw = createKey();
 
-        /*
-        TODO:
-        왜 에러를 es로 정의하신 지 궁금합니다
-catch로 에러를 잡았으면 그 에러에 대한 행동을 정의하면 됩니다. -> 즉 messaging 오류가 발생했다 다시 message를 보낸다 이런 느낌으로요
-catch로 에러를 잡았는데 throw new RuntimeException으로 런타임 오류를 던질 필요는 없을 것 같습니다
-아니면 다른 서비스단에서 사용한다면 런타임 에러를 던지지 말고 그냥 에러를 던져서 이 메일 서비스를 사용하는 서비스단에서 이 오류를 잡아서 처리하도록 해도 좋을 것 같습니다
-
-public void call() {
-    try {
-        runSQL();
-    } catch (SQLException e) {
-        throw new RuntimeSQLException(e); //기존 예외(e) 포함
-    }
-}
-추가로 예외 처리를 할때 원래 에러, 즉 Exception을 예외처리 한 runtime exception에 넘겨줘서 기록을 남기는 것이 매우 중요합니다 나중에 에러가 발생했을 때 원래의 오류를 찾지 못하는 상황이 생길 수도 있기 때문입니다
-
-         */
         try {// 예외처리
             MimeMessage message = createMessage(to); // 메일 발송
             emailsender.send(message);
-        } catch (MessagingException | UnsupportedEncodingException es ) {
-            es.printStackTrace();
-            throw new RuntimeException(es);
+        } catch (MessagingException | UnsupportedEncodingException e ) {
+            throw new RuntimeException(e);
         }
 
 

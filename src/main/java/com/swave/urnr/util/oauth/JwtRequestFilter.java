@@ -62,10 +62,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             return;
         }
         else if(request.getHeader("Authorization") == null) {
-            //TODO: Custom exception
             log.info("error: No Authorization token on header");
             request.setAttribute(JwtProperties.HEADER_STRING, "Authorization 이 없습니다.");
-            throw new RuntimeException();
+            throw new RuntimeException("No authorization");
         }
         // header 가 정상적인 형식인지 확인
         if(jwtHeader == null || !jwtHeader.startsWith(JwtProperties.TOKEN_PREFIX)) {

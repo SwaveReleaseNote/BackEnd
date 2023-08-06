@@ -10,19 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class TokenService {
-    public String createToken(User user) {
-
-        String jwtToken = JWT.create()
-                .withSubject(user.getEmail())
-                .withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.EXPIRATION_TIME))
-                .withClaim("id", user.getId())
-                .withClaim("name", user.getUsername())
-                .sign(Algorithm.HMAC512(JwtProperties.SECRET));
-
-        return jwtToken;
-    }
+public interface TokenService {
+    String createToken(User user);
 }
