@@ -116,7 +116,6 @@ public class ReleaseNote {
         }
 
         releaseNoteContentResponseDTO.setComment(commentContentList);
-        //releaseNoteContentDTO.setLiked(this);
 
         return releaseNoteContentResponseDTO;
     }

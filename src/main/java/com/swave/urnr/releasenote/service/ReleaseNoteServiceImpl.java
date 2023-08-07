@@ -12,15 +12,15 @@ import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.repository.UserInProjectRepository;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.util.http.HttpResponse;
-import com.swave.urnr.util.type.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+
 import java.util.*;
 
 @Slf4j
@@ -35,6 +35,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
     private final ChatGPTService chatGPTService;
     private final SeenCheckService seenCheckService;
     private final CommentService commentService;
+    private final LikedService likedService;
 
 
     //todo 나중에 다른 쪽에서 구현이 끝나면 service로 갈아 끼울것
@@ -131,6 +132,9 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
         ReleaseNoteContentResponseDTO releaseNoteContentResponseDTO = releaseNote.makeReleaseNoteContentDTO();
         releaseNoteContentResponseDTO.setComment(commentContentList);
 
+        LikedCountResponseDTO likedCountResponseDTO = likedService.countLiked(releaseNoteId);
+        releaseNoteContentResponseDTO.setLiked(likedCountResponseDTO.getLikedCount());
+
         releaseNote.addViewCount();
         releaseNoteRepository.flush();
 
@@ -223,6 +227,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public ReleaseNoteContentResponseDTO loadRecentReleaseNote(HttpServletRequest request){
         ReleaseNote releaseNote = releaseNoteRepository.findMostRecentReleaseNote((Long) request.getAttribute("id"));
         if(releaseNote == null){
