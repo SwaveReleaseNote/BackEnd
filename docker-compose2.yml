@@ -7,14 +7,9 @@ services:
       - node.name=single-node
       - cluster.name=backtony
       - discovery.type=single-node
-      - ELASTICSEARCH_SSL_CERTIFICATE=/certs/elastic-certificates.pem
-      - ELASTICSEARCH_SSL_KEY=/certs/elastic-certificates.pem
     ports:
       - 9200:9200
       - 9300:9300
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-      - ./certs:/certs
     networks:
       - es-bridge
 
@@ -22,22 +17,29 @@ services:
     container_name: kibana
     image: docker.elastic.co/kibana/kibana:7.17.10
     environment:
-      - SERVER_NAME=kibana
-      - ELASTICSEARCH_HOSTS=https://elastic:9200
+      SERVER_NAME: kibana
+      ELASTICSEARCH_HOSTS: http://elastic:9200
     ports:
       - 5601:5601
     # Elasticsearch Start Dependency
     depends_on:
       - es
+    networks:
+      - es-bridge
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:7.17.10
     volumes:
-      - ./certs:/certs
+      - ./logstash-config/:/usr/share/logstash/pipeline/
+    environment:
+      LS_JAVA_OPTS: -Xmx256m -Xms256m
+      ELASTICSEARCH_HOSTS: http://elastic:9200  # "es" is the hostname of the Elasticsearch service defined above
+    depends_on:
+      - es
     networks:
       - es-bridge
 
 networks:
   es-bridge:
     driver: bridge
-
-volumes:
-  esdata:
-    driver: local
