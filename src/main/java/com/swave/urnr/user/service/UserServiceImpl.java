@@ -270,7 +270,7 @@ public class UserServiceImpl implements UserService {
             userRepository.flush();
 
         } else {
-            throw new UserNotFoundException();
+            throw new NoSuchElementException();
 
         }
         return loginState;
