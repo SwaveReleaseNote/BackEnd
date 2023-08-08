@@ -1,8 +1,11 @@
 package com.swave.urnr.user.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAInsertClause;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.swave.urnr.project.domain.Project;
 import com.swave.urnr.user.domain.User;
+import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.responsedto.UserMemberInfoResponseDTO;
 import com.swave.urnr.util.type.UserRole;
 
@@ -11,6 +14,7 @@ import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.swave.urnr.project.domain.QProject.project;
 import static com.swave.urnr.user.domain.QUser.user;
 import static com.swave.urnr.user.domain.QUserInProject.userInProject;
 //import static com.swave.urnr.user.responsedto.QUserMemberInfoResponseDTO.userMemberInfoResponseDTO;
@@ -60,5 +64,23 @@ public class UserInProjectCustomRepositoryImpl implements UserInProjectCustomRep
                 .set(userInProject.isDeleted, true)
                 .where(userInProject.project.id.eq(projectId).and(userInProject.user.id.eq(userId)))
                 .execute());
+    }
+
+    //@Override
+    public Integer subscribeProject2(Long userId, Long projectId) {
+
+        UserInProject entity = new UserInProject();
+        entity.setRole(UserRole.Subscriber);
+        //entity.setUser(user);
+        //entity.setProject(project);
+
+        JPAInsertClause insertClause = queryFactory.insert(userInProject);
+        insertClause.set(userInProject.isDeleted, false);
+        insertClause.set(userInProject.role, entity.getRole());
+        insertClause.set(userInProject.user, entity.getUser());
+        insertClause.set(userInProject.project, entity.getProject());
+
+        long affectedRows = insertClause.execute();
+        return Math.toIntExact(affectedRows);
     }
 }

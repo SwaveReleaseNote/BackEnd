@@ -15,5 +15,7 @@ public interface UserInProjectCustomRepository {
 
     Integer dropProject(Long userId, Long projectId);
 
+    //Integer subscribeProject2(Long userId, Long projectId);
+
 
 }

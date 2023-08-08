@@ -6,6 +6,7 @@ import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
 import com.swave.urnr.project.responsedto.*;
 
 import com.swave.urnr.project.service.ProjectService;
+import com.swave.urnr.util.type.UserRole;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,9 @@ public class ProjectController {
     @Operation(summary="프로젝트 하나 가져오기", description="프로젝트 ID를 가져와 프로젝트를 표시합니다.")
     @GetMapping("/project/{projectId}")
     public ProjectContentResponseDTO loadProject(@PathVariable Long projectId){
+/*
+        //todo:권한체크 http헤더로 가져오기
+        UserRole role = getRole((Long)request.getAttribute("id"),);*/
         return projectService.loadProject(projectId);
     }
 

@@ -120,7 +120,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(keywordExpression,userInProject.role.eq(UserRole.Developer))
+                .where(keywordExpression,userInProject.role.eq(UserRole.Developer),userInProject.isDeleted.eq(false))
                 .fetch();
 
         return queryFactory
@@ -136,7 +136,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(project.id.in(projectIdsWithRole))
+                .where(project.id.in(projectIdsWithRole),userInProject.isDeleted.eq(false))
                 .fetch();
     }
 
