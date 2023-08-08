@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
@@ -24,7 +25,7 @@ public class SecurityConfig{
 
 
 
-    public static final String FRONT_URL = "http://localhost:5173";
+    public static final String FRONT_URL = "http://localhost:3000";
 
     private final CorsFilter corsFilter;
 
