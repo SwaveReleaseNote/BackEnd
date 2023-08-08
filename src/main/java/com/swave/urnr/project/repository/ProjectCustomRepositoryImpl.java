@@ -50,7 +50,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(keywordExpression)
+                .where(keywordExpression.and(userInProject.role.ne(UserRole.Subscriber)).and(userInProject.isDeleted.eq(false)))
                 .fetch();
     }
 
@@ -74,7 +74,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(keywordExpression)
+                .where(keywordExpression.and(userInProject.role.ne(UserRole.Subscriber)).and(userInProject.isDeleted.eq(false)))
                 .fetch();
     }
 
@@ -89,7 +89,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(keywordExpression,userInProject.role.eq(UserRole.Manager))
+                .where(keywordExpression,userInProject.role.eq(UserRole.Manager),userInProject.isDeleted.eq(false))
                 .fetch();
 
         return queryFactory
@@ -105,7 +105,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(project.id.in(projectIdsWithRole))
+                .where(project.id.in(projectIdsWithRole).and(userInProject.role.ne(UserRole.Subscriber)).and(userInProject.isDeleted.eq(false)))
                 .fetch();
     }
 
@@ -136,7 +136,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(project.id.in(projectIdsWithRole),userInProject.isDeleted.eq(false))
+                .where(project.id.in(projectIdsWithRole).and(userInProject.role.ne(UserRole.Subscriber)).and(userInProject.isDeleted.eq(false)))
                 .fetch();
     }
 
