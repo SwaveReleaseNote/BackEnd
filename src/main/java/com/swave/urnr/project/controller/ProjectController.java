@@ -1,5 +1,10 @@
 package com.swave.urnr.project.controller;
 
+import com.swave.urnr.opensearch.domain.ProjectOpenSearch;
+import com.swave.urnr.opensearch.domain.UserInProjectOpenSearch;
+import com.swave.urnr.opensearch.domain.UserOpenSearch;
+import com.swave.urnr.opensearch.service.OpenSearchIndexService;
+import com.swave.urnr.opensearch.service.OpenSearchService;
 import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
 import com.swave.urnr.project.requestdto.ProjectKeywordRequestContentDTO;
 import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;

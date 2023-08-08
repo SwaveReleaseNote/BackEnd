@@ -62,6 +62,7 @@ public class NoteBlockServiceImpl implements NoteBlockService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReleaseNoteLabelContentResponseDTO> filterByLabel(Long projectId){
         List<ReleaseNoteLabelContentResponseDTO> releaseNoteLabelContentResponseDTOList = noteBlockRepository.filterByLabel(projectId);
 

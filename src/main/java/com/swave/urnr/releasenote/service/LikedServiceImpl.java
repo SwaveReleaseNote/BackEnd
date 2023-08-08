@@ -86,6 +86,7 @@ public class LikedServiceImpl implements LikedService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public LikedCountResponseDTO countLiked(Long releaseNoteId){
         LikedCountResponseDTO likedCountResponseDTO = new LikedCountResponseDTO();
         likedCountResponseDTO.setLikedCount(likedRepository.countByLiked(releaseNoteId));
