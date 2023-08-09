@@ -18,15 +18,16 @@ import lombok.RequiredArgsConstructor;
 import com.swave.urnr.util.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+import javax.sql.DataSource;
+
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 ;import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
 import static com.swave.urnr.util.type.UserRole.Manager;
@@ -36,7 +37,6 @@ import static com.swave.urnr.util.type.UserRole.Manager;
 @Slf4j
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
-
     private final ProjectRepository projectRepository;
 
     private final UserInProjectRepository userInProjectRepository;
@@ -46,6 +46,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ReleaseNoteRepository releaseNoteRepository;
 
     @Override
+    @Transactional
     public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto) {
         //빌더로 프로젝트생성
         Project project = Project.builder()
@@ -171,6 +172,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     //최신 릴리즈노트 이름 가져오기
     @Override
+    @Transactional(readOnly = true)
     public List<ProjectListResponseDTO> loadProjectList(HttpServletRequest request) {
         List<ProjectListResponseDTO> projectList = new ArrayList<>();
         List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id((Long)request.getAttribute("id"));
@@ -195,6 +197,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectContentResponseDTO loadProject(Long projectId) {
         Project project = projectRepository.findById(projectId).get();
         ProjectContentResponseDTO getproject = ProjectContentResponseDTO.builder()
@@ -219,6 +222,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) {
         //유저가 해당 프로젝트 멤버인지 확인 UserInList확인
         //유저가 관리자인지 확인 UserInList확인
@@ -246,6 +250,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId){
         Project project = projectRepository.findById(projectId).get();
         User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
@@ -320,6 +325,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional
     public HttpResponse deleteProject(Long projectId) {
         List<UserInProject> userInProjectList = userInProjectRepository.findByProject_Id(projectId);
         for(UserInProject userInProject:userInProjectList) {
@@ -334,6 +340,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException {
         String keyword = projectKeywordRequestContentDTO.getKeyword();
         ProjectSearchResultListResponseDTO projectSearchResultListResponseDTO = new ProjectSearchResultListResponseDTO();
@@ -360,6 +367,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProjectUserCheckDTO> checkUser(Long projectId) {
         List<ProjectUserCheckDTO> projectUserCheckList = new ArrayList<>();
         List<UserMemberInfoResponseDTO> getMemberLists = userInProjectRepository.getLoginMembers(projectId);
