@@ -23,7 +23,6 @@ import java.util.Map;
 
 @Api(tags = "UserController")
 @RestController
-@Validated
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api")
@@ -31,9 +30,6 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-
-
-    private final KafkaService kafkaService;
 
     @Operation(summary="사용자 정보 리스트 반환", description="관리자의 정보와 사용자들의 정보 리스트를 반환합니다.")
     @GetMapping("/users")
