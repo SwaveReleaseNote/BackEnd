@@ -33,6 +33,7 @@ public interface ProjectService {
 
     ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException;
 
+    List<ProjectUserCheckDTO> checkUser(Long projectId);
 
     UserRole getRole(HttpServletRequest request, Long projectId);
 

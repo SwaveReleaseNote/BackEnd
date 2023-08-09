@@ -17,5 +17,7 @@ public interface UserInProjectCustomRepository {
 
     //Integer subscribeProject2(Long userId, Long projectId);
 
+    List<UserMemberInfoResponseDTO> getLoginMembers(Long projectId);
+
 
 }

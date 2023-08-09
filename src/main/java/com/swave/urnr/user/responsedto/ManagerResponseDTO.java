@@ -10,24 +10,25 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@ApiModel(value = "유저 정보 리스트 반환용 DTO")
+@ApiModel(value = "관리자 및 유저 정보 리스트 반환용 DTO")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ManagerResponseDTO {
-    @ApiModelProperty(value = "관리자 식별번호", example = "1", required = true)
+    @ApiModelProperty(value = "관리자 식별번호", example = "10", required = true)
     @ApiParam(value = "관리자 식별번호", required = true, example = "15")
     private Long managerId;
 
     @ApiModelProperty(value="관리자 이름", example = "전강훈", required = true)
     @ApiParam(value = "이름", required = true, example = "전강훈")
     private String managerName;
-    @ApiModelProperty(value="관리자 소속", example = "가천대학교", required = true)
+    @ApiModelProperty(value="관리자 소속", example = "개발부", required = true)
     @ApiParam(value = "소속", required = true, example = "소속을 입력하세요.")
     private String managerDepartment;
 
-    @ApiModelProperty(value="사용자 소속", example = "가천대학교", required = true)
-    @ApiParam(value = "소속", required = true, example = "소속을 입력하세요.")
+
+    @ApiModelProperty(value="사용자 리스트", example ="[{ \"userId\": 1, \"username\": \"전강훈\"  , \"userDepartment\" : \"가천대학교\"}]" , required = true)
+    @ApiParam(value = "사용자 리스트", required = true, example = "소속을 입력하세요.")
     private List<UserListResponseDTO> users;
 
 }

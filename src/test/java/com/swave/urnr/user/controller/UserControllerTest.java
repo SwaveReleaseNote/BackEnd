@@ -40,7 +40,7 @@ class UserControllerTest {
 
 
     @BeforeEach
-    @DisplayName("유저 생성 테스트")
+    @DisplayName("사용자 생성 테스트")
     void setAccountToServer() throws Exception {
         userRepository.deleteAll();
 
@@ -77,7 +77,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("유저 업데이트 테스트")
+    @DisplayName("사용자 업데이트 테스트")
     void updateUser() throws Exception{
 
         UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");

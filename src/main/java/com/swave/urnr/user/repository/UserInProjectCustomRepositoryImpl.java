@@ -66,6 +66,7 @@ public class UserInProjectCustomRepositoryImpl implements UserInProjectCustomRep
                 .execute());
     }
 
+
     //@Override
     public Integer subscribeProject2(Long userId, Long projectId) {
 
@@ -82,5 +83,15 @@ public class UserInProjectCustomRepositoryImpl implements UserInProjectCustomRep
 
         long affectedRows = insertClause.execute();
         return Math.toIntExact(affectedRows);
+
+    @Override
+    public List<UserMemberInfoResponseDTO> getLoginMembers(Long projectId){
+        return queryFactory
+                .select(Projections.constructor(UserMemberInfoResponseDTO.class, user.id, user.username, user.department))
+                .from(userInProject)
+                .join(user).on(userInProject.user.id.eq(user.user.id))
+                .where(userInProject.project.id.eq(projectId))
+                .fetch();
+
     }
 }

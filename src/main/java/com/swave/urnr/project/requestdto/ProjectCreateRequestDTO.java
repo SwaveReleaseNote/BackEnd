@@ -24,7 +24,7 @@ public class ProjectCreateRequestDTO {
 
 
     //managerID
-    @ApiModelProperty(value="유저ID", example = "1", required = true)
+    @ApiModelProperty(value="사용자 ID", example = "1", required = true)
     Long userId;
 
     @ApiModelProperty(value="프로젝트에 담긴 유저", example = "[2,3,4,5]", required = true)

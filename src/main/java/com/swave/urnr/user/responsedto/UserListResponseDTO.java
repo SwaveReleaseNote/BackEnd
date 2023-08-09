@@ -10,7 +10,7 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 
-@ApiModel(value = "유저 정보 리스트 반환용 DTO")
+@ApiModel(value = "사용자 정보 리스트 반환용 DTO")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

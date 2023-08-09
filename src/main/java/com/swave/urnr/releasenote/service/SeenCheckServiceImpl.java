@@ -1,13 +1,8 @@
 package com.swave.urnr.releasenote.service;
 
-import com.swave.urnr.releasenote.domain.BlockContext;
-import com.swave.urnr.releasenote.domain.NoteBlock;
 import com.swave.urnr.releasenote.domain.ReleaseNote;
 import com.swave.urnr.releasenote.domain.SeenCheck;
-import com.swave.urnr.releasenote.repository.BlockContextRepository;
 import com.swave.urnr.releasenote.repository.SeenCheckRepository;
-import com.swave.urnr.releasenote.requestdto.BlockContextCreateRequestDTO;
-import com.swave.urnr.releasenote.requestdto.BlockContextUpdateRequestDTO;
 import com.swave.urnr.user.domain.UserInProject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,5 +35,4 @@ public class SeenCheckServiceImpl implements SeenCheckService {
 
         return seenCheck;
     }
-
 }

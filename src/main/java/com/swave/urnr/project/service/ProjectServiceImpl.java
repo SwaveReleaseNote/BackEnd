@@ -20,14 +20,18 @@ import lombok.RequiredArgsConstructor;
 import com.swave.urnr.util.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
+import javax.sql.DataSource;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+
 import java.util.*;
+
 
 ;import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
 import static com.swave.urnr.util.type.UserRole.Manager;
@@ -38,7 +42,6 @@ import static com.swave.urnr.util.type.UserRole.None;
 @Slf4j
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
-
     private final ProjectRepository projectRepository;
 
     private final UserInProjectRepository userInProjectRepository;
@@ -140,6 +143,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     //최신 릴리즈노트 이름 가져오기
     @Override
+    @Transactional(readOnly = true)
     public List<ProjectListResponseDTO> loadProjectList(HttpServletRequest request) {
 
 
@@ -166,6 +170,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectContentResponseDTO loadProject(Long projectId) {
 
         Project project = projectRepository.findById(projectId).get();
@@ -212,6 +217,7 @@ public class ProjectServiceImpl implements ProjectService {
             throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
         }
 
+
         Project project = projectRepository.findById(projectId).get();
         User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
         List<UserMemberInfoResponseDTO> getMembers = userInProjectRepository.getMembers(projectId);
@@ -236,7 +242,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+
     public ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
+
         Project project = projectRepository.findById(projectId).get();
         User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
         List<UserMemberInfoResponseDTO> getMembers  = new ArrayList<>();
@@ -322,6 +331,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
+
     public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
         //todo:권한체크
@@ -343,6 +353,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException {
 
         //todo:권한체크
@@ -369,6 +380,25 @@ public class ProjectServiceImpl implements ProjectService {
         projectSearchResultListResponseDTO.setDeveloperSearch(makeProjectSearchListResponseDTOList(projectSearchByDeveloperListResponseDTOList));
 
         return projectSearchResultListResponseDTO;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectUserCheckDTO> checkUser(Long projectId) {
+        List<ProjectUserCheckDTO> projectUserCheckList = new ArrayList<>();
+        List<UserMemberInfoResponseDTO> getMemberLists = userInProjectRepository.getLoginMembers(projectId);
+        log.info(String.valueOf(getMemberLists.get(0)));
+        for (UserMemberInfoResponseDTO getMember : getMemberLists) {
+            User user = userRepository.getReferenceById(getMember.getUserId());
+            ProjectUserCheckDTO projectUserCheck = ProjectUserCheckDTO.builder()
+                    .memberId(user.getId())
+                    .memberName(user.getUsername())
+                    .isOnline(user.isOnline())
+                    .build();
+            projectUserCheckList.add(projectUserCheck);
+
+        }
+        return projectUserCheckList;
     }
 
 
