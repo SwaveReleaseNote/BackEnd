@@ -7,20 +7,19 @@ import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.swave.urnr.project.responsedto.ProjectSearchListResponseDTO;
 
-import com.swave.urnr.user.domain.QUserInProject;
 import com.swave.urnr.user.responsedto.UserMemberInfoResponseDTO;
 import com.swave.urnr.util.type.UserRole;
 
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.types.Projections.list;
 import static com.querydsl.core.types.dsl.Expressions.set;
+import static com.swave.urnr.project.domain.QProject.project;
 import static com.swave.urnr.user.domain.QUser.user;
 import static com.swave.urnr.user.domain.QUserInProject.userInProject;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
-import static com.swave.urnr.project.domain.QProject.project;
 
 public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
 

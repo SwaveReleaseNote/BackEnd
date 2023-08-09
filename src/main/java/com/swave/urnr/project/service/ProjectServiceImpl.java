@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+
 import javax.sql.DataSource;
 
 import java.io.IOException;
