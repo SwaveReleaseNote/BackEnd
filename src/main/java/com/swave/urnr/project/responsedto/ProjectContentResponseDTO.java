@@ -13,10 +13,8 @@ import org.hibernate.annotations.Where;
 import java.util.Date;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @ApiModel(value = "프로젝트 하나 가져오는 DTO")
-@Builder
 public class ProjectContentResponseDTO {
 
     @ApiModelProperty(value="프로젝트 ID", example = "1", required = true)
@@ -32,8 +30,11 @@ public class ProjectContentResponseDTO {
     @ApiModelProperty(value="프로젝트 생성날짜", example = "자동생성", required = true)
     Date createDate;
 
-
-
-
-
+    @Builder
+    public ProjectContentResponseDTO(Long id, String name, String description, Date createDate) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.createDate = createDate;
+    }
 }

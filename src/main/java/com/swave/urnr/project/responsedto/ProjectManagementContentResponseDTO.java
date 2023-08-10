@@ -44,4 +44,6 @@ public class ProjectManagementContentResponseDTO {
 
     @ApiModelProperty(value="프로젝트 참여자", example = "참가자 리스트", required = true)
     List<UserMemberInfoResponseDTO> teamMembers;
+
+
 }

@@ -7,20 +7,19 @@ import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.swave.urnr.project.responsedto.ProjectSearchListResponseDTO;
 
-import com.swave.urnr.user.domain.QUserInProject;
 import com.swave.urnr.user.responsedto.UserMemberInfoResponseDTO;
 import com.swave.urnr.util.type.UserRole;
 
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.types.Projections.list;
 import static com.querydsl.core.types.dsl.Expressions.set;
+import static com.swave.urnr.project.domain.QProject.project;
 import static com.swave.urnr.user.domain.QUser.user;
 import static com.swave.urnr.user.domain.QUserInProject.userInProject;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
-import static com.swave.urnr.project.domain.QProject.project;
 
 public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
 
@@ -50,7 +49,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(keywordExpression)
+                .where(keywordExpression.and(userInProject.role.ne(UserRole.Subscriber)).and(userInProject.isDeleted.eq(false)))
                 .fetch();
     }
 
@@ -74,7 +73,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(keywordExpression)
+                .where(keywordExpression.and(userInProject.role.ne(UserRole.Subscriber)).and(userInProject.isDeleted.eq(false)))
                 .fetch();
     }
 
@@ -89,7 +88,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(keywordExpression,userInProject.role.eq(UserRole.Manager))
+                .where(keywordExpression,userInProject.role.eq(UserRole.Manager),userInProject.isDeleted.eq(false))
                 .fetch();
 
         return queryFactory
@@ -105,7 +104,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(project.id.in(projectIdsWithRole))
+                .where(project.id.in(projectIdsWithRole).and(userInProject.role.ne(UserRole.Subscriber)).and(userInProject.isDeleted.eq(false)))
                 .fetch();
     }
 
@@ -120,7 +119,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(keywordExpression,userInProject.role.eq(UserRole.Developer))
+                .where(keywordExpression,userInProject.role.eq(UserRole.Developer),userInProject.isDeleted.eq(false))
                 .fetch();
 
         return queryFactory
@@ -136,7 +135,7 @@ public class ProjectCustomRepositoryImpl implements ProjectCustomRepository {
                 .from(project)
                 .join(userInProject).on(project.id.eq(userInProject.project.id))
                 .join(user).on(userInProject.user.id.eq(user.id))
-                .where(project.id.in(projectIdsWithRole))
+                .where(project.id.in(projectIdsWithRole).and(userInProject.role.ne(UserRole.Subscriber)).and(userInProject.isDeleted.eq(false)))
                 .fetch();
     }
 
