@@ -2,6 +2,7 @@ package com.swave.urnr.project.service;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.swave.urnr.project.domain.Project;
+import com.swave.urnr.project.exception.NotAuthorizedException;
 import com.swave.urnr.project.repository.ProjectRepository;
 import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
 import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
@@ -225,7 +226,7 @@ class ProjectServiceTest {
     }
 
     @Test
-    void updateProject() {
+    void updateProject() throws NotAuthorizedException {
         Long projectId = 3L;
 
         List<Long> deleteUsers = new ArrayList<>(){
@@ -247,7 +248,7 @@ class ProjectServiceTest {
                 .updateUsers(updateUsers)
                 .build();
 
-        ProjectUpdateRequestDTO projectUpdateResponseDTO = projectService.updateProject(projectId,projectUpdateRequestDTO);
+        ProjectUpdateRequestDTO projectUpdateResponseDTO = projectService.updateProject(request,projectId,projectUpdateRequestDTO);
 
 
         assertEquals(projectUpdateResponseDTO.getName(),"집가고싶다");
@@ -259,10 +260,10 @@ class ProjectServiceTest {
     }
 
     @Test
-    void deleteProject() {
+    void deleteProject() throws NotAuthorizedException {
 
         Long projectId = 3L;
-        HttpResponse httpResponse = projectService.deleteProject(projectId);
+        HttpResponse httpResponse = projectService.deleteProject(request, projectId);
         assertEquals(httpResponse.getDescription(),"Project Id 3 deleted");
 
     }

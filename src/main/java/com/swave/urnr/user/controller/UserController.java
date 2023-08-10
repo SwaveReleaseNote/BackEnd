@@ -107,6 +107,13 @@ public class UserController {
     @PostMapping("/user/sample")
     public void createSampleAccount(){
         userService.createSampleAccount();
+
+    @Operation(summary="사용자 password 변경", description="사용자 password 변경합니다.")
+    @PatchMapping("/user/password")
+    @SecurityRequirement(name = "JWT 토큰")
+    public ResponseEntity<String> updatePassword(HttpServletRequest request, @RequestBody UserUpdateAccountRequestDTO requestDto) throws UserNotFoundException {
+        return userService.updatePassword(request, requestDto);
+        
     }
 
 }

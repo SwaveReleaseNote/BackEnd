@@ -9,5 +9,5 @@ import com.swave.urnr.releasenote.requestdto.BlockContextUpdateRequestDTO;
 import com.swave.urnr.user.domain.UserInProject;
 
 public interface SeenCheckService {
-    SeenCheck createSeenCheck(String username , ReleaseNote releaseNote, UserInProject userInProject);
+    public SeenCheck createSeenCheck(String username , ReleaseNote releaseNote, UserInProject userInProject);
 } 

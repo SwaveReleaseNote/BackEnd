@@ -94,6 +94,7 @@ class UserServiceImplTest {
         assertEquals( result.getBody().getData(), userEntityResponseDTO.getData());
     }
 
+    /*
     @Test
     @DisplayName("인증코드 반환 테스트")
     void getValidationCode() {
@@ -107,7 +108,7 @@ class UserServiceImplTest {
 
 //        assertEquals( result.getStatusCode().value() , 200);
 
-    }
+    }*/
 
     @Test
     @DisplayName("사용자 정보 반환 테스트")

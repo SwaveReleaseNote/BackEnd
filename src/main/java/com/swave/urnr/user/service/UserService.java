@@ -40,4 +40,9 @@ public interface UserService {
     boolean updateLoginState(HttpServletRequest request, boolean requestDto) throws UserNotFoundException;
 
     void createSampleAccount();
+
+    boolean updateLoginState(HttpServletRequest request, boolean loginState) throws UserNotFoundException;
+
+    ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) ;
+
 }

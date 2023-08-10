@@ -3,10 +3,13 @@ package com.swave.urnr.user.controller;
 import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.service.UserInProjectService;
 import com.swave.urnr.util.http.HttpResponse;
+import com.swave.urnr.util.type.UserRole;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,4 +31,19 @@ public class UserInProjectController {
     public HttpResponse dropProject(HttpServletRequest request, @PathVariable Long projectId){
         return userInProjectService.dropProject(request, projectId);
     }
+
+
+    @Operation(summary = "프로젝트 구독", description="projectID와 유저정보를 받아 프로젝트를 구독합니다.")
+    @PostMapping("/{projectId}/subscribe")
+    public HttpResponse subscribeProject(HttpServletRequest request, @PathVariable Long projectId){
+        return userInProjectService.subscribeProject(request, projectId);
+    }
+
+    @Operation(summary = "유저 권한 확인", description="projectID와 유저정보를 받아 권한을 확인합니다.")
+    @GetMapping("/{projectId}/role")
+    public UserRole getRole(HttpServletRequest request, @PathVariable Long projectId){
+        return userInProjectService.getRole(request, projectId);
+    }
+
+
 }

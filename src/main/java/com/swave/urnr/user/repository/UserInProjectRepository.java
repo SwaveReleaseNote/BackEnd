@@ -11,4 +11,5 @@ public interface UserInProjectRepository extends JpaRepository<UserInProject, Lo
 
     List<UserInProject> findByUser_Id(Long Id);
     List<UserInProject> findByProject_Id(Long Id);
+    UserInProject findByUser_IdAndProject_Id(Long user_Id, Long Project_Id);
 }

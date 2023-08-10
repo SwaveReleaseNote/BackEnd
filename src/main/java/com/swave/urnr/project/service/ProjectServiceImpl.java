@@ -2,6 +2,7 @@ package com.swave.urnr.project.service;
 
 
 import com.swave.urnr.project.domain.Project;
+import com.swave.urnr.project.exception.NotAuthorizedException;
 import com.swave.urnr.project.repository.ProjectRepository;
 import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
 import com.swave.urnr.project.requestdto.ProjectKeywordRequestContentDTO;
@@ -13,30 +14,34 @@ import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.repository.UserInProjectRepository;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.user.responsedto.UserMemberInfoResponseDTO;
+import com.swave.urnr.user.service.UserInProjectService;
 import com.swave.urnr.util.type.UserRole;
 import lombok.RequiredArgsConstructor;
 import com.swave.urnr.util.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+import javax.servlet.http.HttpServletResponse;
 
+import javax.sql.DataSource;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
+
 
 ;import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
 import static com.swave.urnr.util.type.UserRole.Manager;
+import static com.swave.urnr.util.type.UserRole.None;
 
 //0710 확인 CR
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
-
     private final ProjectRepository projectRepository;
 
     private final UserInProjectRepository userInProjectRepository;
@@ -45,7 +50,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ReleaseNoteRepository releaseNoteRepository;
 
+
     @Override
+    @Transactional
     public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto) {
         //빌더로 프로젝트생성
         Project project = Project.builder()
@@ -134,44 +141,12 @@ public class ProjectServiceImpl implements ProjectService {
                 .build();
     }
 
-    //requestGetAttribute
-    //서블렛
-    /*@Override
-    public String updateUsers(ProjectRequestDto projectRequestDto) {
-        //프로젝트를 불러와서
-        //리스트 받아서
-        //유저인리스트 와
-        //유저에 매핑
-
-        //모든객체 싹다 호출
-        //Project project = projectRepository.findById(projectRequestDto.getId()).orElse(null);
-        //List<UserInProject> teamMembers = new ArrayList<>(project.getUserInProjectList());
-
-
-        for(Long userId : projectRequestDto.getUsers() )
-        {
-            UserInProject userInProject = new UserInProject();
-            userInProject.setRole(UserRole.Developer);
-            userInProject.setProject(project);
-
-            User user = userRepository.findById(userId).get();
-            //User user1 = userRepository.findById(userInProject1.getId()).get();
-            userInProject.setUser(user);
-            userInProjectRepository.save(userInProject);
-            List<UserInProject> userInProjectList = user.getUserInProjectList();
-            userInProjectList.add(userInProject);
-            user.setUserInProjectList(userInProjectList);
-            userRepository.flush();
-
-            project.getUserInProjectList().add(userInProject);
-        }
-        projectRepository.flush();
-        return null;
-    }*/
-
     //최신 릴리즈노트 이름 가져오기
     @Override
+    @Transactional(readOnly = true)
     public List<ProjectListResponseDTO> loadProjectList(HttpServletRequest request) {
+
+
         List<ProjectListResponseDTO> projectList = new ArrayList<>();
         List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id((Long)request.getAttribute("id"));
 
@@ -195,7 +170,9 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectContentResponseDTO loadProject(Long projectId) {
+
         Project project = projectRepository.findById(projectId).get();
         ProjectContentResponseDTO getproject = ProjectContentResponseDTO.builder()
                 .id(project.getId())
@@ -219,9 +196,28 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) {
-        //유저가 해당 프로젝트 멤버인지 확인 UserInList확인
-        //유저가 관리자인지 확인 UserInList확인
+    public UserRole getRole(HttpServletRequest request, Long projectId) {
+        UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long)request.getAttribute("id"),projectId);
+
+        UserRole role;
+        if(userInProject==null){
+            role = None;
+        }else{
+            role = userInProject.getRole();
+        }
+
+        return role;
+    }
+
+    @Override
+    public ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) throws NotAuthorizedException {
+        //todo:권한체크
+        UserRole role = getRole(request, projectId);
+        if (role != UserRole.Manager) {
+            throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
+        }
+
+
         Project project = projectRepository.findById(projectId).get();
         User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
         List<UserMemberInfoResponseDTO> getMembers = userInProjectRepository.getMembers(projectId);
@@ -246,10 +242,18 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId){
+    @Transactional(readOnly = true)
+
+    public ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
+
         Project project = projectRepository.findById(projectId).get();
         User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
         List<UserMemberInfoResponseDTO> getMembers  = new ArrayList<>();
+        //todo:권한체크
+        UserRole role = getRole(request, projectId);
+        if (role != UserRole.Manager) {
+            throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
+        }
 
         for(UserInProject userInProject:project.getUserInProjectList()){
             UserMemberInfoResponseDTO userMemberInfoResponseDTO = new UserMemberInfoResponseDTO();
@@ -276,7 +280,13 @@ public class ProjectServiceImpl implements ProjectService {
     //관리자 변경하기 의외로 쉽게 될수도?
     @Override
     @Transactional
-    public ProjectUpdateRequestDTO updateProject(Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) {
+    public ProjectUpdateRequestDTO updateProject(HttpServletRequest request, Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) throws NotAuthorizedException {
+
+        //todo:권한체크
+        UserRole role = getRole(request, projectId);
+        if (role != UserRole.Manager) {
+            throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
+        }
 
         System.out.println(projectId);
         Project project = projectRepository.findById(projectId).orElseThrow(null);
@@ -320,7 +330,16 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public HttpResponse deleteProject(Long projectId) {
+    @Transactional
+
+    public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
+
+        //todo:권한체크
+        UserRole role = getRole(request, projectId);
+        if (role != UserRole.Manager) {
+            throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
+        }
+
         List<UserInProject> userInProjectList = userInProjectRepository.findByProject_Id(projectId);
         for(UserInProject userInProject:userInProjectList) {
             userInProjectRepository.delete(userInProject);
@@ -334,7 +353,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException {
+
+        //todo:권한체크
+
         String keyword = projectKeywordRequestContentDTO.getKeyword();
         ProjectSearchResultListResponseDTO projectSearchResultListResponseDTO = new ProjectSearchResultListResponseDTO();
 
@@ -360,6 +383,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProjectUserCheckDTO> checkUser(Long projectId) {
         List<ProjectUserCheckDTO> projectUserCheckList = new ArrayList<>();
         List<UserMemberInfoResponseDTO> getMemberLists = userInProjectRepository.getLoginMembers(projectId);
