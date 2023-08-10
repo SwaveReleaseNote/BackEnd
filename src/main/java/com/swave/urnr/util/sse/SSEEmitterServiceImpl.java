@@ -2,15 +2,13 @@ package com.swave.urnr.util.sse;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swave.urnr.user.responsedto.ManagerResponseDTO;
-import com.swave.urnr.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +55,31 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
     @Override
     public SseEmitter getEmitter(String id){
 
+        log.info("GETEmitter : {} "+id);
+        SseEmitter emitter = new SseEmitter();
+        CLIENTS.put(id, emitter);
+        emitter.onTimeout(() -> CLIENTS.remove(id));
+        emitter.onCompletion(() -> CLIENTS.remove(id));
+        try {
+
+            String jsonMsg = objectMapper.writeValueAsString("Token already distributed");
+            SSEDataDTO sseDataDTO = new SSEDataDTO(jsonMsg, SSETypeEnum.NORMAL);
+            emitter.send(sseDataDTO, MediaType.APPLICATION_JSON);
+        } catch (Exception e) {
+            log.warn("disconnected id : {}", id);
+        }
+
+        log.info("EV on getEmitter : "+String.valueOf(CLIENTS.containsKey(id)));
+        return emitter;
+    }
+
+
+
+    @Override
+    public SseEmitter getEmitterByHTTP(HttpServletRequest request){
+
+
+        String id = request.getAttribute("id").toString();
         log.info("GETEmitter : {} "+id);
         SseEmitter emitter = new SseEmitter();
         CLIENTS.put(id, emitter);

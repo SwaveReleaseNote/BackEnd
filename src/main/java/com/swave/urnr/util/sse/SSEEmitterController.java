@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Api(tags = "EmitterController")
 @RestController
 @RequiredArgsConstructor
@@ -47,6 +49,12 @@ public class SSEEmitterController {
         sseEmitterService.publishMessageToSpeficEmitter(id, message);
     }
 
+
+    @Operation(summary="Emitter request 기반 반환", description="request를 기반으로 emitter를 반환합니다.")
+    @PostMapping("/emitter/html")
+    public void postMessage(HttpServletRequest request) {
+        sseEmitterService.getEmitterByHTTP(request);
+    }
 
 
 
