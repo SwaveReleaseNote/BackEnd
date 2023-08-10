@@ -36,5 +36,7 @@ public interface UserService {
 
     ManagerResponseDTO getUserInformationList(HttpServletRequest request);
 
-    boolean updateLoginState(HttpServletRequest request, boolean requestDto) throws UserNotFoundException;
+    boolean updateLoginState(HttpServletRequest request, boolean loginState) throws UserNotFoundException;
+
+    ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) ;
 }

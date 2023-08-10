@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 @Slf4j
+@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 public class JwtRequestFilter extends OncePerRequestFilter {
 
 
@@ -32,7 +34,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private static final String Exclude_url="/api/test," +
             "/swagger/**,/v2/api-docs/**,/configuration/ui/**," +
             "/swagger-resources/**,/configuration/security/**," +
-            "/swagger-ui/**,/webjars/**,/swagger-ui.html";
+            "/swagger-ui/**,/webjars/**,/swagger-ui.html,"+"/ws-stomp/**";
 
 
     private static final String Exclude_post_url="/api/user,"+

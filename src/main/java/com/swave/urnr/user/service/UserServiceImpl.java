@@ -196,7 +196,7 @@ public class UserServiceImpl implements UserService {
         }
         User user =  userRepository.findById(id).get();
 
-        user.setPassword(encoder.encode(requestDto.getPassword()));
+//        user.setPassword(encoder.encode(requestDto.getPassword()));
         user.setDepartment(requestDto.getDepartment());
         user.setUsername(requestDto.getName());
 
@@ -258,4 +258,22 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
+
+        Long id = (Long) request.getAttribute("id");
+        if(!userRepository.findById(id).isPresent())
+        {
+            return ResponseEntity.status(404).body("User doesn't exist");
+        }
+        User user =  userRepository.findById(id).get();
+
+        user.setPassword(encoder.encode(requestDto.getPassword()));
+
+        log.info("Final : " + user);
+        userRepository.save(user);
+        userRepository.flush();
+
+        return ResponseEntity.status(204).body("Updated User data");
+    }
 }
