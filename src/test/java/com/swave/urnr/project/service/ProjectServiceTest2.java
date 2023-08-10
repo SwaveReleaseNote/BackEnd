@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class ProjectServiceTest {
+class ProjectServiceTest2 {
 
     @Autowired
     ProjectService projectService;
@@ -130,14 +130,8 @@ class ProjectServiceTest {
     @Test
     @Transactional
     void createProject() {
-        User user = User.builder()
-                .email("test@gmail.com")
-                .name("joe")
-                .password("1q2w3e4r5t")
-                .provider("local")
-                .build();
-        userRepository.saveAndFlush(user);
-
+        //테스트 코드는 무언가를 받을 필요가 없나?
+        System.out.println("시작");
         ProjectCreateRequestDTO projectCreateRequestDTO = ProjectCreateRequestDTO.builder()
                 .projectName("SwaveForm")
                 .description("굳잡")
@@ -148,25 +142,12 @@ class ProjectServiceTest {
                 add(2L);
                 add(3L);
                 add(4L);
-
             }
         };
-        //List<Long> users = new ArrayList<>();
         projectCreateRequestDTO.setUsers(users);
 
+        //projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
-        request.setAttribute("id",user.getId());
-
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
-
-        System.out.println(request.getAttribute("id"));
-
-        System.out.println(request.getAttribute("username"));
-
-        System.out.println(projectCreateRequestDTO.getProjectName());
-        System.out.println(projectCreateRequestDTO.getDescription());
-        System.out.println(projectCreateRequestDTO.getUserId());
-        System.out.println(projectCreateRequestDTO.getUsers());
 
         HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
 

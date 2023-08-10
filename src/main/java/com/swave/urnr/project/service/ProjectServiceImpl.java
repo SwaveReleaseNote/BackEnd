@@ -33,7 +33,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 
-;import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
+import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
 import static com.swave.urnr.util.type.UserRole.Manager;
 import static com.swave.urnr.util.type.UserRole.None;
 
@@ -63,7 +63,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .build();
 
         log.info(request.toString());
-        log.info(project.getDescription().toString());
+        log.info(project.getDescription());
 
         //유저리스트 받아서 설정
         //project.setUserInProjectList(new ArrayList<>()); //빌더에 넣어보기
@@ -71,7 +71,7 @@ public class ProjectServiceImpl implements ProjectService {
         //projectRequestDto.getUserId()
         User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
         //user대신에 명확한 변수명 사용 manager?
-        
+
         //UserInProject.setUserInProject(new ArrayList<>());
         //builder를 이용한 userInProject 생성
 
@@ -85,6 +85,10 @@ public class ProjectServiceImpl implements ProjectService {
 
         //리스트형식에서 삽입을 위한 list생성 빈칸생성은 아닌듯
         //유저의 프로젝트 리스트를 가져와서 추가해서 넣어줌 기존에 유저가 가입된 프로젝트 리스트
+
+        System.out.println("안녕"+user.getUserInProjectList());
+        System.out.println("안녕"+user.getId());
+        log.info(user.getUserInProjectList().toString());
         ArrayList<UserInProject> list = new ArrayList<>(user.getUserInProjectList());
         //리스트는 리스트로
 
@@ -103,7 +107,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         UserInProject saveUserInProject = userInProjectRepository.save(userInProject);
 
-        if(projectCreateRequestDto.getUsers().size()>=1) {
+        if(!projectCreateRequestDto.getUsers().isEmpty()) {
             for (Long userId : projectCreateRequestDto.getUsers()) {
                 //유저인 프로젝트 생성
                 UserInProject userInProject1 = new UserInProject();
@@ -293,7 +297,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         project.setName(projectUpdateRequestDto.getName());
         project.setDescription(projectUpdateRequestDto.getDescription());
-        
+
         //dto에 유저 추가하면 되는데 관리자를 개발자리스트나 구독자에선 빼야함
 
         //project.setUserInProjectList(projectUpdateRequestDto.getUsers());
@@ -403,5 +407,4 @@ public class ProjectServiceImpl implements ProjectService {
 
 
 }
-
 
