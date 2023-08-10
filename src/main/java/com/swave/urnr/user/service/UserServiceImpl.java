@@ -14,10 +14,8 @@ import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.user.requestdto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -174,6 +172,7 @@ public class UserServiceImpl implements UserService {
         return new ManagerResponseDTO(user.getId(),user.getUsername(),user.getDepartment(),result);
 
     }
+
 
 
     @Override

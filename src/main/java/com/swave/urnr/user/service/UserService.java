@@ -19,7 +19,8 @@ public interface UserService {
     ResponseEntity<String> updateUser(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto);
 
     ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, UserDepartmentRequestDTO requestDto) ;
- 
+
+
     ResponseEntity<String> getTokenByLogin(UserLoginServerRequestDTO requestDto) ;
 
     ResponseEntity<String> setTemporaryPassword(UserValidateEmailDTO request) ;

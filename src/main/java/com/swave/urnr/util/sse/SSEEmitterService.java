@@ -9,8 +9,9 @@ public interface SSEEmitterService {
 
     SseEmitter getEmitter(String id);
 
-    void publishMessageToSseEmitter(@RequestBody String message);
+    void publishMessageToAllSseEmitter(@RequestBody String message);
 
 
-    void publishMessageToCetrainEmitter(String message, String uid);
+
+    void publishMessageToSpeficEmitter(String message, String uid);
 }

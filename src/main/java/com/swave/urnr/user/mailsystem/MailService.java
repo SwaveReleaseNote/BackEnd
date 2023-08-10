@@ -4,7 +4,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 
-public interface MailServiceInter {
+public interface MailService {
     // 메일 내용 작성
     MimeMessage createMessage(String to) throws MessagingException, UnsupportedEncodingException;
 

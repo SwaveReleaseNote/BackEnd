@@ -1,11 +1,9 @@
 package com.swave.urnr.user.mailsystem;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -14,7 +12,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
 @Service
-public class MailSendImp implements MailServiceInter {
+public class MailSendImp implements MailService {
 
     @Autowired
     JavaMailSender emailsender; // Bean 등록해둔 MailConfig 를 emailsender 라는 이름으로 autowired

@@ -66,7 +66,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         else if(request.getHeader("Authorization") == null) {
             log.info("error: No Authorization token on header for URI " + request.getRequestURI());
             request.setAttribute(JwtProperties.HEADER_STRING, "Authorization 이 없습니다.");
-            throw new RuntimeException("No authorization");
+            throw new RuntimeException("No authorization.  token name were " +request.getRequestURI());
         }
         // header 가 정상적인 형식인지 확인
         if(jwtHeader == null || !jwtHeader.startsWith(JwtProperties.TOKEN_PREFIX)) {

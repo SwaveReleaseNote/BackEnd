@@ -25,12 +25,26 @@ import java.util.*;
 @Slf4j
 @EnableTransactionManagement
 public class KafkaServiceImpl implements  KafkaService{
-
-    /*
-    To prevent error before implementation to cloud, temporary  disable Kafka service.
-    It will disappear after fully imported to cloud server during our project, so everything is ok for now.
-     */
-
+//    @Override
+//    public void produceMessage(NotificationDTO notificationDTO, String topic) {
+//
+//    }
+//
+//    @Override
+//    public List<String> getMessagesFromKafkaTopic(String topic, int n) {
+//        return null;
+//    }
+//
+//    @Override
+//    public String createTopic(String topicName) {
+//        return null;
+//    }
+//
+//    @Override
+//    public List<String> getMessagesFromKafkaTopicFirst(String topic) {
+//        return null;
+//    }
+//
 
     @Override
     public String createTopic(String topicName) {
