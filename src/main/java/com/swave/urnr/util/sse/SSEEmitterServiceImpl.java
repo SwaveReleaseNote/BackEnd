@@ -23,12 +23,11 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
 
     private static final Map<String, SseEmitter> CLIENTS = new ConcurrentHashMap<>();
 
-    private final UserService userService;
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Override
-    public  SseEmitter subscribeEmitter(String id, String firstMessage){
+    public  SseEmitter subscribeEmitter(String id, String message){
 
 
         log.info("SubscribeEmitter : {} "+id);
@@ -40,7 +39,10 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
         emitter.onTimeout(() -> CLIENTS.remove(id));
         emitter.onCompletion(() -> CLIENTS.remove(id));
         try {
-            emitter.send("data: " +firstMessage+ "\n\n",MediaType.TEXT_EVENT_STREAM);
+
+            String jsonMsg = objectMapper.writeValueAsString(message);
+            SSEDataDTO sseDataDTO = new SSEDataDTO(jsonMsg, SSETypeEnum.TOKEN);
+            emitter.send(sseDataDTO, MediaType.APPLICATION_JSON);
         } catch (Exception e) {
             log.warn("disconnected id : {}", id);
         }
@@ -61,7 +63,10 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
         emitter.onTimeout(() -> CLIENTS.remove(id));
         emitter.onCompletion(() -> CLIENTS.remove(id));
         try {
-            emitter.send("data: Emitter started on getEmitter!\n\n",MediaType.TEXT_EVENT_STREAM);
+
+            String jsonMsg = objectMapper.writeValueAsString("Token already distributed");
+            SSEDataDTO sseDataDTO = new SSEDataDTO(jsonMsg, SSETypeEnum.NORMAL);
+            emitter.send(sseDataDTO, MediaType.APPLICATION_JSON);
         } catch (Exception e) {
             log.warn("disconnected id : {}", id);
         }
@@ -78,8 +83,7 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
 
         try {
             // JSON 객체를 문자열로 변환
-            String jsonMsg = objectMapper.writeValueAsString(message);
-            SSEDataDTO sseDataDTO = new SSEDataDTO(jsonMsg, SSETypeEnum.TOKEN);
+            SSEDataDTO sseDataDTO = new SSEDataDTO(message, SSETypeEnum.TOKEN);
             log.info("DATA : {}",sseDataDTO.getData());
 
             CLIENTS.forEach((id, emitter) -> {

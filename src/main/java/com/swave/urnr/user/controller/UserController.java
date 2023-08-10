@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -88,12 +89,12 @@ public class UserController {
 
     @Operation(summary="이메일 로그인을 통한 토큰 반환", description="입력된 이메일 계정과 비밀번호가 동일하면 토큰값을 반환합니다.")
     @PostMapping("/user/login-by-email")
-    public  ResponseEntity<String> getTokenByLogin( @RequestBody UserLoginServerRequestDTO requestDto) throws UserNotFoundException {
+    public  ResponseEntity<SseEmitter> getTokenByLogin(@RequestBody UserLoginServerRequestDTO requestDto) throws UserNotFoundException {
         return userService.getTokenByLogin(requestDto);
     }
     @Operation(summary="oAuth 로그인을 통한 토큰 반환", description="Oauth 기능을 기반으로 사용자의 계정을 로그인합니다.")
     @PostMapping("/user/login-by-oauth")
-    public ResponseEntity getTokenByOauth(@RequestParam("code") String code, @RequestParam("provider") String provider) {
+    public ResponseEntity<SseEmitter> getTokenByOauth(@RequestParam("code") String code, @RequestParam("provider") String provider) {
         return userService.getTokenByOauth(code, provider);
     }
     @Operation(summary="사용자 로그인 여부 확인", description="현재 사용자가 로그인하고 있으면 true 아니면 false가 나옵니다")
@@ -105,8 +106,9 @@ public class UserController {
 
     @Operation(summary="샘플 계정 생성", description="(임시 프로토타입) 임시 사용자 계정 6개를 생성합니다. ")
     @PostMapping("/user/sample")
-    public void createSampleAccount(){
+    public void createSampleAccount() {
         userService.createSampleAccount();
+    }
 
     @Operation(summary="사용자 password 변경", description="사용자 password 변경합니다.")
     @PatchMapping("/user/password")

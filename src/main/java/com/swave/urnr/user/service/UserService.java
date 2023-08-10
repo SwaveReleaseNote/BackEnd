@@ -6,6 +6,7 @@ import com.swave.urnr.user.responsedto.UserEntityResponseDTO;
 import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.requestdto.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,7 +22,7 @@ public interface UserService {
     ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, UserDepartmentRequestDTO requestDto) ;
 
 
-    ResponseEntity<String> getTokenByLogin(UserLoginServerRequestDTO requestDto) ;
+    ResponseEntity<SseEmitter> getTokenByLogin(UserLoginServerRequestDTO requestDto) ;
 
     ResponseEntity<String> setTemporaryPassword(UserValidateEmailDTO request) ;
 
@@ -31,7 +32,7 @@ public interface UserService {
 
     ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request) throws RuntimeException;
 
-    ResponseEntity getTokenByOauth(String code, String provider) ;
+    ResponseEntity<SseEmitter> getTokenByOauth(String code, String provider) ;
 
     void checkInvalidToken(HttpServletRequest request) ;
 
@@ -40,8 +41,6 @@ public interface UserService {
     boolean updateLoginState(HttpServletRequest request, boolean requestDto) throws UserNotFoundException;
 
     void createSampleAccount();
-
-    boolean updateLoginState(HttpServletRequest request, boolean loginState) throws UserNotFoundException;
 
     ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) ;
 

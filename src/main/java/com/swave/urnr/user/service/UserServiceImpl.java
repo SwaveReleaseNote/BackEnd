@@ -12,6 +12,7 @@ import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.mailsystem.MailSendImp;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.user.requestdto.*;
+import com.swave.urnr.util.sse.SSEEmitterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,9 +42,12 @@ public class UserServiceImpl implements UserService {
     private final TokenService tokenService;
     private final KafkaService kafkaService;
 
+    private final SSEEmitterService sseEmitterService;
+
     public PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Override
+    @Transactional
     public ResponseEntity<UserEntityResponseDTO> createAccountByEmail(UserRegisterRequestDTO request) {
 
 
@@ -78,6 +84,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, UserDepartmentRequestDTO requestDto)  {
 
         Long id = (Long) request.getAttribute("id");
@@ -100,6 +107,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<String> getValidationCode(UserValidateEmailDTO request)  {
 
         String email = request.getEmail();
@@ -113,6 +121,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponseDTO getUser(HttpServletRequest request)  {
 
         Long userCode = (Long) request.getAttribute("id");
@@ -130,6 +139,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request)  {
         UserResponseDTO user =null;
         try {
@@ -158,6 +168,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ManagerResponseDTO getUserInformationList(HttpServletRequest request) {
 
         Long userCode = (Long) request.getAttribute("id");
@@ -176,7 +187,9 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public ResponseEntity<String> getTokenByLogin(UserLoginServerRequestDTO requestDto)  {
+    @Transactional(readOnly = true)
+    public ResponseEntity<SseEmitter> getTokenByLogin(UserLoginServerRequestDTO requestDto)  {
+
 
         String email = requestDto.getEmail();
         Optional<User> optionalUser = userRepository.findByEmail(email);
@@ -184,23 +197,37 @@ public class UserServiceImpl implements UserService {
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (encoder.matches( requestDto.getPassword(),user.getPassword())){
-                return  ResponseEntity.ok().body(tokenService.createToken(user));
+
+                String token = tokenService.createToken(user);
+                log.info("TOKEN AQUIRED : {}", token);
+                log.info("UI AQUIRED : {}", user.getId().toString());
+                SseEmitter sseEmitter = sseEmitterService.subscribeEmitter(String.valueOf(user.getId()), token);
+
+                log.info(" SSE AQUIRED? ");
+
+                return  ResponseEntity.ok().body(sseEmitter);
             }
         }
 
-        return ResponseEntity.status(409).body("Invalid Information");
+        return ResponseEntity.status(409).body(new SseEmitter() );
     }
 
     @Override
-    public ResponseEntity getTokenByOauth(String code, String provider) {
+    @Transactional
+    public ResponseEntity<SseEmitter> getTokenByOauth(String code, String provider) {
         OauthToken oauthToken = oAuthService.getOauthAccessToken(code, provider);
         String jwtToken = oAuthService.getTokenByOauth(oauthToken.getAccess_token(), provider);
         HttpHeaders headers = new HttpHeaders();
         headers.add(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + jwtToken);
-        return ResponseEntity.ok().headers(headers).body("\"success\"");
+
+
+        SseEmitter sseEmitter = sseEmitterService.subscribeEmitter(String.valueOf("UserID need to here"), jwtToken);
+
+        return  ResponseEntity.ok().body(sseEmitter);
     }
 
     @Override
+    @Transactional
     public ResponseEntity<String> updateUser(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
         Long id = (Long) request.getAttribute("id");
@@ -223,6 +250,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<String> setTemporaryPassword(UserValidateEmailDTO request)  {
 
         String email = request.getEmail();
@@ -243,6 +271,7 @@ public class UserServiceImpl implements UserService {
 
     }
     @Override
+    @Transactional
     public ResponseEntity<String> deleteUser(HttpServletRequest request)  {
         Long id = (Long) request.getAttribute("id");
         if(userRepository.findById(id).isPresent())
@@ -255,6 +284,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public boolean updateLoginState(HttpServletRequest request, boolean loginState)  {
         Long id = (Long) request.getAttribute("id");
         Optional<User> optionalUser = userRepository.findById(id);
@@ -277,12 +307,12 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-
+    @Transactional
     public void createSampleAccount() {
 
         User user = User.builder()
                 .email("rkdwnsgml@xptmxm.com")
-                .password(encoder.encode( "123456"))
+                .password(encoder.encode("123456"))
                 .name("강준희")
                 .provider("email")
                 .build();
@@ -290,7 +320,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         user = User.builder()
                 .email("rlarlgus@xptmxm.com")
-                .password(encoder.encode( "123456"))
+                .password(encoder.encode("123456"))
                 .name("김기현")
                 .provider("email")
                 .build();
@@ -299,7 +329,7 @@ public class UserServiceImpl implements UserService {
 
         user = User.builder()
                 .email("wjsrkdgns@xptmxm.com")
-                .password(encoder.encode( "admin"))
+                .password(encoder.encode("admin"))
                 .name("전강훈")
                 .provider("email")
                 .build();
@@ -308,7 +338,7 @@ public class UserServiceImpl implements UserService {
 
         user = User.builder()
                 .email("gkarjsdnr@xptmxm.com")
-                .password(encoder.encode( "admin"))
+                .password(encoder.encode("admin"))
                 .name("함건욱")
                 .provider("email")
                 .build();
@@ -318,7 +348,7 @@ public class UserServiceImpl implements UserService {
 
         user = User.builder()
                 .email("rlatjdrnr@xptmxm.com")
-                .password(encoder.encode( "admin"))
+                .password(encoder.encode("admin"))
                 .name("김성국")
                 .provider("email")
                 .build();
@@ -327,7 +357,7 @@ public class UserServiceImpl implements UserService {
 
         user = User.builder()
                 .email("dltmdtjq@xptmxm.com")
-                .password(encoder.encode( "admin"))
+                .password(encoder.encode("admin"))
                 .name("이승섭")
                 .provider("email")
                 .build();
@@ -352,9 +382,11 @@ public class UserServiceImpl implements UserService {
 
         userId = userRepository.findByEmail("gkarjsdnr@xptmxm.com").get().getId();
         kafkaService.createTopic(userId.toString());
+    }
 
 
     @Override
+    @Transactional
     public ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
         Long id = (Long) request.getAttribute("id");

@@ -34,10 +34,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private static final String Exclude_url="/api/test," +
             "/swagger/**,/v2/api-docs/**,/configuration/ui/**," +
             "/swagger-resources/**,/configuration/security/**," +
-
             "/swagger-ui/**,/webjars/**,/swagger-ui.html," +
             "/api/subscribe/**," + "/api/publish/**,"+
-            "/api/kafka/**,"+"/api/user/sample,"+
+            "/api/kafka/**,"+"/api/user/sample,/api/user/login**,"+
             "/api/sse/**,"+ "/favicon.ico**,"+
             "/swagger-ui/**,/webjars/**,/swagger-ui.html,"+"/ws-stomp/**";
 
