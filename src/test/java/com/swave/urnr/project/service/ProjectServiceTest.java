@@ -17,6 +17,7 @@ import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.user.requestdto.UserLoginServerRequestDTO;
 import com.swave.urnr.user.service.UserService;
 import com.swave.urnr.util.http.HttpResponse;
+import com.swave.urnr.util.type.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,24 +68,42 @@ class ProjectServiceTest {
 
     MockHttpServletRequest request;
 
+    User userTest1;
+    User userTest2;
+    User userTest3;
+    User userTest4;
+    User userTest5;
+
+
+
     @BeforeEach
+    @Transactional
     @DisplayName("사용자 등록")
     void setUp() throws UserNotFoundException {
 
 
-        User user = User.builder()
+        MockHttpSession httpSession = new MockHttpSession();
+        request = new MockHttpServletRequest();
+
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("릴리즈 노트 생성 테스트")
+    void createProject() {
+
+
+        userTest1 = User.builder()
                 .name("kang")
                 .email("admin@naver.com")
                 .provider("server")
                 .password("1234")
                 .build();
-        userRepository.save(user);
-
-        UserLoginServerRequestDTO userLoginServerRequestDTO =  new UserLoginServerRequestDTO(user.getEmail(),user.getPassword());
+        userRepository.save(userTest1);
 
         //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
 
-        User user2 = User.builder()
+        userTest2 = User.builder()
                 .name("kim")
                 .email("korea2@naver.com")
                 .provider("server")
@@ -91,45 +111,37 @@ class ProjectServiceTest {
                 .build();
 
 
-        User user3 = User.builder()
+        userTest3 = User.builder()
                 .name("jin")
                 .email("korea3@naver.com")
                 .provider("server")
                 .password("1233")
                 .build();
-        User user4 = User.builder()
+
+        userTest4 = User.builder()
                 .name("john")
                 .email("korea4@naver.com")
                 .provider("server")
                 .password("1234")
                 .build();
-        User user5 = User.builder()
+
+        userTest5 = User.builder()
                 .name("user5")
                 .email("korea5@naver.com")
                 .provider("server")
                 .password("1235")
                 .build();
 
-        userRepository.save(user2);
 
-        userRepository.save(user3);
+        userRepository.save(userTest2);
 
-        userRepository.save(user4);
+        userRepository.save(userTest3);
 
-        userRepository.save(user5);
+        userRepository.save(userTest4);
 
-        MockHttpSession httpSession = new MockHttpSession();
-        request = new MockHttpServletRequest();
-        request.setSession(httpSession);
-        request.setAttribute("id", 1L);
-        request.setAttribute("username", "kang");
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        userRepository.save(userTest5);
 
-    }
 
-    @Test
-    @Transactional
-    void createProject() {
         User user = User.builder()
                 .email("test@gmail.com")
                 .name("joe")
@@ -145,10 +157,9 @@ class ProjectServiceTest {
 
         List<Long> users = new ArrayList<>(){
             {
-                add(2L);
-                add(3L);
-                add(4L);
-
+                add(userTest1.getId());
+                add(userTest2.getId());
+                add(userTest3.getId());
             }
         };
         //List<Long> users = new ArrayList<>();
@@ -159,14 +170,8 @@ class ProjectServiceTest {
 
         projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
-        System.out.println(request.getAttribute("id"));
+        user.setUserInProjectList(new ArrayList<>());
 
-        System.out.println(request.getAttribute("username"));
-
-        System.out.println(projectCreateRequestDTO.getProjectName());
-        System.out.println(projectCreateRequestDTO.getDescription());
-        System.out.println(projectCreateRequestDTO.getUserId());
-        System.out.println(projectCreateRequestDTO.getUsers());
 
         HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
 
@@ -176,12 +181,26 @@ class ProjectServiceTest {
             String numberString = matcher.group(); // Extract the matched digits as a string
             long number = Long.parseLong(numberString); // Convert the string to an integer
 
-            Project project = projectRepository.findById(number).get();
+            Project project = projectRepository.findById(number).orElse(null);
             //ReleaseNote releaseNote = releaseNoteRepository.findById(Long.parseLong(httpResponse.getDescription().substring(18,21).replace(" ","").replace("C", ""))).orElse(null);
+            System.out.println(project.getUserInProjectList().get(0).getUser().getUsername());
+            System.out.println(project.getUserInProjectList().get(0).getRole());
+            System.out.println(project.getUserInProjectList().get(1).getUser().getUsername());
+            System.out.println(project.getUserInProjectList().get(1).getRole());
+            System.out.println(project.getUserInProjectList().get(2).getUser().getUsername());
+            System.out.println(project.getUserInProjectList().get(2).getRole());
+            System.out.println(project.getUserInProjectList().get(3).getUser().getUsername());
+            System.out.println(project.getUserInProjectList().get(3).getRole());
+            List<UserInProject> userInProjectList = project.getUserInProjectList();
 
             assertEquals(httpResponse.getDescription(),"Project Id "+number+" created");
             assertEquals(project.getName(),"SwaveForm");
             assertEquals(project.getDescription(),"굳잡");
+            assertEquals(project.getUserInProjectList().get(0).getUser().getId(),user.getId());
+            assertEquals(project.getUserInProjectList().get(1).getUser().getId(),userTest1.getId());
+            assertEquals(project.getUserInProjectList().get(2).getUser().getId(),userTest2.getId());
+            assertEquals(project.getUserInProjectList().get(3).getUser().getId(),userTest3.getId());
+            assertEquals(project.getUserInProjectList().get(2).getRole(), UserRole.Developer);
             //assertEquals(number,"8");
         }
 
@@ -192,6 +211,62 @@ class ProjectServiceTest {
     void loadProjectList() {
 
 
+        userTest1 = User.builder()
+                .name("kang")
+                .email("admin@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+        userRepository.save(userTest1);
+
+        //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
+
+        userTest2 = User.builder()
+                .name("kim")
+                .email("korea2@naver.com")
+                .provider("server")
+                .password("1232")
+                .build();
+
+
+        userTest3 = User.builder()
+                .name("jin")
+                .email("korea3@naver.com")
+                .provider("server")
+                .password("1233")
+                .build();
+
+        userTest4 = User.builder()
+                .name("john")
+                .email("korea4@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+
+        userTest5 = User.builder()
+                .name("user5")
+                .email("korea5@naver.com")
+                .provider("server")
+                .password("1235")
+                .build();
+
+
+        userRepository.save(userTest2);
+
+        userRepository.save(userTest3);
+
+        userRepository.save(userTest4);
+
+        userRepository.save(userTest5);
+        User user = User.builder()
+                .email("test@gmail.com")
+                .name("joe")
+                .password("1q2w3e4r5t")
+                .provider("local")
+                .build();
+        userRepository.saveAndFlush(user);
+
+
         System.out.println("시작");
         ProjectCreateRequestDTO projectCreateRequestDTO = ProjectCreateRequestDTO.builder()
                 .projectName("SwaveForm")
@@ -200,18 +275,25 @@ class ProjectServiceTest {
 
         List<Long> users = new ArrayList<>(){
             {
-                add(2L);
-                add(3L);
-                add(4L);
+                add(userTest1.getId());
+                add(userTest2.getId());
+                add(userTest3.getId());
             }
         };
+
+
         projectCreateRequestDTO.setUsers(users);
+
+
+        request.setAttribute("id",user.getId());
+
+        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
+
+        user.setUserInProjectList(new ArrayList<>());
 
         HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
 
         List<ProjectListResponseDTO> projectListResponseDTOList = projectService.loadProjectList(request);
-
-
 
 
         Pattern pattern = Pattern.compile("\\d+"); // Matches one or more digits
@@ -229,34 +311,239 @@ class ProjectServiceTest {
             //assertEquals(number,"8");
         }
 
-        assertEquals(projectListResponseDTOList.get(0).getName(),"가나");
-        assertEquals(projectListResponseDTOList.get(0).getDescription(),"안정");
-        assertEquals(projectListResponseDTOList.get(0).getId(),2L);
+
+        assertEquals(projectListResponseDTOList.get(0).getName(),"SwaveForm");
+        assertEquals(projectListResponseDTOList.get(0).getDescription(),"굳잡");
+
     }
 
     @Test
-    void loadProject() {
-        Long projectId = 3L;
-        ProjectContentResponseDTO projectContentResponseDTO =  projectService.loadProject(projectId);
+    void loadProject() throws NotAuthorizedException {
 
-        assertEquals(projectContentResponseDTO.getName(),"니거무라");
-        assertEquals(projectContentResponseDTO.getDescription(),"이거도");
-        assertEquals(projectContentResponseDTO.getId(),3L);
+
+        userTest1 = User.builder()
+                .name("kang")
+                .email("admin@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+        userRepository.save(userTest1);
+
+        //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
+
+        userTest2 = User.builder()
+                .name("kim")
+                .email("korea2@naver.com")
+                .provider("server")
+                .password("1232")
+                .build();
+
+
+        userTest3 = User.builder()
+                .name("jin")
+                .email("korea3@naver.com")
+                .provider("server")
+                .password("1233")
+                .build();
+
+        userTest4 = User.builder()
+                .name("john")
+                .email("korea4@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+
+        userTest5 = User.builder()
+                .name("user5")
+                .email("korea5@naver.com")
+                .provider("server")
+                .password("1235")
+                .build();
+
+
+        userRepository.save(userTest2);
+
+        userRepository.save(userTest3);
+
+        userRepository.save(userTest4);
+
+        userRepository.save(userTest5);
+
+        User user = User.builder()
+                .email("test@gmail.com")
+                .name("joe")
+                .password("1q2w3e4r5t")
+                .provider("local")
+                .build();
+        userRepository.saveAndFlush(user);
+
+
+        System.out.println("시작");
+        ProjectCreateRequestDTO projectCreateRequestDTO = ProjectCreateRequestDTO.builder()
+                .projectName("SwaveForm")
+                .description("굳잡")
+                .build();
+
+        List<Long> users = new ArrayList<>(){
+            {
+                add(userTest1.getId());
+                add(userTest2.getId());
+                add(userTest3.getId());
+            }
+        };
+
+
+        projectCreateRequestDTO.setUsers(users);
+
+
+        request.setAttribute("id",user.getId());
+
+        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
+
+        user.setUserInProjectList(new ArrayList<>());
+
+        HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
+
+
+        Pattern pattern = Pattern.compile("\\d+"); // Matches one or more digits
+        Matcher matcher = pattern.matcher(httpResponse.getDescription());
+        long number = 0;
+        if (matcher.find()) {
+            String numberString = matcher.group(); // Extract the matched digits as a string
+            number = Long.parseLong(numberString); // Convert the string to an integer
+
+            Project project = projectRepository.findById(number).get();
+            //ReleaseNote releaseNote = releaseNoteRepository.findById(Long.parseLong(httpResponse.getDescription().substring(18,21).replace(" ","").replace("C", ""))).orElse(null);
+
+            assertEquals(httpResponse.getDescription(),"Project Id "+number+" created");
+            assertEquals(project.getName(),"SwaveForm");
+            assertEquals(project.getDescription(),"굳잡");
+            //assertEquals(number,"8");
+        }
+
+        ProjectContentResponseDTO projectContentResponseDTO =  projectService.loadProject(request,number);
+
+        assertEquals(projectContentResponseDTO.getName(),"SwaveForm");
+        assertEquals(projectContentResponseDTO.getDescription(),"굳잡");
+        assertEquals(projectContentResponseDTO.getId(),number);
     }
 
     @Test
     void updateProject() throws NotAuthorizedException {
-        Long projectId = 3L;
+
+
+        userTest1 = User.builder()
+                .name("kang")
+                .email("admin@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+        userRepository.save(userTest1);
+
+        //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
+
+        userTest2 = User.builder()
+                .name("kim")
+                .email("korea2@naver.com")
+                .provider("server")
+                .password("1232")
+                .build();
+
+
+        userTest3 = User.builder()
+                .name("jin")
+                .email("korea3@naver.com")
+                .provider("server")
+                .password("1233")
+                .build();
+
+        userTest4 = User.builder()
+                .name("john")
+                .email("korea4@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+
+        userTest5 = User.builder()
+                .name("user5")
+                .email("korea5@naver.com")
+                .provider("server")
+                .password("1235")
+                .build();
+
+
+        userRepository.save(userTest2);
+
+        userRepository.save(userTest3);
+
+        userRepository.save(userTest4);
+
+        userRepository.save(userTest5);
+        User user = User.builder()
+                .email("test@gmail.com")
+                .name("joe")
+                .password("1q2w3e4r5t")
+                .provider("local")
+                .build();
+        userRepository.saveAndFlush(user);
+
+
+        System.out.println("시작");
+        ProjectCreateRequestDTO projectCreateRequestDTO = ProjectCreateRequestDTO.builder()
+                .projectName("SwaveForm")
+                .description("굳잡")
+                .build();
+
+        List<Long> users = new ArrayList<>(){
+            {
+                add(userTest1.getId());
+                add(userTest2.getId());
+                add(userTest3.getId());
+            }
+        };
+
+
+        projectCreateRequestDTO.setUsers(users);
+
+
+        request.setAttribute("id",user.getId());
+
+        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
+
+        user.setUserInProjectList(new ArrayList<>());
+
+        HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
+
+        List<ProjectListResponseDTO> projectListResponseDTOList = projectService.loadProjectList(request);
+
+
+        Pattern pattern = Pattern.compile("\\d+"); // Matches one or more digits
+        Matcher matcher = pattern.matcher(httpResponse.getDescription());
+
+        long number=0;
+
+        if (matcher.find()) {
+            String numberString = matcher.group(); // Extract the matched digits as a string
+            number = Long.parseLong(numberString); // Convert the string to an integer
+
+            Project project = projectRepository.findById(number).get();
+            //ReleaseNote releaseNote = releaseNoteRepository.findById(Long.parseLong(httpResponse.getDescription().substring(18,21).replace(" ","").replace("C", ""))).orElse(null);
+
+            assertEquals(httpResponse.getDescription(),"Project Id "+number+" created");
+            assertEquals(project.getName(),"SwaveForm");
+            assertEquals(project.getDescription(),"굳잡");
+            //assertEquals(number,"8");
+        }
+        Long projectId = number;
 
         List<Long> deleteUsers = new ArrayList<>(){
             {
-                add(4L);
+                add(userTest4.getId());
             }
         };
         List<Long> updateUsers = new ArrayList<>(){
             {
-
-                add(66L);
+                add(userTest5.getId());
             }
         };
 
@@ -281,9 +568,114 @@ class ProjectServiceTest {
     @Test
     void deleteProject() throws NotAuthorizedException {
 
-        Long projectId = 3L;
-        HttpResponse httpResponse = projectService.deleteProject(request, projectId);
-        assertEquals(httpResponse.getDescription(),"Project Id 3 deleted");
+        userTest1 = User.builder()
+                .name("kang")
+                .email("admin@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+        userRepository.save(userTest1);
+
+        //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
+
+        userTest2 = User.builder()
+                .name("kim")
+                .email("korea2@naver.com")
+                .provider("server")
+                .password("1232")
+                .build();
+
+
+        userTest3 = User.builder()
+                .name("jin")
+                .email("korea3@naver.com")
+                .provider("server")
+                .password("1233")
+                .build();
+
+        userTest4 = User.builder()
+                .name("john")
+                .email("korea4@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+
+        userTest5 = User.builder()
+                .name("user5")
+                .email("korea5@naver.com")
+                .provider("server")
+                .password("1235")
+                .build();
+
+
+        userRepository.save(userTest2);
+
+        userRepository.save(userTest3);
+
+        userRepository.save(userTest4);
+
+        userRepository.save(userTest5);
+        User user = User.builder()
+                .email("test@gmail.com")
+                .name("joe")
+                .password("1q2w3e4r5t")
+                .provider("local")
+                .build();
+        userRepository.saveAndFlush(user);
+
+
+        System.out.println("시작");
+        ProjectCreateRequestDTO projectCreateRequestDTO = ProjectCreateRequestDTO.builder()
+                .projectName("SwaveForm")
+                .description("굳잡")
+                .build();
+
+        List<Long> users = new ArrayList<>(){
+            {
+                add(userTest1.getId());
+                add(userTest2.getId());
+                add(userTest3.getId());
+            }
+        };
+
+
+        projectCreateRequestDTO.setUsers(users);
+
+
+        request.setAttribute("id",user.getId());
+
+        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
+
+        user.setUserInProjectList(new ArrayList<>());
+
+        HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
+
+        List<ProjectListResponseDTO> projectListResponseDTOList = projectService.loadProjectList(request);
+
+
+        Pattern pattern = Pattern.compile("\\d+"); // Matches one or more digits
+        Matcher matcher = pattern.matcher(httpResponse.getDescription());
+
+        long number=0;
+
+        if (matcher.find()) {
+            String numberString = matcher.group(); // Extract the matched digits as a string
+            number = Long.parseLong(numberString); // Convert the string to an integer
+
+            Project project = projectRepository.findById(number).get();
+            //ReleaseNote releaseNote = releaseNoteRepository.findById(Long.parseLong(httpResponse.getDescription().substring(18,21).replace(" ","").replace("C", ""))).orElse(null);
+
+            assertEquals(httpResponse.getDescription(),"Project Id "+number+" created");
+            assertEquals(project.getName(),"SwaveForm");
+            assertEquals(project.getDescription(),"굳잡");
+            //assertEquals(number,"8");
+        }
+        Long projectId = number;
+
+        projectService.deleteProject(request, projectId);
+        Project project = projectRepository.findById(projectId).orElse(null);
+
+        assertEquals(project,null);
 
     }
 }

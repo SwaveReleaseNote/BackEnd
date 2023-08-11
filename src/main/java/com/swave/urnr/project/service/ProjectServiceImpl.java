@@ -114,20 +114,20 @@ public class ProjectServiceImpl implements ProjectService {
                 userInProject1.setRole(UserRole.Developer);
                 userInProject1.setProject(project);
 
-                User user1 = userRepository.findById(userId).get();
+                User user1 = userRepository.findById(userId).orElse(null);
                 //User user1 = userRepository.findById(userInProject1.getId()).get();
                 userInProject1.setUser(user1);
                 userInProjectRepository.save(userInProject1);
 
                 //유저생성
-                List<UserInProject> userInProjectList = user.getUserInProjectList();
+                /*List<UserInProject> userInProjectList = user.getUserInProjectList();
                 userInProjectList.add(userInProject);
-                user.setUserInProjectList(userInProjectList);
-                userRepository.flush();
+                user.setUserInProjectList(userInProjectList);*/
 
+                userRepository.flush();
                 userInProjectRepository.flush();
 
-                project.getUserInProjectList().add(userInProject);
+                project.getUserInProjectList().add(userInProject1);
             }
         }
         //저장하고
@@ -175,7 +175,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProjectContentResponseDTO loadProject(Long projectId) {
+    public ProjectContentResponseDTO loadProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
+
+        UserRole role = getRole(request, projectId);
+        if (role == None) {
+            throw new NotAuthorizedException("해당 프로젝트에 접근할 수 없습니다.");
+        }
 
         Project project = projectRepository.findById(projectId).get();
         ProjectContentResponseDTO getproject = ProjectContentResponseDTO.builder()
