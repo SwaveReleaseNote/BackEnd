@@ -19,7 +19,7 @@ import java.util.List;
 public class ReleaseNoteCreateRequestDTO {
     @ApiModelProperty(value="릴리즈 노트 버전", example = "1.0.0", required = true)
     private String version;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     @ApiModelProperty(value="릴리즈 날짜", example = "2023-07-08", required = true)
     private Date releaseDate;
     @ApiModelProperty(value="노트 블럭 리스트", required = true)
