@@ -209,7 +209,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        return ResponseEntity.status(409).body(new SseEmitter() );
+        return ResponseEntity.status(409).body(null);
     }
 
     @Override

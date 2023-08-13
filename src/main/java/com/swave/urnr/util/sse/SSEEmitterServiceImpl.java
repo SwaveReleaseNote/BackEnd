@@ -39,7 +39,8 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
         try {
 
             String jsonMsg = objectMapper.writeValueAsString(message);
-            SSEDataDTO sseDataDTO = new SSEDataDTO(jsonMsg, SSETypeEnum.TOKEN);
+            log.info("id : {} TEMPORARY VALUE :  {}  Before message : {}",id, jsonMsg, message);
+            SSEDataDTO sseDataDTO = new SSEDataDTO(message, SSETypeEnum.TOKEN);
             emitter.send(sseDataDTO, MediaType.APPLICATION_JSON);
         } catch (Exception e) {
             log.warn("disconnected id : {}", id);
@@ -72,8 +73,6 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
         log.info("EV on getEmitter : "+String.valueOf(CLIENTS.containsKey(id)));
         return emitter;
     }
-
-
 
     @Override
     public SseEmitter getEmitterByHTTP(HttpServletRequest request){
@@ -138,6 +137,8 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
         log.info("PV : "+uid);
         log.info("MSG : "+message);
             try {
+
+                log.info("id : {} TEMPORARY VALUE :  {}  Before message : {}",uid, message, message);
                 emitter.send(sseDataDTO, MediaType.APPLICATION_JSON);
             } catch (Exception e) {
                 deadIds.add(uid);

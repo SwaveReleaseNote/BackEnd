@@ -98,13 +98,13 @@ public class UserController {
         return userService.getTokenByOauth(code, provider);
     }
     @Operation(summary="사용자 로그인 여부 확인", description="현재 사용자가 로그인하고 있으면 true 아니면 false가 나옵니다")
-    @PatchMapping("/user/status")
+    @PatchMapping("ㅣ/user/status")
     public boolean updateStatus(HttpServletRequest request,  @RequestBody Map<String, Object> requestBody) throws UserNotFoundException {
         return userService.updateLoginState(request, (Boolean) requestBody.get("loginState"));
     }
 
 
-    @Operation(summary="샘플 계정 생성", description="(임시 프로토타입) 임시 사용자 계정 6개를 생성합니다. ")
+    @Operation(summary="샘플 계정 생성", description="(테스트 전용 코드) 임시 사용자 계정 6개를 생성합니다. ")
     @PostMapping("/user/sample")
     public void createSampleAccount() {
         userService.createSampleAccount();
