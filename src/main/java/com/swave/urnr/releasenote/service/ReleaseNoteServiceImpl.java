@@ -12,6 +12,8 @@ import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.repository.UserInProjectRepository;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.util.http.HttpResponse;
+import com.swave.urnr.util.kafka.KafkaService;
+import com.swave.urnr.util.sse.SSEEmitterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -43,6 +45,10 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
     private final UserRepository userRepository;
     private final UserInProjectRepository userInProjectRepository;
 
+    private final SSEEmitterService sseEmitterService;
+
+    private final KafkaService kafkaService;
+
 
     @Override
     @Transactional
@@ -70,6 +76,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
         releaseNoteRepository.save(releaseNote);
 
 
+
         StringBuilder content = new StringBuilder(new String());
         List<NoteBlock> noteBlockList = new ArrayList<>();
 
@@ -95,6 +102,12 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
         //releaseNote.setSummary(ChatGPTResultDTO.getText());
 
         releaseNoteRepository.flush();
+
+        /*
+        TODO :  Project 모든 유저의 kafka topic에 메세지 발행 / 이후 Listener가 감지하여 해당 유저들 emitter에 알림설정.
+         */
+
+
 
         return HttpResponse.builder()
                 .message("Release Note Created")

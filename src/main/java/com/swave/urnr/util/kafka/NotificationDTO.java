@@ -16,6 +16,6 @@ public class NotificationDTO {
     private Date date;
     private String content;
 
-    private long id;
+    private long releaseNoteId;
 
 }

@@ -46,7 +46,7 @@ public class KafkaController {
     }
 
     @GetMapping("/get-topic-new/{topicName}")
-    public List<String> getMessageFromTopicFirst(@PathVariable String topicName) {
+    public List<String> getMessageFromTopicNew(@PathVariable String topicName) {
         return kafkaService.getNewMessagesFromKafkaTopic(topicName);
     }
 

@@ -53,6 +53,10 @@ public class User {
     private List<Comment> commentList;
 
 
+    public void hardDelete(EntityManager entityManager) {
+        entityManager.remove(this);
+    }
+
     @Builder
     public User(String email, String password, String name, String provider) {
         this.email = email;

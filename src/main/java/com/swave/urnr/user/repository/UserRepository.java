@@ -4,7 +4,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.responsedto.UserListResponseDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long>  {
     User findByEmailAndProvider(String email, String provider);
 
 
+    @Modifying
+    @Query("DELETE from User where id = :userId")
+    void hardDeleteById(@Param("userId") Long userId);
 }

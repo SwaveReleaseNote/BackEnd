@@ -322,7 +322,7 @@ public class UserServiceImpl implements UserService {
 
         String email = "rkdwnsgml@xptmxm.com";
         if(userRepository.findByEmail(email).isPresent()){
-            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.hardDeleteById(userRepository.findByEmail(email).get().getId());
             userRepository.flush();
         }
 
@@ -337,7 +337,7 @@ public class UserServiceImpl implements UserService {
 
         email = "rlarlgus@xptmxm.com";
         if(userRepository.findByEmail(email).isPresent()){
-            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.hardDeleteById(userRepository.findByEmail(email).get().getId());
             userRepository.flush();
         }
 
@@ -352,7 +352,7 @@ public class UserServiceImpl implements UserService {
 
         email = "wjsrkdgns@xptmxm.com";
         if(userRepository.findByEmail(email).isPresent()){
-            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.hardDeleteById(userRepository.findByEmail(email).get().getId());
             userRepository.flush();
         }
 
@@ -369,7 +369,7 @@ public class UserServiceImpl implements UserService {
 
         email = "gkarjsdnr@xptmxm.com";
         if(userRepository.findByEmail(email).isPresent()){
-            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.hardDeleteById(userRepository.findByEmail(email).get().getId());
             userRepository.flush();
         }
 
@@ -386,7 +386,7 @@ public class UserServiceImpl implements UserService {
 
         email = "rlatjdrnr@xptmxm.com";
         if(userRepository.findByEmail(email).isPresent()){
-            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.hardDeleteById(userRepository.findByEmail(email).get().getId());
             userRepository.flush();
         }
         userRepository.save(user);
@@ -402,29 +402,12 @@ public class UserServiceImpl implements UserService {
 
         email = "dltmdtjq@xptmxm.com";
         if(userRepository.findByEmail(email).isPresent()){
-            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.hardDeleteById(userRepository.findByEmail(email).get().getId());
             userRepository.flush();
         }
         userRepository.save(user);
         userRepository.flush();
 
-        Long userId = userRepository.findByEmail("rkdwnsgml@xptmxm.com").get().getId();
-        kafkaService.createTopic(userId.toString());
-
-        userId = userRepository.findByEmail("rlarlgus@xptmxm.com").get().getId();
-        kafkaService.createTopic(userId.toString());
-
-        userId = userRepository.findByEmail("rlatjdrnr@xptmxm.com").get().getId();
-        kafkaService.createTopic(userId.toString());
-
-        userId = userRepository.findByEmail("wjsrkdgns@xptmxm.com").get().getId();
-        kafkaService.createTopic(userId.toString());
-
-        userId = userRepository.findByEmail("dltmdtjq@xptmxm.com").get().getId();
-        kafkaService.createTopic(userId.toString());
-
-        userId = userRepository.findByEmail("gkarjsdnr@xptmxm.com").get().getId();
-        kafkaService.createTopic(userId.toString());
     }
 
 
@@ -434,22 +417,22 @@ public class UserServiceImpl implements UserService {
 
 
         Long userId = userRepository.findByEmail("rkdwnsgml@xptmxm.com").get().getId();
-        userRepository.deleteById(userId);
+        userRepository.hardDeleteById(userId);
 
         userId = userRepository.findByEmail("rlarlgus@xptmxm.com").get().getId();
-        userRepository.deleteById(userId);
+        userRepository.hardDeleteById(userId);
 
         userId = userRepository.findByEmail("rlatjdrnr@xptmxm.com").get().getId();
-        userRepository.deleteById(userId);
+        userRepository.hardDeleteById(userId);
 
         userId = userRepository.findByEmail("wjsrkdgns@xptmxm.com").get().getId();
-        userRepository.deleteById(userId);
+        userRepository.hardDeleteById(userId);
 
         userId = userRepository.findByEmail("dltmdtjq@xptmxm.com").get().getId();
-        userRepository.deleteById(userId);
+        userRepository.hardDeleteById(userId);
 
         userId = userRepository.findByEmail("gkarjsdnr@xptmxm.com").get().getId();
-        userRepository.deleteById(userId);
+        userRepository.hardDeleteById(userId);
     }
 
 
