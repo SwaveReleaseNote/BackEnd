@@ -391,6 +391,8 @@ public class ProjectServiceImpl implements ProjectService {
         return projectSearchResultListResponseDTO;
     }
 
+
+
     @Override
     @Transactional(readOnly = true)
     public List<ProjectUserCheckDTO> checkUser(Long projectId) {

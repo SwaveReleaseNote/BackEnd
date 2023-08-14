@@ -5,9 +5,11 @@ import com.swave.urnr.project.domain.Project;
 import com.swave.urnr.project.exception.NotAuthorizedException;
 import com.swave.urnr.project.repository.ProjectRepository;
 import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
+import com.swave.urnr.project.requestdto.ProjectKeywordRequestContentDTO;
 import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
 import com.swave.urnr.project.responsedto.ProjectContentResponseDTO;
 import com.swave.urnr.project.responsedto.ProjectListResponseDTO;
+import com.swave.urnr.project.responsedto.ProjectSearchResultListResponseDTO;
 import com.swave.urnr.releasenote.domain.ReleaseNote;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.domain.UserInProject;
@@ -38,6 +40,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.transaction.Transactional;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -89,7 +92,7 @@ class ProjectServiceTest {
 
     @Test
     @Transactional
-    @DisplayName("릴리즈 노트 생성 테스트")
+    @DisplayName("프로젝트 생성 테스트")
     void createProject() {
 
 
@@ -208,6 +211,8 @@ class ProjectServiceTest {
     }
 
     @Test
+    @Transactional
+    @DisplayName("프로젝트 리스트 로딩")
     void loadProjectList() {
 
 
@@ -318,6 +323,8 @@ class ProjectServiceTest {
     }
 
     @Test
+    @Transactional
+    @DisplayName("프로젝트 로딩 테스트")
     void loadProject() throws NotAuthorizedException {
 
 
@@ -429,6 +436,7 @@ class ProjectServiceTest {
     }
 
     @Test
+    @DisplayName("프로젝트 업데이트 테스트")
     void updateProject() throws NotAuthorizedException {
 
 
@@ -512,9 +520,8 @@ class ProjectServiceTest {
 
         user.setUserInProjectList(new ArrayList<>());
 
-        HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
 
-        List<ProjectListResponseDTO> projectListResponseDTOList = projectService.loadProjectList(request);
+        HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
 
 
         Pattern pattern = Pattern.compile("\\d+"); // Matches one or more digits
@@ -538,7 +545,7 @@ class ProjectServiceTest {
 
         List<Long> deleteUsers = new ArrayList<>(){
             {
-                add(userTest4.getId());
+                add(userTest3.getId());
             }
         };
         List<Long> updateUsers = new ArrayList<>(){
@@ -566,6 +573,8 @@ class ProjectServiceTest {
     }
 
     @Test
+    @Transactional
+    @DisplayName("프로젝트 삭제 테스트")
     void deleteProject() throws NotAuthorizedException {
 
         userTest1 = User.builder()
@@ -678,4 +687,215 @@ class ProjectServiceTest {
         assertEquals(project,null);
 
     }
+
+    @Test
+    @Transactional
+    @DisplayName("역할 가져오기 테스트")
+    void getRole(){
+        //유저 만들고
+        //프로젝트 생성
+
+        userTest1 = User.builder()
+                .name("kang")
+                .email("admin@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+        userRepository.save(userTest1);
+
+        //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
+
+        userTest2 = User.builder()
+                .name("kim")
+                .email("korea2@naver.com")
+                .provider("server")
+                .password("1232")
+                .build();
+
+
+        userTest3 = User.builder()
+                .name("jin")
+                .email("korea3@naver.com")
+                .provider("server")
+                .password("1233")
+                .build();
+
+        userTest4 = User.builder()
+                .name("john")
+                .email("korea4@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+
+        userTest5 = User.builder()
+                .name("user5")
+                .email("korea5@naver.com")
+                .provider("server")
+                .password("1235")
+                .build();
+
+
+        userRepository.save(userTest2);
+
+        userRepository.save(userTest3);
+
+        userRepository.save(userTest4);
+
+        userRepository.save(userTest5);
+
+
+        User user = User.builder()
+                .email("test@gmail.com")
+                .name("joe")
+                .password("1q2w3e4r5t")
+                .provider("local")
+                .build();
+        userRepository.saveAndFlush(user);
+
+        ProjectCreateRequestDTO projectCreateRequestDTO = ProjectCreateRequestDTO.builder()
+                .projectName("SwaveForm")
+                .description("굳잡")
+                .build();
+
+        List<Long> users = new ArrayList<>(){
+            {
+                add(userTest1.getId());
+                add(userTest2.getId());
+                add(userTest3.getId());
+            }
+        };
+        //List<Long> users = new ArrayList<>();
+        projectCreateRequestDTO.setUsers(users);
+
+
+        request.setAttribute("id",user.getId());
+
+        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
+
+        user.setUserInProjectList(new ArrayList<>());
+
+
+        HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
+
+        Pattern pattern = Pattern.compile("\\d+"); // Matches one or more digits
+        Matcher matcher = pattern.matcher(httpResponse.getDescription());
+        long number = 0;
+        if (matcher.find()) {
+            String numberString = matcher.group(); // Extract the matched digits as a string
+            number = Long.parseLong(numberString); // Convert the string to an integer
+
+            Project project = projectRepository.findById(number).get();
+            //ReleaseNote releaseNote = releaseNoteRepository.findById(Long.parseLong(httpResponse.getDescription().substring(18,21).replace(" ","").replace("C", ""))).orElse(null);
+
+            assertEquals(httpResponse.getDescription(),"Project Id "+number+" created");
+            assertEquals(project.getName(),"SwaveForm");
+            assertEquals(project.getDescription(),"굳잡");
+            //assertEquals(number,"8");
+        }
+
+        UserRole role = projectService.getRole(request,number);
+
+
+        assertEquals(role,UserRole.Manager);
+
+
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("프로젝트 검색 테스트")
+    void searchProject() throws UnsupportedEncodingException {
+        //유저 만들고
+        //프로젝트 생성
+
+        userTest1 = User.builder()
+                .name("kang")
+                .email("admin@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+        userRepository.save(userTest1);
+
+        //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
+
+        userTest2 = User.builder()
+                .name("kim")
+                .email("korea2@naver.com")
+                .provider("server")
+                .password("1232")
+                .build();
+
+
+        userTest3 = User.builder()
+                .name("jin")
+                .email("korea3@naver.com")
+                .provider("server")
+                .password("1233")
+                .build();
+
+        userTest4 = User.builder()
+                .name("john")
+                .email("korea4@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+
+        userTest5 = User.builder()
+                .name("user5")
+                .email("korea5@naver.com")
+                .provider("server")
+                .password("1235")
+                .build();
+
+
+        userRepository.save(userTest2);
+
+        userRepository.save(userTest3);
+
+        userRepository.save(userTest4);
+
+        userRepository.save(userTest5);
+
+
+        User user = User.builder()
+                .email("test@gmail.com")
+                .name("joe")
+                .password("1q2w3e4r5t")
+                .provider("local")
+                .build();
+        userRepository.saveAndFlush(user);
+
+        ProjectCreateRequestDTO projectCreateRequestDTO = ProjectCreateRequestDTO.builder()
+                .projectName("SwaveForm")
+                .description("굳잡")
+                .build();
+
+        List<Long> users = new ArrayList<>(){
+            {
+                add(userTest1.getId());
+                add(userTest2.getId());
+                add(userTest3.getId());
+            }
+        };
+        //List<Long> users = new ArrayList<>();
+        projectCreateRequestDTO.setUsers(users);
+
+
+        request.setAttribute("id",user.getId());
+
+        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
+
+        user.setUserInProjectList(new ArrayList<>());
+
+
+        HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
+
+        ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO = new ProjectKeywordRequestContentDTO();
+        projectKeywordRequestContentDTO.setKeyword("Swave");
+
+        ProjectSearchResultListResponseDTO projectSearchResultListResponseDTO = projectService.searchProject(projectKeywordRequestContentDTO);
+
+        assertEquals(projectSearchResultListResponseDTO.getTitleSearch().get(0).getName(),"SwaveForm");
+    }
+
 }

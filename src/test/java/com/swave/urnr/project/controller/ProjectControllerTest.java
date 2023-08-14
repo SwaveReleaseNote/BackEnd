@@ -1,32 +1,21 @@
 package com.swave.urnr.project.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swave.urnr.project.domain.Project;
-import com.swave.urnr.project.exception.NotAuthorizedException;
 import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
+import com.swave.urnr.project.requestdto.ProjectKeywordRequestContentDTO;
 import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
-import com.swave.urnr.project.responsedto.ProjectContentResponseDTO;
-import com.swave.urnr.project.responsedto.ProjectListResponseDTO;
-import com.swave.urnr.project.responsedto.ProjectManagementContentResponseDTO;
+import com.swave.urnr.project.responsedto.*;
 import com.swave.urnr.project.service.ProjectService;
-import com.swave.urnr.releasenote.requestdto.ReleaseNoteCreateRequestDTO;
-import com.swave.urnr.releasenote.requestdto.ReleaseNoteUpdateRequestDTO;
 import com.swave.urnr.user.domain.User;
-import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.user.responsedto.UserMemberInfoResponseDTO;
 import com.swave.urnr.util.http.HttpResponse;
 import com.swave.urnr.util.type.UserRole;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Persistable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -34,22 +23,18 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,8 +53,6 @@ class ProjectControllerTest {
 
     @MockBean
     private UserRepository userRepository;
-
-
 
 
     User userTest1;
@@ -424,6 +407,117 @@ class ProjectControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(projectManagementContentResponseDTO)));
 
+
+
+    }
+
+    @Test
+    void searchProject() throws Exception {
+
+        userTest1 = User.builder()
+                .name("kang")
+                .email("admin@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+        userRepository.save(userTest1);
+
+        //String token = userService.getTokenByLogin(userLoginServerRequestDTO);
+
+        userTest2 = User.builder()
+                .name("kim")
+                .email("korea2@naver.com")
+                .provider("server")
+                .password("1232")
+                .build();
+
+
+        userTest3 = User.builder()
+                .name("jin")
+                .email("korea3@naver.com")
+                .provider("server")
+                .password("1233")
+                .build();
+
+        userTest4 = User.builder()
+                .name("john")
+                .email("korea4@naver.com")
+                .provider("server")
+                .password("1234")
+                .build();
+
+        userTest5 = User.builder()
+                .name("user5")
+                .email("korea5@naver.com")
+                .provider("server")
+                .password("1235")
+                .build();
+
+
+        userRepository.save(userTest2);
+
+        userRepository.save(userTest3);
+
+        userRepository.save(userTest4);
+
+        userRepository.save(userTest5);
+
+        ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO = new ProjectKeywordRequestContentDTO();
+        projectKeywordRequestContentDTO.setKeyword("Swave");
+
+        //검색결과
+        ProjectSearchResultListResponseDTO projectSearchResultListResponseDTO = new ProjectSearchResultListResponseDTO();
+
+        List<UserMemberInfoResponseDTO> teamMembers = new ArrayList<>(){
+            {
+                add(new UserMemberInfoResponseDTO(userTest4.getId(),userTest4.getUsername(),userTest4.getDepartment()));
+                add(new UserMemberInfoResponseDTO(userTest5.getId(),userTest5.getUsername(),userTest5.getDepartment()));
+            }
+        };
+
+        //제목 검색 결과
+        ProjectSearchContentResponseDTO projectSearchContentTitleResponseDTO = new ProjectSearchContentResponseDTO();
+        projectSearchContentTitleResponseDTO.setId(1L);
+        projectSearchContentTitleResponseDTO.setManagerId(1L);
+        projectSearchContentTitleResponseDTO.setName("SwaveForm");
+        projectSearchContentTitleResponseDTO.setDescription("굳잡");
+        projectSearchContentTitleResponseDTO.setCreateDate(new Date());
+        projectSearchContentTitleResponseDTO.setManagerName("Kang");
+        projectSearchContentTitleResponseDTO.setManagerDepartment("개발");
+        projectSearchContentTitleResponseDTO.setTeamMembers(teamMembers);
+
+        ProjectSearchContentResponseDTO projectSearchContentLeastResponseDTO = new ProjectSearchContentResponseDTO();
+        projectSearchContentLeastResponseDTO.setId(2L);
+        projectSearchContentLeastResponseDTO.setManagerId(2L);
+        projectSearchContentLeastResponseDTO.setName("Kim");
+        projectSearchContentLeastResponseDTO.setDescription("anflasn");
+        projectSearchContentLeastResponseDTO.setCreateDate(new Date());
+        projectSearchContentLeastResponseDTO.setManagerName("Kim");
+        projectSearchContentLeastResponseDTO.setManagerDepartment("개발");
+        projectSearchContentTitleResponseDTO.setTeamMembers(teamMembers);
+
+
+        List<ProjectSearchContentResponseDTO> projectSearchContentResponseDTOList = new ArrayList<>();
+        projectSearchContentResponseDTOList.add(projectSearchContentTitleResponseDTO);
+
+        List<ProjectSearchContentResponseDTO> projectSearchContentLeastResponseDTOList = new ArrayList<>();
+        projectSearchContentLeastResponseDTOList.add(projectSearchContentLeastResponseDTO);
+
+        projectSearchResultListResponseDTO.setTitleSearch(projectSearchContentResponseDTOList);
+        projectSearchResultListResponseDTO.setDescriptionSearch(projectSearchContentLeastResponseDTOList);
+        projectSearchResultListResponseDTO.setDeveloperSearch(projectSearchContentLeastResponseDTOList);
+        projectSearchResultListResponseDTO.setManagerSearch(projectSearchContentLeastResponseDTOList);
+
+        given(projectService.searchProject(eq(projectKeywordRequestContentDTO)))
+                .willReturn(projectSearchResultListResponseDTO);
+
+        mvc.perform(post("/api/project/search")
+                        .content(objectMapper.writeValueAsString(projectKeywordRequestContentDTO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(projectSearchResultListResponseDTO)));
 
 
     }
