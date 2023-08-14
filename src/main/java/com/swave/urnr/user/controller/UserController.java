@@ -110,6 +110,13 @@ public class UserController {
         userService.createSampleAccount();
     }
 
+
+    @Operation(summary="샘플 계정 생성", description="(테스트 전용 코드) 임시 사용자 계정 6개를 생성합니다. ")
+    @DeleteMapping("/user/sample")
+    public void deleteSampleAccount() {
+        userService.deleteSampleAccount();
+    }
+
     @Operation(summary="사용자 password 변경", description="사용자 password 변경합니다.")
     @PatchMapping("/user/password")
     @SecurityRequirement(name = "JWT 토큰")

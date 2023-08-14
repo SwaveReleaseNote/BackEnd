@@ -1,7 +1,5 @@
 package com.swave.urnr.util.kafka;
 
-import org.springframework.kafka.core.ProducerFactory;
-
 import java.util.List;
 
 public interface KafkaService {
@@ -11,10 +9,14 @@ public interface KafkaService {
 
     void produceMessage(NotificationDTO notificationDTO , String topic) ;
 
+    KafkaMessageListDTO getMessageListFromKafka(String topic);
+
     List<String> getMessagesFromKafkaTopic(String topic, int n);
 
     String createTopic(String topicName) ;
 
 
-    List<String> getMessagesFromKafkaTopicFirst(String topic);
+    Boolean getCountFromSpecificTopic(String topic);
+
+    List<String> getNewMessagesFromKafkaTopic(String topic);
 }

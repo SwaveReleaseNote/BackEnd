@@ -1,5 +1,7 @@
 package com.swave.urnr.user.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserListResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
@@ -220,8 +222,8 @@ public class UserServiceImpl implements UserService {
         HttpHeaders headers = new HttpHeaders();
         headers.add(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + jwtToken);
 
-
-        SseEmitter sseEmitter = sseEmitterService.subscribeEmitter(String.valueOf("UserID need to here"), jwtToken);
+        Long id = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(jwtToken).getClaim("id").asLong();
+        SseEmitter sseEmitter = sseEmitterService.subscribeEmitter(String.valueOf(id), jwtToken);
 
         return  ResponseEntity.ok().body(sseEmitter);
     }
@@ -310,12 +312,19 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void createSampleAccount() {
 
+
         User user = User.builder()
                 .email("rkdwnsgml@xptmxm.com")
                 .password(encoder.encode("123456"))
                 .name("강준희")
                 .provider("email")
                 .build();
+
+        String email = "rkdwnsgml@xptmxm.com";
+        if(userRepository.findByEmail(email).isPresent()){
+            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.flush();
+        }
 
         userRepository.save(user);
         user = User.builder()
@@ -324,6 +333,13 @@ public class UserServiceImpl implements UserService {
                 .name("김기현")
                 .provider("email")
                 .build();
+
+
+        email = "rlarlgus@xptmxm.com";
+        if(userRepository.findByEmail(email).isPresent()){
+            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.flush();
+        }
 
         userRepository.save(user);
 
@@ -334,6 +350,12 @@ public class UserServiceImpl implements UserService {
                 .provider("email")
                 .build();
 
+        email = "wjsrkdgns@xptmxm.com";
+        if(userRepository.findByEmail(email).isPresent()){
+            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.flush();
+        }
+
         userRepository.save(user);
 
         user = User.builder()
@@ -342,6 +364,14 @@ public class UserServiceImpl implements UserService {
                 .name("함건욱")
                 .provider("email")
                 .build();
+
+
+
+        email = "gkarjsdnr@xptmxm.com";
+        if(userRepository.findByEmail(email).isPresent()){
+            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.flush();
+        }
 
         userRepository.save(user);
 
@@ -353,6 +383,12 @@ public class UserServiceImpl implements UserService {
                 .provider("email")
                 .build();
 
+
+        email = "rlatjdrnr@xptmxm.com";
+        if(userRepository.findByEmail(email).isPresent()){
+            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.flush();
+        }
         userRepository.save(user);
 
         user = User.builder()
@@ -362,6 +398,13 @@ public class UserServiceImpl implements UserService {
                 .provider("email")
                 .build();
 
+
+
+        email = "dltmdtjq@xptmxm.com";
+        if(userRepository.findByEmail(email).isPresent()){
+            userRepository.deleteById(userRepository.findByEmail(email).get().getId());
+            userRepository.flush();
+        }
         userRepository.save(user);
         userRepository.flush();
 
@@ -382,6 +425,31 @@ public class UserServiceImpl implements UserService {
 
         userId = userRepository.findByEmail("gkarjsdnr@xptmxm.com").get().getId();
         kafkaService.createTopic(userId.toString());
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteSampleAccount() {
+
+
+        Long userId = userRepository.findByEmail("rkdwnsgml@xptmxm.com").get().getId();
+        userRepository.deleteById(userId);
+
+        userId = userRepository.findByEmail("rlarlgus@xptmxm.com").get().getId();
+        userRepository.deleteById(userId);
+
+        userId = userRepository.findByEmail("rlatjdrnr@xptmxm.com").get().getId();
+        userRepository.deleteById(userId);
+
+        userId = userRepository.findByEmail("wjsrkdgns@xptmxm.com").get().getId();
+        userRepository.deleteById(userId);
+
+        userId = userRepository.findByEmail("dltmdtjq@xptmxm.com").get().getId();
+        userRepository.deleteById(userId);
+
+        userId = userRepository.findByEmail("gkarjsdnr@xptmxm.com").get().getId();
+        userRepository.deleteById(userId);
     }
 
 

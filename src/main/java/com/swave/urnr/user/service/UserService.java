@@ -6,6 +6,7 @@ import com.swave.urnr.user.responsedto.UserEntityResponseDTO;
 import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.requestdto.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +42,9 @@ public interface UserService {
     boolean updateLoginState(HttpServletRequest request, boolean requestDto) throws UserNotFoundException;
 
     void createSampleAccount();
+
+    @Transactional
+    void deleteSampleAccount();
 
     ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) ;
 

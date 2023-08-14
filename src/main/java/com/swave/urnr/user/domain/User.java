@@ -22,6 +22,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id; // unsigend int
+
+
+    @Column(name = "kafka_count")
+    private Long kafka_count =0L;
     @Column(name = "email")
     private String email; // @ 이메일 유효성 검사
     @Column(name = "password")
@@ -47,6 +51,7 @@ public class User {
     @Column(name = "comment_id")
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,  orphanRemoval = true)
     private List<Comment> commentList;
+
 
     @Builder
     public User(String email, String password, String name, String provider) {

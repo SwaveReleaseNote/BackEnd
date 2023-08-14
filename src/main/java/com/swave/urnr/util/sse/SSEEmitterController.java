@@ -30,7 +30,6 @@ public class SSEEmitterController {
     @Operation(summary="Emitter 반환", description=" emitter를 반환합니다.")
     @GetMapping("/emitter/{id}")
     public SseEmitter getEmitter(@PathVariable String id) {
-        log.info("TESTR ");
         return sseEmitterService.getEmitter(id);
     }
 
