@@ -21,7 +21,7 @@ import org.springframework.web.client.RestTemplate;
 public interface OAuthService {
 
 
-    OauthToken getOauthAccessToken(String code, String provider) throws RuntimeException;
+    OauthToken getOauthAccessToken(String code, String provider) ;
 
     KakaoProfile findKakaoProfile(String token);
 

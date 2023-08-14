@@ -154,7 +154,6 @@ public class KafkaServiceImpl implements  KafkaService{
         return messages;
     }
 
-
     @Override
     public Boolean getCountFromSpecificTopic(String topic) {
         Properties properties = new Properties();
@@ -182,8 +181,6 @@ public class KafkaServiceImpl implements  KafkaService{
         Long kafkaValue = userRepository.findById(Long.valueOf(topic)).orElseThrow(NoSuchElementException::new).getKafka_count();
         log.info(" kaf val : {} , ms val : {} ,   Ex Val :{} ",kafkaValue , messages.size(),kafkaValue == messages.size());
         return kafkaValue == messages.size();
-
-
 
     }
 

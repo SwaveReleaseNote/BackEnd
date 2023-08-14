@@ -119,7 +119,7 @@ class UserServiceImplTest {
     @Test
     @DisplayName("사용자 정보 반환 테스트")
     @Transactional
-    void getUser() throws UserNotFoundException {
+    void getUser()  {
 
         UserRegisterRequestDTO userRegisterRequestDTO = new UserRegisterRequestDTO("corgiwalke@gmail.com","1q2w3e4r","전강훈");
 

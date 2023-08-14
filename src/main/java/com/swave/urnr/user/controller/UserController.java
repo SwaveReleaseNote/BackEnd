@@ -62,7 +62,7 @@ public class UserController {
     @Operation(summary="사용자 소속 수정", description="로그인한 사용자로부터 받은 정보로 사용자의 계정 정보를 수정합니다.")
     @PatchMapping("/user")
     @SecurityRequirement(name = "JWT 토큰")
-    public  ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, @RequestBody UserDepartmentRequestDTO requestDto) throws UserNotFoundException {
+    public  ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, @RequestBody UserDepartmentRequestDTO requestDto) {
         return userService.initDepartment(request, requestDto);
     }
 
@@ -89,7 +89,7 @@ public class UserController {
 
     @Operation(summary="이메일 로그인을 통한 토큰 반환", description="입력된 이메일 계정과 비밀번호가 동일하면 토큰값을 반환합니다.")
     @PostMapping("/user/login-by-email")
-    public  ResponseEntity<SseEmitter> getTokenByLogin(@RequestBody UserLoginServerRequestDTO requestDto) throws UserNotFoundException {
+    public  ResponseEntity<SseEmitter> getTokenByLogin(@RequestBody UserLoginServerRequestDTO requestDto)  {
         return userService.getTokenByLogin(requestDto);
     }
     @Operation(summary="oAuth 로그인을 통한 토큰 반환", description="Oauth 기능을 기반으로 사용자의 계정을 로그인합니다.")
@@ -99,7 +99,7 @@ public class UserController {
     }
     @Operation(summary="사용자 로그인 여부 확인", description="현재 사용자가 로그인하고 있으면 true 아니면 false가 나옵니다")
     @PatchMapping("ㅣ/user/status")
-    public boolean updateStatus(HttpServletRequest request,  @RequestBody Map<String, Object> requestBody) throws UserNotFoundException {
+    public boolean updateStatus(HttpServletRequest request,  @RequestBody Map<String, Object> requestBody)  {
         return userService.updateLoginState(request, (Boolean) requestBody.get("loginState"));
     }
 
@@ -111,7 +111,7 @@ public class UserController {
     }
 
 
-    @Operation(summary="샘플 계정 생성", description="(테스트 전용 코드) 임시 사용자 계정 6개를 생성합니다. ")
+    @Operation(summary="샘플 계정 삭제", description="(테스트 전용 코드) 임시 사용자 계정 6개를 삭제시킵니다. ")
     @DeleteMapping("/user/sample")
     public void deleteSampleAccount() {
         userService.deleteSampleAccount();
@@ -120,7 +120,7 @@ public class UserController {
     @Operation(summary="사용자 password 변경", description="사용자 password 변경합니다.")
     @PatchMapping("/user/password")
     @SecurityRequirement(name = "JWT 토큰")
-    public ResponseEntity<String> updatePassword(HttpServletRequest request, @RequestBody UserUpdateAccountRequestDTO requestDto) throws UserNotFoundException {
+    public ResponseEntity<String> updatePassword(HttpServletRequest request, @RequestBody UserUpdateAccountRequestDTO requestDto)  {
         return userService.updatePassword(request, requestDto);
         
     }

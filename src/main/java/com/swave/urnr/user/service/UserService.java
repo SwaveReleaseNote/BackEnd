@@ -29,9 +29,9 @@ public interface UserService {
 
     ResponseEntity<String> deleteUser(HttpServletRequest request);
 
-    UserResponseDTO getUser(HttpServletRequest request) throws UserNotFoundException;
+    UserResponseDTO getUser(HttpServletRequest request) ;
 
-    ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request) throws RuntimeException;
+    ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request) ;
 
     ResponseEntity<SseEmitter> getTokenByOauth(String code, String provider) ;
 
@@ -39,7 +39,7 @@ public interface UserService {
 
     ManagerResponseDTO getUserInformationList(HttpServletRequest request);
 
-    boolean updateLoginState(HttpServletRequest request, boolean requestDto) throws UserNotFoundException;
+    boolean updateLoginState(HttpServletRequest request, boolean requestDto) ;
 
     void createSampleAccount();
 

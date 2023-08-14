@@ -45,18 +45,25 @@ class UserControllerTest {
 
     @BeforeEach
     @DisplayName("사용자 생성 테스트")
-    void setAccountToServer() throws Exception {
+    void setAccountToServer()  {
         userRepository.deleteAll();
 
         UserRegisterRequestDTO userRegisterRequestDto = new UserRegisterRequestDTO("corgiwalke@gmail.com","1q2w3e4r","전강훈");
+        try{
 
-        String json = objectMapper.writeValueAsString(userRegisterRequestDto);
-        log.info(json);
-        MvcResult result = mockmvc.perform(post("/api/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().is(201))
-                .andReturn();
+            String json = objectMapper.writeValueAsString(userRegisterRequestDto);
+            log.info(json);
+            MvcResult result = mockmvc.perform(post("/api/user")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().is(201))
+                    .andReturn();
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+
+        }
 
 
         User user = User.builder()
@@ -69,102 +76,135 @@ class UserControllerTest {
 
     @Test
     @DisplayName("이메일 전송 테스트")
-    void emailSend() throws Exception {
+    void emailSend()  {
         UserValidateEmailDTO userValidateEmailDTO = new UserValidateEmailDTO("corgiwalke@gmail.com");
 
-        String json = objectMapper.writeValueAsString(userValidateEmailDTO);
-        MvcResult result = mockmvc.perform(post("/api/user/validation")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                        .andExpect(status().is(200))
-                        .andReturn();
+        try{
+            String json = objectMapper.writeValueAsString(userValidateEmailDTO);
+            MvcResult result = mockmvc.perform(post("/api/user/validation")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().is(200))
+                    .andReturn();
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
     @DisplayName("사용자 업데이트 테스트")
-    void updateUser() throws Exception{
+    void updateUser() {
 
-        UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");
+        try{
 
-        String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
-        MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().is(200))
-                .andReturn();
+            UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");
 
-        UserUpdateAccountRequestDTO userUpdateAccountRequestDTO = new UserUpdateAccountRequestDTO("TestPassword", "TestDeparment","Ganghoon");
-        json = objectMapper.writeValueAsString(userUpdateAccountRequestDTO);
-        String responseContent = result.getResponse().getContentAsString();
-        result = mockmvc.perform(put("/api/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .header("Authorization", "Bearer "+responseContent))
-                .andExpect(status().is(204))
-                .andReturn();
+            String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
+            MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().is(200))
+                    .andReturn();
 
+            UserUpdateAccountRequestDTO userUpdateAccountRequestDTO = new UserUpdateAccountRequestDTO("TestPassword", "TestDeparment","Ganghoon");
+            json = objectMapper.writeValueAsString(userUpdateAccountRequestDTO);
+            String responseContent = result.getResponse().getContentAsString();
+            result = mockmvc.perform(put("/api/user")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json)
+                            .header("Authorization", "Bearer "+responseContent))
+                    .andExpect(status().is(204))
+                    .andReturn();
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
     @DisplayName("부서 입력 테스트")
-    void initDepartment() throws Exception {
+    void initDepartment() {
 
         UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");
 
-        String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
-        MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().is(200))
-                .andReturn();
+        try{
 
-        UserDepartmentRequestDTO userDepartmentRequestDto = new UserDepartmentRequestDTO("Test");
+            String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
+            MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().is(200))
+                    .andReturn();
 
-        json = objectMapper.writeValueAsString(userDepartmentRequestDto);
-        String responseContent = result.getResponse().getContentAsString();
-        result = mockmvc.perform(patch("/api/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .header("Authorization", "Bearer "+responseContent))
-                .andExpect(status().is(200))
-                .andReturn();
+            UserDepartmentRequestDTO userDepartmentRequestDto = new UserDepartmentRequestDTO("Test");
+
+            json = objectMapper.writeValueAsString(userDepartmentRequestDto);
+            String responseContent = result.getResponse().getContentAsString();
+            result = mockmvc.perform(patch("/api/user")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json)
+                            .header("Authorization", "Bearer "+responseContent))
+                    .andExpect(status().is(200))
+                    .andReturn();
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
     @DisplayName("로그인 테스트")
-    void getTokenByLogin() throws Exception {
+    void getTokenByLogin() {
 
 
         UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");
 
-        String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
-        MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().is(200))
-                .andReturn();
+
+        try{
+
+            String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
+            MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().is(200))
+                    .andReturn();
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Test
     @DisplayName("삭제 테스트")
-    void deleteUser() throws  Exception {
+    void deleteUser() {
 
         UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");
 
-        String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
-        MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().is(200))
-                .andReturn();
 
-        String responseContent = result.getResponse().getContentAsString();
-        result = mockmvc.perform(delete("/api/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .header("Authorization", "Bearer "+responseContent))
-                .andExpect(status().is(200))
-                .andReturn();
+        try{
+
+            String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
+            MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().is(200))
+                    .andReturn();
+
+            String responseContent = result.getResponse().getContentAsString();
+            result = mockmvc.perform(delete("/api/user")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json)
+                            .header("Authorization", "Bearer "+responseContent))
+                    .andExpect(status().is(200))
+                    .andReturn();
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Test
@@ -172,45 +212,59 @@ class UserControllerTest {
     }
 
     @Test
-    void getUserInformationList() throws Exception {
+    void getUserInformationList()  {
+
+
         UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");
 
-        String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
-        MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().is(200))
-                .andReturn();
+        try{
+            String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
+            MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().is(200))
+                    .andReturn();
 
-        String responseContent = result.getResponse().getContentAsString();
-        result = mockmvc.perform(get("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .header("Authorization", "Bearer "+responseContent))
-                .andExpect(status().is(200))
-                .andReturn();
+            String responseContent = result.getResponse().getContentAsString();
+            result = mockmvc.perform(get("/api/users")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json)
+                            .header("Authorization", "Bearer "+responseContent))
+                    .andExpect(status().is(200))
+                    .andReturn();
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
     }
 
+
     @Test
-    void getCurrentUserInformation() throws Exception {
+    void getCurrentUserInformation()  {
 
 
         UserLoginServerRequestDTO userLoginServerRequestDTO = new UserLoginServerRequestDTO("corgiwalke@gmail.com", "1q2w3e4r");
 
 
-        String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
-        MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().is(200))
-                .andReturn();
+        try{
+            String json = objectMapper.writeValueAsString(userLoginServerRequestDTO);
+            MvcResult result = mockmvc.perform(post("/api/user/login-by-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().is(200))
+                    .andReturn();
 
-        String responseContent = result.getResponse().getContentAsString();
-        result = mockmvc.perform(get("/api/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .header("Authorization", "Bearer "+responseContent))
-                .andExpect(status().is(200))
-                .andReturn();
+            String responseContent = result.getResponse().getContentAsString();
+            result = mockmvc.perform(get("/api/user")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json)
+                            .header("Authorization", "Bearer "+responseContent))
+                    .andExpect(status().is(200))
+                    .andReturn();
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 }
