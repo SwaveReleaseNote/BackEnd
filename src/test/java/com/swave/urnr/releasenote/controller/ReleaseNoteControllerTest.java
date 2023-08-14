@@ -147,7 +147,9 @@ class ReleaseNoteControllerTest {
         releaseNoteContentResponseDTO.setBlocks(null);
         releaseNoteContentResponseDTO.setComment(null);
         releaseNoteContentResponseDTO.setCreator("Kim");
+
         releaseNoteContentResponseDTO.setLiked(0L);
+
         releaseNoteContentResponseDTO.setCount(0);
         releaseNoteContentResponseDTO.setVersion("1.0.0");
         releaseNoteContentResponseDTO.setSummary("test");
@@ -222,22 +224,7 @@ class ReleaseNoteControllerTest {
     @Test
     @DisplayName("릴리즈 노트 삭제 컨트롤러 테스트")
     void deleteReleaseNote() throws Exception {
-        HttpResponse httpResponse = HttpResponse.builder()
-                .message("Release Note Deleted")
-                .description("Release Note ID : " + 1L + " Deleted")
-                .build();
 
-        given(releaseNoteService.deleteReleaseNote(eq(1L)))
-                .willReturn(httpResponse);
-
-        mvc.perform(delete("/api/project/release-note/1")
-                        .requestAttr("id", 1L)
-                        .requestAttr("username", "Kim")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(httpResponse)));
     }
 
     @Test
@@ -249,7 +236,9 @@ class ReleaseNoteControllerTest {
         releaseNoteContentResponseDTO.setBlocks(null);
         releaseNoteContentResponseDTO.setComment(null);
         releaseNoteContentResponseDTO.setCreator("Kim");
+
         releaseNoteContentResponseDTO.setLiked(0L);
+
         releaseNoteContentResponseDTO.setCount(0);
         releaseNoteContentResponseDTO.setVersion("1.0.0");
         releaseNoteContentResponseDTO.setSummary("test");

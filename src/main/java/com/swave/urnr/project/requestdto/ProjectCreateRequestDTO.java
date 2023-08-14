@@ -22,11 +22,6 @@ public class ProjectCreateRequestDTO {
     @ApiModelProperty(value="프로젝트 세부사항", example = "설문조사 프로그램", required = true)
     String description;
 
-
-    //managerID
-    @ApiModelProperty(value="사용자 ID", example = "1", required = true)
-    Long userId;
-
     @ApiModelProperty(value="프로젝트에 담긴 유저", example = "[2,3,4,5]", required = true)
     List<Long> users;
 

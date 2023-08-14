@@ -21,7 +21,7 @@ public interface ProjectService {
 
     List<ProjectListResponseDTO> loadProjectList(HttpServletRequest request);
 
-    ProjectContentResponseDTO loadProject(Long projectId);
+    ProjectContentResponseDTO loadProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException;
 
     ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) throws IOException, NotAuthorizedException;
 

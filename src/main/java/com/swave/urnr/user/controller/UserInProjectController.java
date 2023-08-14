@@ -27,7 +27,7 @@ public class UserInProjectController {
     //프로젝트 탈퇴
     //softDelete
     @Operation(summary = "프로젝트 탈퇴(개발자, 구독자)", description="projectID를 받아 프로젝트에서 탈퇴합니다.")
-    @DeleteMapping("/drop/{projectId}")
+    @DeleteMapping("/{projectId}/drop")
     public HttpResponse dropProject(HttpServletRequest request, @PathVariable Long projectId){
         return userInProjectService.dropProject(request, projectId);
     }

@@ -51,11 +51,11 @@ public class ProjectController {
 
     @Operation(summary="프로젝트 하나 가져오기", description="프로젝트 ID를 가져와 프로젝트를 표시합니다.")
     @GetMapping("/project/{projectId}")
-    public ProjectContentResponseDTO loadProject(@PathVariable Long projectId){
+    public ProjectContentResponseDTO loadProject(HttpServletRequest request, @PathVariable Long projectId) throws NotAuthorizedException {
 /*
         //todo:권한체크 http헤더로 가져오기
         UserRole role = getRole((Long)request.getAttribute("id"),);*/
-        return projectService.loadProject(projectId);
+        return projectService.loadProject(request, projectId);
     }
 
     @Operation(summary="프로젝트 하나 가져오기(관리페이지)", description="프로젝트ID를 가져와 프로젝트와 유저정보를 표시합니다.")
@@ -69,7 +69,7 @@ public class ProjectController {
     @Operation(summary="프로젝트 검색하기", description="프로젝트 검색결과를 표시합니다.")
     @PostMapping("/project/search")
     public ProjectSearchResultListResponseDTO searchProject(@RequestBody ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO)throws UnsupportedEncodingException {
-        System.out.println(projectKeywordRequestContentDTO.getKeyword());
+        //System.out.println(projectKeywordRequestContentDTO.getKeyword());
         return projectService.searchProject(projectKeywordRequestContentDTO);
     }
 
