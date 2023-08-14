@@ -148,7 +148,6 @@ Request has now have attribute value
             String[] excludePostUrls = Exclude_post_url.split(",");
             for (String excludeUrl : excludePostUrls ) {
 
-//                log.info("URLS : "+excludeUrl.toString() +" SO R : "+ pathMatcher.match(excludeUrl,requestURI));
                 if (pathMatcher.match(excludeUrl, requestURI)) {
 
                     return true;
