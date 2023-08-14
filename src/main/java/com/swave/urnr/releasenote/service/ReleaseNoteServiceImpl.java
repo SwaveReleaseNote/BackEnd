@@ -104,6 +104,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
 
     //project id를 받아서 해당 project에 연결된 모든 releaseNote를 리스트로 반환 -> 전체 출력용
     @Override
+    @Transactional(readOnly = true)
     public ArrayList<ReleaseNoteContentListResponseDTO> loadReleaseNoteList(Long projectId){
         List<ReleaseNote> releaseNoteList = releaseNoteRepository.findByProject_Id(projectId);
 
@@ -117,6 +118,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ReleaseNoteContentResponseDTO loadReleaseNote(HttpServletRequest request, Long releaseNoteId){
         UserInProject userInProject = releaseNoteRepository.findUserInProjectByUserIdAndReleaseNoteId((Long) request.getAttribute("id"), releaseNoteId);
 
@@ -135,9 +137,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
         LikedCountResponseDTO likedCountResponseDTO = likedService.countLiked(releaseNoteId);
         releaseNoteContentResponseDTO.setLiked(likedCountResponseDTO.getLikedCount());
 
-        releaseNote.addViewCount();
-        releaseNoteRepository.flush();
-
+        seenCheckService.addViewCount(releaseNoteId);
         seenCheckService.createSeenCheck((String) request.getAttribute("username"), releaseNote, userInProject);
 
         return releaseNoteContentResponseDTO;
@@ -196,6 +196,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ArrayList<ReleaseNoteVersionListResponseDTO> loadProjectVersionList(HttpServletRequest request){
         ArrayList<ReleaseNoteVersionListResponseDTO> responseVersionListDTOList = new ArrayList<>();
         List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id((Long) request.getAttribute("id"));
@@ -236,4 +237,5 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
             return releaseNote.makeReleaseNoteContentDTO();
         }
     }
+
 }
