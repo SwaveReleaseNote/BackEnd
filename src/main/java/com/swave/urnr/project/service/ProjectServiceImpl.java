@@ -205,6 +205,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserRole getRole(HttpServletRequest request, Long projectId) {
         UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long)request.getAttribute("id"),projectId);
 
@@ -219,6 +220,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) throws NotAuthorizedException {
         //todo:권한체크
         UserRole role = getRole(request, projectId);
@@ -252,7 +254,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
-
     public ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
         Project project = projectRepository.findById(projectId).get();
@@ -340,7 +341,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-
     public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
         //todo:권한체크
@@ -362,7 +362,6 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException {
 
         //todo:권한체크
