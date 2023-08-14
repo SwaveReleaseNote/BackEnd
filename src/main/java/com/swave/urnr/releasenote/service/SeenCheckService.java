@@ -10,4 +10,7 @@ import com.swave.urnr.user.domain.UserInProject;
 
 public interface SeenCheckService {
     public SeenCheck createSeenCheck(String username , ReleaseNote releaseNote, UserInProject userInProject);
+    public void addViewCount(Long releaseNoteId);
+    //public void addViewCount(ReleaseNote releaseNote);
+
 } 

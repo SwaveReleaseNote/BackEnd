@@ -33,7 +33,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 
-;import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
+import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
 import static com.swave.urnr.util.type.UserRole.Manager;
 import static com.swave.urnr.util.type.UserRole.None;
 
@@ -63,7 +63,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .build();
 
         log.info(request.toString());
-        log.info(project.getDescription().toString());
+        log.info(project.getDescription());
 
         //유저리스트 받아서 설정
         //project.setUserInProjectList(new ArrayList<>()); //빌더에 넣어보기
@@ -71,7 +71,7 @@ public class ProjectServiceImpl implements ProjectService {
         //projectRequestDto.getUserId()
         User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
         //user대신에 명확한 변수명 사용 manager?
-        
+
         //UserInProject.setUserInProject(new ArrayList<>());
         //builder를 이용한 userInProject 생성
 
@@ -85,6 +85,10 @@ public class ProjectServiceImpl implements ProjectService {
 
         //리스트형식에서 삽입을 위한 list생성 빈칸생성은 아닌듯
         //유저의 프로젝트 리스트를 가져와서 추가해서 넣어줌 기존에 유저가 가입된 프로젝트 리스트
+
+        System.out.println("안녕"+user.getUserInProjectList());
+        System.out.println("안녕"+user.getId());
+        log.info(user.getUserInProjectList().toString());
         ArrayList<UserInProject> list = new ArrayList<>(user.getUserInProjectList());
         //리스트는 리스트로
 
@@ -103,27 +107,27 @@ public class ProjectServiceImpl implements ProjectService {
 
         UserInProject saveUserInProject = userInProjectRepository.save(userInProject);
 
-        if(projectCreateRequestDto.getUsers().size()>=1) {
+        if(!projectCreateRequestDto.getUsers().isEmpty()) {
             for (Long userId : projectCreateRequestDto.getUsers()) {
                 //유저인 프로젝트 생성
                 UserInProject userInProject1 = new UserInProject();
                 userInProject1.setRole(UserRole.Developer);
                 userInProject1.setProject(project);
 
-                User user1 = userRepository.findById(userId).get();
+                User user1 = userRepository.findById(userId).orElse(null);
                 //User user1 = userRepository.findById(userInProject1.getId()).get();
                 userInProject1.setUser(user1);
                 userInProjectRepository.save(userInProject1);
 
                 //유저생성
-                List<UserInProject> userInProjectList = user.getUserInProjectList();
+                /*List<UserInProject> userInProjectList = user.getUserInProjectList();
                 userInProjectList.add(userInProject);
-                user.setUserInProjectList(userInProjectList);
-                userRepository.flush();
+                user.setUserInProjectList(userInProjectList);*/
 
+                userRepository.flush();
                 userInProjectRepository.flush();
 
-                project.getUserInProjectList().add(userInProject);
+                project.getUserInProjectList().add(userInProject1);
             }
         }
         //저장하고
@@ -171,7 +175,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProjectContentResponseDTO loadProject(Long projectId) {
+    public ProjectContentResponseDTO loadProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
+
+        UserRole role = getRole(request, projectId);
+        if (role == None) {
+            throw new NotAuthorizedException("해당 프로젝트에 접근할 수 없습니다.");
+        }
 
         Project project = projectRepository.findById(projectId).get();
         ProjectContentResponseDTO getproject = ProjectContentResponseDTO.builder()
@@ -196,6 +205,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserRole getRole(HttpServletRequest request, Long projectId) {
         UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long)request.getAttribute("id"),projectId);
 
@@ -210,6 +220,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) throws NotAuthorizedException {
         //todo:권한체크
         UserRole role = getRole(request, projectId);
@@ -243,7 +254,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
-
     public ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
         Project project = projectRepository.findById(projectId).get();
@@ -293,7 +303,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         project.setName(projectUpdateRequestDto.getName());
         project.setDescription(projectUpdateRequestDto.getDescription());
-        
+
         //dto에 유저 추가하면 되는데 관리자를 개발자리스트나 구독자에선 빼야함
 
         //project.setUserInProjectList(projectUpdateRequestDto.getUsers());
@@ -331,7 +341,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-
     public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
         //todo:권한체크
@@ -353,7 +362,6 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException {
 
         //todo:권한체크
@@ -382,6 +390,8 @@ public class ProjectServiceImpl implements ProjectService {
         return projectSearchResultListResponseDTO;
     }
 
+
+
     @Override
     @Transactional(readOnly = true)
     public List<ProjectUserCheckDTO> checkUser(Long projectId) {
@@ -403,5 +413,4 @@ public class ProjectServiceImpl implements ProjectService {
 
 
 }
-
 

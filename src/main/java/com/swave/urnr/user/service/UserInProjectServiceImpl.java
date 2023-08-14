@@ -11,9 +11,9 @@ import com.swave.urnr.util.type.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,6 +71,7 @@ public class UserInProjectServiceImpl implements UserInProjectService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserRole getRole(HttpServletRequest request, Long projectId) {
         UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long)request.getAttribute("id"),projectId);
 

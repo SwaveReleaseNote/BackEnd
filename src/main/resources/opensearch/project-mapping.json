@@ -1,0 +1,107 @@
+{
+  "settings": {
+    "index.mapping.ignore_malformed": true,
+    "index.search.slowlog.threshold.query.warn": "10s",
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "standard": {
+            "type": "custom",
+            "tokenizer": "standard"
+          },
+          "seunjeon": {
+            "type": "custom",
+            "tokenizer": "seunjeon_tokenizer",
+            "dictionary_filter": ["synonyms", "stopwords"],
+            "filter": ["lowercase", "trim"]
+          },
+          "ngram": {
+            "type": "custom",
+            "tokenizer": "ngram_tokenizer",
+            "filter": ["lowercase", "trim"]
+          },
+          "autocomplete_analyzer": {
+            "tokenizer": "standard",
+            "filter": ["lowercase", "trim", "autocomplete"]
+          },
+          "remove_html": {
+            "type": "custom",
+            "tokenizer": "ngram_tokenizer",
+            "char_filter": ["html_strip"],
+            "dictionary_filter": ["stopwords"],
+            "filter": ["lowercase", "trim"]
+          },
+          "remove_special_char": {
+            "type": "custom",
+            "tokenizer": "ngram_tokenizer",
+            "char_filter": ["remove_whitespace", "remove_special_char"],
+            "dictionary_filter": ["stopwords"],
+            "filter": ["lowercase", "trim"]
+          }
+        },
+        "tokenizer": {
+          "seunjeon_tokenizer": {
+            "type": "seunjeon_tokenizer",
+            "user_dict_path": "analyzers/F175892661",
+            "index_poses": [
+              "UNK",
+              "I",
+              "M",
+              "N",
+              "S",
+              "SL",
+              "SH",
+              "SN",
+              "V",
+              "VCP",
+              "XP",
+              "XS",
+              "XR"
+            ],
+            "index_eojeol": false,
+            "decompound": true,
+            "pos_tagging": false
+          },
+          "ngram_tokenizer": {
+            "type": "edge_ngram",
+            "min_gram": 2,
+            "max_gram": 10,
+            "token_chars": ["letter", "digit"]
+          }
+        },
+        "filter": {
+          "autocomplete": {
+            "type": "edge_ngram",
+            "min_gram": 1,
+            "max_gram": 20,
+            "token_chars": ["letter", "digit", "whitespace"]
+          }
+        },
+        "dictionary_filter": {
+          "synonyms": {
+            "type": "synonym",
+            "synonyms_path": "analyzers/F217095579",
+            "updateable": true
+          },
+          "stopwords": {
+            "type": "stop",
+            "synonyms_path": "analyzers/F13804164",
+            "updateable": true
+          }
+        },
+        "char_filter": {
+          "remove_special_char": {
+            "pattern": "[^A-Za-z0-9]",
+            "type": "pattern_replace",
+            "replacement": ""
+          },
+          "remove_whitespace": {
+            "type": "pattern_replace",
+            "pattern": " ",
+            "replacement": ""
+          }
+        }
+      }
+    }
+  }
+}

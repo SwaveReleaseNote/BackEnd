@@ -14,9 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -60,6 +60,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CommentContentListResponseDTO loadRecentComment(Long projectId){
         CommentContentListResponseDTO commentContentListResponseDTO = new CommentContentListResponseDTO(new ArrayList<>());
         List<CommentContentResponseDTO> comments = commentRepository.findTop5RecentComment(projectId);
@@ -83,6 +84,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ArrayList<CommentContentResponseDTO> loadCommentList(Long releaseNoteId){
         ArrayList<Comment> commentList = commentRepository.findByReleaseNote_Id(releaseNoteId);
         ArrayList<CommentContentResponseDTO> commentContentList = new ArrayList<>();

@@ -1,0 +1,53 @@
+package com.swave.urnr.opensearch.controller;
+
+import com.swave.urnr.opensearch.domain.ProjectOpenSearch;
+import com.swave.urnr.opensearch.service.OpenSearchIndexService;
+import com.swave.urnr.opensearch.service.OpenSearchService;
+import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
+import java.util.List;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@Api(tags = "OpenSearchController")
+public class OpenSearchController {
+
+    private final OpenSearchService openSearchService;
+    private final OpenSearchIndexService openSearchIndexService;
+
+    @Operation(summary="검색 쿼리 테스트", description="테스트용 코드입니다.")
+    @GetMapping("/test/{query}")
+    public List<ProjectOpenSearch> test(@PathVariable String query){
+        List<ProjectOpenSearch> test = openSearchService.searchProjectByDescription(query);
+        //List<ProjectOpenSearch> test = openSearchService.searchProjectByProjectName(query);
+        //List<UserOpenSearch> test = openSearchService.searchUserById(1L);
+        //List<UserInProjectOpenSearch> test = openSearchService.searchUserInProjectByRole(2L);
+        return test;
+    }
+
+    @Operation(summary="유저 인덱스 생성", description="OpenSearch에 유저 인덱스를 생성합니다.")
+    @GetMapping("/api/opensearch/index/user")
+    public String createUserIndex() throws IOException {
+        return openSearchIndexService.createUserIndex();
+    }
+
+    @Operation(summary="유저인프로젝트 인덱스 생성", description="OpenSearch에 유저인프로젝트 인덱스를 생성합니다.")
+    @GetMapping("/api/opensearch/index/user-in-project")
+    public String createUserInProjectIndex() throws IOException {
+        return openSearchIndexService.createUserInProjectIndex();
+    }
+
+    @Operation(summary="프로젝트 인덱스 생성", description="OpenSearch에 프로젝트 인덱스를 생성합니다.")
+    @GetMapping("/api/opensearch/index/project")
+    public String createProjectIndex() throws IOException {
+        return openSearchIndexService.createProjectIndex();
+    }
+}
