@@ -28,6 +28,7 @@ repositories {
 
 ext {
     set('snippetsDir', file("build/generated-snippets"))
+    set('elasticsearch.version', '7.12.1')
 }
 
 dependencies {
@@ -77,6 +78,11 @@ dependencies {
 
     //mockito
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
+
+    //opensearch
+    implementation 'org.opensearch.client:opensearch-rest-client:2.9.0'
+    implementation 'org.opensearch.client:opensearch-java:2.4.0'
+    implementation 'org.springframework.data:spring-data-elasticsearch:4.3.7'
 }
 
 tasks.named('test') {

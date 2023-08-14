@@ -147,7 +147,9 @@ class ReleaseNoteControllerTest {
         releaseNoteContentResponseDTO.setBlocks(null);
         releaseNoteContentResponseDTO.setComment(null);
         releaseNoteContentResponseDTO.setCreator("Kim");
-        //releaseNoteContentResponseDTO.setLiked(0);
+
+        releaseNoteContentResponseDTO.setLiked(0L);
+
         releaseNoteContentResponseDTO.setCount(0);
         releaseNoteContentResponseDTO.setVersion("1.0.0");
         releaseNoteContentResponseDTO.setSummary("test");
@@ -234,7 +236,9 @@ class ReleaseNoteControllerTest {
         releaseNoteContentResponseDTO.setBlocks(null);
         releaseNoteContentResponseDTO.setComment(null);
         releaseNoteContentResponseDTO.setCreator("Kim");
-        //releaseNoteContentResponseDTO.setLiked(0);
+
+        releaseNoteContentResponseDTO.setLiked(0L);
+
         releaseNoteContentResponseDTO.setCount(0);
         releaseNoteContentResponseDTO.setVersion("1.0.0");
         releaseNoteContentResponseDTO.setSummary("test");
