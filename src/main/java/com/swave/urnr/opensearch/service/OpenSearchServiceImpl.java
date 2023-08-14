@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
 
@@ -206,79 +207,65 @@ public class OpenSearchServiceImpl implements OpenSearchService{
     public ProjectSearchResultListResponseDTO searchProject(String keyword) {
         ProjectSearchResultListResponseDTO projectSearchResultListResponseDTO = new ProjectSearchResultListResponseDTO();
 
-        UserRole role = null;
-        List<ProjectSearchListResponseDTO> projectSearchByNameListResponseDTOList =  new ArrayList<>();
         List<ProjectOpenSearch> projectOpenNameSearchList = searchProjectByProjectName(keyword);
 
-        //제목 검색
-        ProjectSearchListResponseDTO projectSearchListResponseDTO = new ProjectSearchListResponseDTO();
-            for(ProjectOpenSearch projectOpenSearch : projectOpenNameSearchList){
-                List<UserInProjectOpenSearch> userInProjectOpenSearchList = searchUserInProjectByProjectId(projectOpenSearch.getId());
+        List<ProjectSearchListResponseDTO> projectSearchByNameListResponseDTOList = projectOpenNameSearchList.stream()
+                .flatMap(projectOpenSearch -> searchUserInProjectByProjectId(projectOpenSearch.getId()).stream()
+                        .flatMap(userInProjectOpenSearch -> searchUserById(userInProjectOpenSearch.getUser_id()).stream()
+                                .map(userOpenSearch -> {
+                                    ProjectSearchListResponseDTO projectSearchListResponseDTO = new ProjectSearchListResponseDTO();
+                                    projectSearchListResponseDTO.setId(projectOpenSearch.getId());
+                                    projectSearchListResponseDTO.setName(projectOpenSearch.getProjectName());
+                                    projectSearchListResponseDTO.setDescription(projectOpenSearch.getDescription());
+                                    projectSearchListResponseDTO.setCreateDate(projectOpenSearch.getCreateDate());
+                                    projectSearchListResponseDTO.setUserId(userOpenSearch.getId());
+                                    projectSearchListResponseDTO.setUserDepartment(userOpenSearch.getDepartment());
+                                    projectSearchListResponseDTO.setUserName(userOpenSearch.getUsername());
 
-                for(UserInProjectOpenSearch userInProjectOpenSearch : userInProjectOpenSearchList){
-                    List<UserOpenSearch> userOpenSearcheList = searchUserById(userInProjectOpenSearch.getUser_id());
+                                    UserRole role = switch (userInProjectOpenSearch.getRole().intValue()) {
+                                        case 0 -> UserRole.Subscriber;
+                                        case 1 -> UserRole.Developer;
+                                        case 2 -> UserRole.Manager;
+                                        default -> null; // Handle other cases if needed
+                                    };
+                                    projectSearchListResponseDTO.setUserRole(role);
 
-                    for(UserOpenSearch userOpenSearch : userOpenSearcheList ){
-                        projectSearchListResponseDTO.setId(projectOpenSearch.getId());
-                        projectSearchListResponseDTO.setName(projectOpenSearch.getProjectName());
-                        projectSearchListResponseDTO.setDescription(projectOpenSearch.getDescription());
-                        projectSearchListResponseDTO.setCreateDate(projectOpenSearch.getCreateDate());
-                        projectSearchListResponseDTO.setUserId(userOpenSearch.getId());
-                        projectSearchListResponseDTO.setUserDepartment(userOpenSearch.getDepartment());
-                        projectSearchListResponseDTO.setUserName(userOpenSearch.getUsername());
-                        if(userInProjectOpenSearch.getRole()==0){
-                            role = UserRole.Subscriber;
-                        }else if(userInProjectOpenSearch.getRole()==1){
-                            role = UserRole.Developer;
-                        }else if(userInProjectOpenSearch.getRole()==2){
-                            role = UserRole.Manager;
-                        }
-                        projectSearchListResponseDTO.setUserRole(role);
+                                    return projectSearchListResponseDTO;
+                                })
+                        )
+                )
+                .collect(Collectors.toList());
 
-                        projectSearchByNameListResponseDTOList.add(projectSearchListResponseDTO);
-
-                    }
-
-                }
-
-            }
-            //디스크립션 검색
+        //디스크립션 검색
         List<ProjectOpenSearch> projectOpenDescriptionSearchList = searchProjectByDescription(keyword);
 
+        List<ProjectSearchListResponseDTO> projectSearchByDescriptionListResponseDTOList = projectOpenDescriptionSearchList.stream()
+                .flatMap(projectOpenSearch -> searchUserInProjectByProjectId(projectOpenSearch.getId()).stream()
+                        .flatMap(userInProjectOpenSearch -> searchUserById(userInProjectOpenSearch.getUser_id()).stream()
+                                .map(userOpenSearch -> {
+                                    ProjectSearchListResponseDTO projectDescriptionSearchListResponseDTO = new ProjectSearchListResponseDTO();
+                                    projectDescriptionSearchListResponseDTO.setId(projectOpenSearch.getId());
+                                    projectDescriptionSearchListResponseDTO.setName(projectOpenSearch.getProjectName());
+                                    projectDescriptionSearchListResponseDTO.setDescription(projectOpenSearch.getDescription());
+                                    projectDescriptionSearchListResponseDTO.setCreateDate(projectOpenSearch.getCreateDate());
+                                    projectDescriptionSearchListResponseDTO.setUserId(userOpenSearch.getId());
+                                    projectDescriptionSearchListResponseDTO.setUserDepartment(userOpenSearch.getDepartment());
+                                    projectDescriptionSearchListResponseDTO.setUserName(userOpenSearch.getUsername());
 
-        List<ProjectSearchListResponseDTO> projectSearchByDescriptionListResponseDTOList =  new ArrayList<>();
+                                    UserRole role = switch (userInProjectOpenSearch.getRole().intValue()) {
+                                        case 0 -> UserRole.Subscriber;
+                                        case 1 -> UserRole.Developer;
+                                        case 2 -> UserRole.Manager;
+                                        default -> null; // Handle other cases if needed
+                                    };
+                                    projectDescriptionSearchListResponseDTO.setUserRole(role);
 
-        ProjectSearchListResponseDTO projectDescriptionSearchListResponseDTO = new ProjectSearchListResponseDTO();
-        for(ProjectOpenSearch projectOpenSearch : projectOpenDescriptionSearchList){
-            List<UserInProjectOpenSearch> userInProjectOpenSearchList = searchUserInProjectByProjectId(projectOpenSearch.getId());
+                                    return projectDescriptionSearchListResponseDTO;
+                                })
+                        )
+                )
+                .collect(Collectors.toList());
 
-            for(UserInProjectOpenSearch userInProjectOpenSearch : userInProjectOpenSearchList){
-                List<UserOpenSearch> userOpenSearcheList = searchUserById(userInProjectOpenSearch.getUser_id());
-
-                for(UserOpenSearch userOpenSearch : userOpenSearcheList ){
-                    projectDescriptionSearchListResponseDTO.setId(projectOpenSearch.getId());
-                    projectDescriptionSearchListResponseDTO.setName(projectOpenSearch.getProjectName());
-                    projectDescriptionSearchListResponseDTO.setDescription(projectOpenSearch.getDescription());
-                    projectDescriptionSearchListResponseDTO.setCreateDate(projectOpenSearch.getCreateDate());
-                    projectDescriptionSearchListResponseDTO.setUserId(userOpenSearch.getId());
-                    projectDescriptionSearchListResponseDTO.setUserDepartment(userOpenSearch.getDepartment());
-                    projectDescriptionSearchListResponseDTO.setUserName(userOpenSearch.getUsername());
-                    if(userInProjectOpenSearch.getRole()==0){
-                        role = UserRole.Subscriber;
-                    }else if(userInProjectOpenSearch.getRole()==1){
-                        role = UserRole.Developer;
-                    }else if(userInProjectOpenSearch.getRole()==2){
-                        role = UserRole.Manager;
-                    }
-                    projectDescriptionSearchListResponseDTO.setUserRole(role);
-
-                    projectSearchByDescriptionListResponseDTOList.add(projectDescriptionSearchListResponseDTO);
-
-                }
-
-            }
-
-        }
         //매니저 이름 검색 유인아
         //이름으로 유저검색 searchUsername
         //유저가 들어간 프로젝트 아이디 유인프
@@ -287,97 +274,70 @@ public class OpenSearchServiceImpl implements OpenSearchService{
         //프로젝트에 들어간 유저검색
         List<UserOpenSearch> projectOpenManagerNameSearchList = searchUserByName(keyword);
 
+        List<ProjectSearchListResponseDTO> projectSearchByManagerListResponseDTOList = projectOpenManagerNameSearchList.stream()
+                .flatMap(userOpenManagerSearch -> searchUserInProjectByUserIdforManager(userOpenManagerSearch.getId()).stream())
+                .flatMap(userInProjectOpenSearch -> searchProjectByProjectId(userInProjectOpenSearch.getProject_id()).stream()
+                        .flatMap(projectOpenProjectSearch -> searchUserInProjectByProjectId(projectOpenProjectSearch.getId()).stream()
+                                .flatMap(userInProjectOpenSearch2 -> searchUserById(userInProjectOpenSearch2.getUser_id()).stream()
+                                        .map(userOpenSearch -> {
+                                            ProjectSearchListResponseDTO projectManagerSearchListResponseDTO = new ProjectSearchListResponseDTO();
+                                            projectManagerSearchListResponseDTO.setId(projectOpenProjectSearch.getId());
+                                            projectManagerSearchListResponseDTO.setName(projectOpenProjectSearch.getProjectName());
+                                            projectManagerSearchListResponseDTO.setDescription(projectOpenProjectSearch.getDescription());
+                                            projectManagerSearchListResponseDTO.setCreateDate(projectOpenProjectSearch.getCreateDate());
+                                            projectManagerSearchListResponseDTO.setUserId(userOpenSearch.getId());
+                                            projectManagerSearchListResponseDTO.setUserDepartment(userOpenSearch.getDepartment());
+                                            projectManagerSearchListResponseDTO.setUserName(userOpenSearch.getUsername());
 
-        List<ProjectSearchListResponseDTO> projectSearchByManagerListResponseDTOList =  new ArrayList<>();
+                                            UserRole role = switch (userInProjectOpenSearch2.getRole().intValue()) {
+                                                case 0 -> UserRole.Subscriber;
+                                                case 1 -> UserRole.Developer;
+                                                case 2 -> UserRole.Manager;
+                                                default -> null; // Handle other cases if needed
+                                            };
+                                            projectManagerSearchListResponseDTO.setUserRole(role);
 
-        ProjectSearchListResponseDTO projectManagerSearchListResponseDTO = new ProjectSearchListResponseDTO();
-        for(UserOpenSearch userOpenManagerSearch : projectOpenManagerNameSearchList){
+                                            return projectManagerSearchListResponseDTO;
+                                        })
+                                )
+                        )
+                )
+                .collect(Collectors.toList());
 
-            List<UserInProjectOpenSearch> userInProjectOpenSearchList = searchUserInProjectByUserIdforManager(userOpenManagerSearch.getId());
 
-            for(UserInProjectOpenSearch userInProjectOpenSearch : userInProjectOpenSearchList) {
-
-                List<ProjectOpenSearch> projectOpenSearch = searchProjectByProjectId(userInProjectOpenSearch.getProject_id());
-
-                for (ProjectOpenSearch projectOpenProjectSearch : projectOpenSearch) {
-                    List<UserInProjectOpenSearch> userInProjectOpenSearchList2 = searchUserInProjectByProjectId(projectOpenProjectSearch.getId());
-
-                    for (UserInProjectOpenSearch userInProjectOpenSearch2 : userInProjectOpenSearchList2) {
-                        List<UserOpenSearch> userOpenSearcheList = searchUserById(userInProjectOpenSearch2.getUser_id());
-
-                        for (UserOpenSearch userOpenSearch : userOpenSearcheList) {
-                            projectManagerSearchListResponseDTO.setId(projectOpenProjectSearch.getId());
-                            projectManagerSearchListResponseDTO.setName(projectOpenProjectSearch.getProjectName());
-                            projectManagerSearchListResponseDTO.setDescription(projectOpenProjectSearch.getDescription());
-                            projectManagerSearchListResponseDTO.setCreateDate(projectOpenProjectSearch.getCreateDate());
-                            projectManagerSearchListResponseDTO.setUserId(userOpenSearch.getId());
-                            projectManagerSearchListResponseDTO.setUserDepartment(userOpenSearch.getDepartment());
-                            projectManagerSearchListResponseDTO.setUserName(userOpenSearch.getUsername());
-                            if (userInProjectOpenSearch2.getRole() == 0) {
-                                role = UserRole.Subscriber;
-                            } else if (userInProjectOpenSearch2.getRole() == 1) {
-                                role = UserRole.Developer;
-                            } else if (userInProjectOpenSearch2.getRole() == 2) {
-                                role = UserRole.Manager;
-                            }
-                            projectManagerSearchListResponseDTO.setUserRole(role);
-
-                            projectSearchByManagerListResponseDTOList.add(projectManagerSearchListResponseDTO);
-
-                        }
-
-                    }
-                }
-            }
-
-        }
         //개발자 이름 검색
+
         List<UserOpenSearch> projectOpenDeveloperNameSearchList = searchUserByName(keyword);
 
+        List<ProjectSearchListResponseDTO> projectSearchByDeveloperListResponseDTOList = projectOpenDeveloperNameSearchList.stream()
+                .flatMap(userOpenManagerSearch -> searchUserInProjectByUserIdforDeveloper(userOpenManagerSearch.getId()).stream())
+                .flatMap(userInProjectOpenSearch -> searchProjectByProjectId(userInProjectOpenSearch.getProject_id()).stream()
+                        .flatMap(projectOpenProjectSearch -> searchUserInProjectByProjectId(projectOpenProjectSearch.getId()).stream()
+                                .flatMap(userInProjectOpenSearch2 -> searchUserById(userInProjectOpenSearch2.getUser_id()).stream()
+                                        .map(userOpenSearch -> {
+                                            ProjectSearchListResponseDTO projectManagerSearchListResponseDTO = new ProjectSearchListResponseDTO();
+                                            projectManagerSearchListResponseDTO.setId(projectOpenProjectSearch.getId());
+                                            projectManagerSearchListResponseDTO.setName(projectOpenProjectSearch.getProjectName());
+                                            projectManagerSearchListResponseDTO.setDescription(projectOpenProjectSearch.getDescription());
+                                            projectManagerSearchListResponseDTO.setCreateDate(projectOpenProjectSearch.getCreateDate());
+                                            projectManagerSearchListResponseDTO.setUserId(userOpenSearch.getId());
+                                            projectManagerSearchListResponseDTO.setUserDepartment(userOpenSearch.getDepartment());
+                                            projectManagerSearchListResponseDTO.setUserName(userOpenSearch.getUsername());
 
-        List<ProjectSearchListResponseDTO> projectSearchByDeveloperListResponseDTOList =  new ArrayList<>();
+                                            UserRole role = switch (userInProjectOpenSearch2.getRole().intValue()) {
+                                                case 0 -> UserRole.Subscriber;
+                                                case 1 -> UserRole.Developer;
+                                                case 2 -> UserRole.Manager;
+                                                default -> null; // Handle other cases if needed
+                                            };
+                                            projectManagerSearchListResponseDTO.setUserRole(role);
 
-        ProjectSearchListResponseDTO projectDeveloperSearchListResponseDTO = new ProjectSearchListResponseDTO();
-        for(UserOpenSearch userOpenManagerSearch : projectOpenDeveloperNameSearchList){
-
-            List<UserInProjectOpenSearch> userInProjectOpenSearchList = searchUserInProjectByUserIdforDeveloper(userOpenManagerSearch.getId());
-
-            for(UserInProjectOpenSearch userInProjectOpenSearch : userInProjectOpenSearchList) {
-
-                List<ProjectOpenSearch> projectOpenSearch = searchProjectByProjectId(userInProjectOpenSearch.getProject_id());
-
-                for (ProjectOpenSearch projectOpenProjectSearch : projectOpenSearch) {
-                    List<UserInProjectOpenSearch> userInProjectOpenSearchList2 = searchUserInProjectByProjectId(projectOpenProjectSearch.getId());
-
-                    for (UserInProjectOpenSearch userInProjectOpenSearch2 : userInProjectOpenSearchList2) {
-                        List<UserOpenSearch> userOpenSearcheList = searchUserById(userInProjectOpenSearch2.getUser_id());
-
-                        for (UserOpenSearch userOpenSearch : userOpenSearcheList) {
-                            projectDeveloperSearchListResponseDTO.setId(projectOpenProjectSearch.getId());
-                            projectDeveloperSearchListResponseDTO.setName(projectOpenProjectSearch.getProjectName());
-                            projectDeveloperSearchListResponseDTO.setDescription(projectOpenProjectSearch.getDescription());
-                            projectDeveloperSearchListResponseDTO.setCreateDate(projectOpenProjectSearch.getCreateDate());
-                            projectDeveloperSearchListResponseDTO.setUserId(userOpenSearch.getId());
-                            projectDeveloperSearchListResponseDTO.setUserDepartment(userOpenSearch.getDepartment());
-                            projectDeveloperSearchListResponseDTO.setUserName(userOpenSearch.getUsername());
-                            if (userInProjectOpenSearch2.getRole() == 0) {
-                                role = UserRole.Subscriber;
-                            } else if (userInProjectOpenSearch2.getRole() == 1) {
-                                role = UserRole.Developer;
-                            } else if (userInProjectOpenSearch2.getRole() == 2) {
-                                role = UserRole.Manager;
-                            }
-                            projectDeveloperSearchListResponseDTO.setUserRole(role);
-
-                            projectSearchByDeveloperListResponseDTOList.add(projectDeveloperSearchListResponseDTO);
-
-                        }
-
-                    }
-                }
-            }
-
-        }
+                                            return projectManagerSearchListResponseDTO;
+                                        })
+                                )
+                        )
+                )
+                .collect(Collectors.toList());
 
         projectSearchResultListResponseDTO.setTitleSearch(makeProjectSearchListResponseDTOList(projectSearchByNameListResponseDTOList));
         projectSearchResultListResponseDTO.setDescriptionSearch(makeProjectSearchListResponseDTOList(projectSearchByDescriptionListResponseDTOList));
