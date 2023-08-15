@@ -122,8 +122,6 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
         deadIds.forEach(CLIENTS::remove);
     }
 
