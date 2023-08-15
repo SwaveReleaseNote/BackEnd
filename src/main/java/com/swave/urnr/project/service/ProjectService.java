@@ -17,7 +17,7 @@ import java.util.List;
 
 public interface ProjectService {
 
-    HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectRequestDto);
+    HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectRequestDto) throws InterruptedException;
 
     List<ProjectListResponseDTO> loadProjectList(HttpServletRequest request);
 

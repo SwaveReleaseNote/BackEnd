@@ -154,8 +154,6 @@ class UserInProjectServiceImplTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
-
         user.setUserInProjectList(new ArrayList<>());
 
         HttpResponse httpResponse = projectService.createProject(request,projectCreateRequestDTO);
@@ -271,7 +269,6 @@ class UserInProjectServiceImplTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -392,7 +389,6 @@ class UserInProjectServiceImplTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 

@@ -171,7 +171,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -292,7 +291,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -405,7 +403,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -516,7 +513,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -653,7 +649,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -770,7 +765,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -883,7 +877,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 

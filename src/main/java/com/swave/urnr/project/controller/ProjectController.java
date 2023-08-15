@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import com.swave.urnr.util.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +38,7 @@ public class ProjectController {
 
     @Operation(summary="프로젝트 생성", description="JWT에서 유저정보를 받아 프로젝트를 생성합니다.")
     @PostMapping("/project")
-    public HttpResponse createProject(HttpServletRequest request, @RequestBody ProjectCreateRequestDTO project){;
+    public HttpResponse createProject(HttpServletRequest request, @RequestBody ProjectCreateRequestDTO project) throws InterruptedException {;
         return projectService.createProject(request, project);
     }
 
@@ -52,9 +53,7 @@ public class ProjectController {
     @Operation(summary="프로젝트 하나 가져오기", description="프로젝트 ID를 가져와 프로젝트를 표시합니다.")
     @GetMapping("/project/{projectId}")
     public ProjectContentResponseDTO loadProject(HttpServletRequest request, @PathVariable Long projectId) throws NotAuthorizedException {
-/*
-        //todo:권한체크 http헤더로 가져오기
-        UserRole role = getRole((Long)request.getAttribute("id"),);*/
+
         return projectService.loadProject(request, projectId);
     }
 
@@ -66,6 +65,7 @@ public class ProjectController {
         return projectService.loadManagementProject(request,projectId);
     }
 
+    @Cacheable(value="Project") //ㄱRedis1 캐싱이 필요한 기능에 적용후
     @Operation(summary="프로젝트 검색하기", description="프로젝트 검색결과를 표시합니다.")
     @PostMapping("/project/search")
     public ProjectSearchResultListResponseDTO searchProject(@RequestBody ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO)throws UnsupportedEncodingException {

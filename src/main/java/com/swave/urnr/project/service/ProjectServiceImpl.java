@@ -8,6 +8,7 @@ import com.swave.urnr.project.requestdto.ProjectCreateRequestDTO;
 import com.swave.urnr.project.requestdto.ProjectKeywordRequestContentDTO;
 import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
 import com.swave.urnr.project.responsedto.*;
+import com.swave.urnr.redis.RedisLockRepository;
 import com.swave.urnr.releasenote.repository.ReleaseNoteRepository;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.domain.UserInProject;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 import static com.swave.urnr.project.domain.Project.makeProjectSearchListResponseDTOList;
@@ -50,99 +52,114 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ReleaseNoteRepository releaseNoteRepository;
 
+    private final RedisLockRepository redisLockRepository;
+
+    //private final RedissonClient redissonClient;
+
 
     @Override
     @Transactional
-    public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto) {
-        //빌더로 프로젝트생성
-        Project project = Project.builder()
-                .name(projectCreateRequestDto.getProjectName())
-                .description(projectCreateRequestDto.getDescription())
-                .createDate(new Date())
-                .userInProjectList(new ArrayList<>())
-                .build();
+    public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto) throws InterruptedException {
+        while (!redisLockRepository.lock((Long)request.getAttribute("id"))) {
+            Thread.sleep(100);
+        }
 
-        log.info(request.toString());
-        log.info(project.getDescription());
+        try {
 
-        //유저리스트 받아서 설정
-        //project.setUserInProjectList(new ArrayList<>()); //빌더에 넣어보기
-        //log.info(projectCreateRequestDto.getUserId().toString());
-        //projectRequestDto.getUserId()
-        User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
-        //user대신에 명확한 변수명 사용 manager?
+            //빌더로 프로젝트생성
+            Project project = Project.builder()
+                    .name(projectCreateRequestDto.getProjectName())
+                    .description(projectCreateRequestDto.getDescription())
+                    .createDate(new Date())
+                    .userInProjectList(new ArrayList<>())
+                    .build();
 
-        //UserInProject.setUserInProject(new ArrayList<>());
-        //builder를 이용한 userInProject 생성
+            log.info(request.toString());
+            log.info(project.getDescription());
 
-        //유저인 프로젝트 생성
-        //todo:워너비는 유저인 프로젝트를 크리에이트 하는 것이 아닌 프로젝트 생성시 자동으로 생성되게 하는 것이 아닌지?
-        UserInProject userInProject = UserInProject.builder()
-                .role(Manager)
-                .user(user)
-                .project(project)
-                .build();
+            //유저리스트 받아서 설정
+            //project.setUserInProjectList(new ArrayList<>()); //빌더에 넣어보기
+            //log.info(projectCreateRequestDto.getUserId().toString());
+            //projectRequestDto.getUserId()
+            User user = userRepository.findById((Long) request.getAttribute("id")).orElse(null);
+            //user대신에 명확한 변수명 사용 manager?
 
-        //리스트형식에서 삽입을 위한 list생성 빈칸생성은 아닌듯
-        //유저의 프로젝트 리스트를 가져와서 추가해서 넣어줌 기존에 유저가 가입된 프로젝트 리스트
+            //UserInProject.setUserInProject(new ArrayList<>());
+            //builder를 이용한 userInProject 생성
 
-        System.out.println("안녕"+user.getUserInProjectList());
-        System.out.println("안녕"+user.getId());
-        log.info(user.getUserInProjectList().toString());
-        ArrayList<UserInProject> list = new ArrayList<>(user.getUserInProjectList());
-        //리스트는 리스트로
+            //유저인 프로젝트 생성
+            //todo:워너비는 유저인 프로젝트를 크리에이트 하는 것이 아닌 프로젝트 생성시 자동으로 생성되게 하는 것이 아닌지?
+            UserInProject userInProject = UserInProject.builder()
+                    .role(Manager)
+                    .user(user)
+                    .project(project)
+                    .build();
 
-        //현재 프로젝트 추가
-        list.add(userInProject);
-        user.setUserInProjectList(list);
+            //리스트형식에서 삽입을 위한 list생성 빈칸생성은 아닌듯
+            //유저의 프로젝트 리스트를 가져와서 추가해서 넣어줌 기존에 유저가 가입된 프로젝트 리스트
 
-        //리스트를 새로 만들어서 프로젝트도 추가해줌
-        list = new ArrayList<>();
-        list.add(userInProject);
+            System.out.println("안녕" + user.getUserInProjectList());
+            System.out.println("안녕" + user.getId());
+            log.info(user.getUserInProjectList().toString());
+            ArrayList<UserInProject> list = new ArrayList<>(user.getUserInProjectList());
+            //리스트는 리스트로
 
-        //프로젝트에 인원추가?
-        project.setUserInProjectList(list);
-        //저장하고
-        Project saveProject = projectRepository.save(project);
+            //현재 프로젝트 추가
+            list.add(userInProject);
+            user.setUserInProjectList(list);
 
-        UserInProject saveUserInProject = userInProjectRepository.save(userInProject);
+            //리스트를 새로 만들어서 프로젝트도 추가해줌
+            list = new ArrayList<>();
+            list.add(userInProject);
 
-        if(!projectCreateRequestDto.getUsers().isEmpty()) {
-            for (Long userId : projectCreateRequestDto.getUsers()) {
-                //유저인 프로젝트 생성
-                UserInProject userInProject1 = new UserInProject();
-                userInProject1.setRole(UserRole.Developer);
-                userInProject1.setProject(project);
+            //프로젝트에 인원추가?
+            project.setUserInProjectList(list);
+            //저장하고
+            Project saveProject = projectRepository.save(project);
 
-                User user1 = userRepository.findById(userId).orElse(null);
-                //User user1 = userRepository.findById(userInProject1.getId()).get();
-                userInProject1.setUser(user1);
-                userInProjectRepository.save(userInProject1);
+            UserInProject saveUserInProject = userInProjectRepository.save(userInProject);
 
-                //유저생성
+            if (!projectCreateRequestDto.getUsers().isEmpty()) {
+                for (Long userId : projectCreateRequestDto.getUsers()) {
+                    //유저인 프로젝트 생성
+                    UserInProject userInProject1 = new UserInProject();
+                    userInProject1.setRole(UserRole.Developer);
+                    userInProject1.setProject(project);
+
+                    User user1 = userRepository.findById(userId).orElse(null);
+                    //User user1 = userRepository.findById(userInProject1.getId()).get();
+                    userInProject1.setUser(user1);
+                    userInProjectRepository.save(userInProject1);
+
+                    //유저생성
                 /*List<UserInProject> userInProjectList = user.getUserInProjectList();
                 userInProjectList.add(userInProject);
                 user.setUserInProjectList(userInProjectList);*/
 
-                userRepository.flush();
-                userInProjectRepository.flush();
+                    userRepository.flush();
+                    userInProjectRepository.flush();
 
-                project.getUserInProjectList().add(userInProject1);
+                    project.getUserInProjectList().add(userInProject1);
+                }
             }
+            //저장하고
+            User saveUser = userRepository.save(user);
+            //flush로 반영한다.
+            userRepository.flush();
+            projectRepository.flush();
+            userInProjectRepository.flush();
+
+
+            //return project.toString();
+            return HttpResponse.builder()
+                    .message("Project Created")
+                    .description("Project Id " + project.getId() + " created")
+                    .build();
         }
-        //저장하고
-        User saveUser = userRepository.save(user);
-        //flush로 반영한다.
-        userRepository.flush();
-        projectRepository.flush();
-        userInProjectRepository.flush();
-
-
-        //return project.toString();
-        return HttpResponse.builder()
-                .message("Project Created")
-                .description("Project Id "+ project.getId()+" created")
-                .build();
+        finally {
+            redisLockRepository.unlock((Long)request.getAttribute("id"));
+            // 락 해제
+        }
     }
 
     //최신 릴리즈노트 이름 가져오기
@@ -388,6 +405,8 @@ public class ProjectServiceImpl implements ProjectService {
         projectSearchResultListResponseDTO.setDeveloperSearch(makeProjectSearchListResponseDTOList(projectSearchByDeveloperListResponseDTOList));
 
         return projectSearchResultListResponseDTO;
+
+
     }
 
 
