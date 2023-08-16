@@ -123,11 +123,11 @@ pipeline {
                 }
                 stage('AgroCD Manifest Update') {
                         steps {
-                               git credentialsId: 'front-github',
+                               git credentialsId: 'kjk7212',
                                    url: 'https://github.com/SwaveReleaseNote/argocd-back',
                                    branch: 'main'
 
-                               sh "sed -i 's/# build-version:.*/# build-version: ${currentBuild.number}/' front.yaml"
+                               sh "sed -i 's/# build-version:.*/# build-version: ${currentBuild.number}/' back.yaml"
                                sh "git add back.yaml"
                             //    sshagent(credentials: ['git-ssh']) {
                                    sh "git commit -m '[UPDATE] v${currentBuild.number} image versioning'"
