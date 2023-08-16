@@ -25,7 +25,7 @@ public class SecurityConfig{
 
 
 
-    public static final String FRONT_URL = "http://266e8974276247f4b3cad8498606fafb.kakaoiedge.com:80";
+    public static final String FRONT_URL = "http://61.109.214.110";
 
     private final CorsFilter corsFilter;
 
