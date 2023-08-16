@@ -99,7 +99,7 @@ public class UserController {
         return userService.getTokenByOauth(code, provider);
     }
     @Operation(summary="사용자 로그인 여부 확인", description="현재 사용자가 로그인하고 있으면 true 아니면 false가 나옵니다")
-    @PatchMapping("ㅣ/user/status")
+    @PatchMapping("/user/status")
     public boolean updateStatus(HttpServletRequest request,  @RequestBody Map<String, Object> requestBody)  {
         return userService.updateLoginState(request, (Boolean) requestBody.get("loginState"));
     }
