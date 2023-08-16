@@ -33,7 +33,6 @@ pipeline {
 
 
                 sh 'ls -al ./build'
-
             }
             post {
                 success {
@@ -82,7 +81,6 @@ pipeline {
                                                                            }
                         sh 'echo " Image Bulid Start"'
                         sh 'docker build . -t kjk7212/release_note_back'
-                        
                     }
                     post {
                         success {
@@ -138,23 +136,23 @@ pipeline {
                                    sh "git push -u origin main"
                                }
                         }
-                    }
+                }
                 post {
-                                success {
-                                    slackSend (
-                                            channel: '#jenkins',
-                                            color: '#00FF00',
-                                            message: "SUCCESS: Job ${env.JOB_NAME} AgroCD Manifest Update"
-                                    )
-                                }
-                                failure {
-                                    slackSend (
-                                            channel: '#jenkins',
-                                            color: '#FF0000',
-                                            message: "FAIL: Job ${env.JOB_NAME} AgroCD Manifest Update"
-                                    )
-                                }
-                            }
+                                                success {
+                                                    slackSend (
+                                                            channel: '#jenkins',
+                                                            color: '#00FF00',
+                                                            message: "SUCCESS: Job ${env.JOB_NAME} AgroCD Manifest Update"
+                                                    )
+                                                }
+                                                failure {
+                                                    slackSend (
+                                                            channel: '#jenkins',
+                                                            color: '#FF0000',
+                                                            message: "FAIL: Job ${env.JOB_NAME} AgroCD Manifest Update"
+                                                    )
+                                                }
+                                            }
 
 
         }
