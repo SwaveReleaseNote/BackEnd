@@ -86,7 +86,7 @@ pipeline {
                 stage('Tag Docker Image') {
                             steps {
                                 // Tag the Docker image with the desired repository name and tag
-                                sh 'docker tag release_note_back:latest kjk7212/release_note_back'
+                                sh 'docker tag release_note_back:latest kjk7212/release_note_back:${currentBuild.number}'
                             }
                         }
                 stage('Docker Push') {
