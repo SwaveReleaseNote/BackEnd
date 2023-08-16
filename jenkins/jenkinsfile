@@ -142,6 +142,7 @@ pipeline {
                                     }
                                 }
                             }
+                            }
                 stage('AgroCD Manifest Update') {
                         steps {
                                git credentialsId: 'kjk7212',
