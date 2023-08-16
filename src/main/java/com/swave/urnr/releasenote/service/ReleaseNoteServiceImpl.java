@@ -135,6 +135,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     @Override
     @Transactional(readOnly = true)
     public ReleaseNoteContentResponseDTO loadReleaseNote(HttpServletRequest request, Long releaseNoteId) {
+
         UserInProject userInProject = releaseNoteRepository.findUserInProjectByUserIdAndReleaseNoteId((Long) request.getAttribute("id"), releaseNoteId);
 
         if (userInProject == null) {
