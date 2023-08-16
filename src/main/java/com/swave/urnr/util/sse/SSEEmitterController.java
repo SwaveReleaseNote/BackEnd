@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/sse")
-@CrossOrigin(origins = "http://61.109.214.110", allowedHeaders = "*", allowCredentials = "true")
+@RequestMapping("/api/alert/sse")
+@CrossOrigin(origins = "http://61.109.214.110:80", allowedHeaders = "*", allowCredentials = "true")
 public class SSEEmitterController {
     public final SSEEmitterService sseEmitterService;
 

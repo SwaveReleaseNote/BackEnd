@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Api(tags = "OpenSearchController")
-@CrossOrigin(origins = "http://61.109.214.110", allowedHeaders = "*", allowCredentials = "true")
+@CrossOrigin(origins = "http://61.109.214.110:80", allowedHeaders = "*", allowCredentials = "true")
 public class OpenSearchController {
 
     private final OpenSearchService openSearchService;
