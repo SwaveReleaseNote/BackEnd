@@ -1,6 +1,7 @@
 package com.swave.urnr.opensearch.controller;
 
 import com.swave.urnr.opensearch.domain.ProjectOpenSearch;
+import com.swave.urnr.opensearch.domain.UserOpenSearch;
 import com.swave.urnr.opensearch.service.OpenSearchIndexService;
 import com.swave.urnr.opensearch.service.OpenSearchService;
 import io.swagger.annotations.Api;
@@ -25,10 +26,10 @@ public class OpenSearchController {
 
     @Operation(summary="검색 쿼리 테스트", description="테스트용 코드입니다.")
     @GetMapping("/test/{query}")
-    public List<ProjectOpenSearch> test(@PathVariable String query){
-        List<ProjectOpenSearch> test = openSearchService.searchProjectByDescription(query);
+    public List<UserOpenSearch> test(@PathVariable Long query){
+        //List<ProjectOpenSearch> test = openSearchService.searchProjectByDescription(query);
         //List<ProjectOpenSearch> test = openSearchService.searchProjectByProjectName(query);
-        //List<UserOpenSearch> test = openSearchService.searchUserById(1L);
+        List<UserOpenSearch> test = openSearchService.searchUserById(query);
         //List<UserInProjectOpenSearch> test = openSearchService.searchUserInProjectByRole(2L);
         return test;
     }
