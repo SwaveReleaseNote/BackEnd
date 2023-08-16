@@ -41,12 +41,7 @@ public class UserInProjectServiceImpl implements UserInProjectService {
     @Transactional
     public HttpResponse dropProject(HttpServletRequest request, Long projectId) {
 
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
 
             Long userId = (Long) request.getAttribute("id");
 
@@ -56,21 +51,12 @@ public class UserInProjectServiceImpl implements UserInProjectService {
                     .message("User drop project")
                     .description(drop + " complete")
                     .build();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 
     @Override
     public HttpResponse subscribeProject(HttpServletRequest request, Long projectId) {
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
 
             System.out.println(projectId);
             User user = userRepository.findById((Long) request.getAttribute("id")).orElse(null);
@@ -90,22 +76,13 @@ public class UserInProjectServiceImpl implements UserInProjectService {
                     .message("User subscribe project")
                     .description(userInProject.getId() + " complete")
                     .build();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserRole getRole(HttpServletRequest request, Long projectId) {
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long) request.getAttribute("id"), projectId);
 
             UserRole role;
@@ -116,11 +93,7 @@ public class UserInProjectServiceImpl implements UserInProjectService {
             }
 
             return role;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
 
     }
 }

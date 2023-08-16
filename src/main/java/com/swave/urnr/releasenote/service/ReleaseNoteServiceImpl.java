@@ -65,12 +65,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     @Override
     @Transactional
     public HttpResponse createReleaseNote(HttpServletRequest request, Long projectId, ReleaseNoteCreateRequestDTO releaseNoteCreateRequestDTO) {
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             Date currentDate = new Date();
 
             User user = userRepository.findById((Long) request.getAttribute("id"))
@@ -155,11 +150,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
                 .description("Release Note ID : " + releaseNote.getId() + " Created")
                 .build();
 
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 
     //project id를 받아서 해당 project에 연결된 모든 releaseNote를 리스트로 반환 -> 전체 출력용

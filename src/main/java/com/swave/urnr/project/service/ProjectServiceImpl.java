@@ -61,28 +61,11 @@ public class ProjectServiceImpl implements ProjectService {
     private final RedissonClient redissonClient;
 
 
-    /*RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try
 
-    {
-        boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-        if (!available) {
-            throw new RuntimeException("Lock 획득 실패!");
-        }
-    }catch (InterruptedException e) {
-        throw new RuntimeException(e);
-    } finally {
-        lock.unlock();
-    }*/
     @Override
     @Transactional
     public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto) throws InterruptedException {
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             log.info("hi");
             //빌더로 프로젝트생성
             Project project = Project.builder()
@@ -173,11 +156,7 @@ public class ProjectServiceImpl implements ProjectService {
                     .message("Project Created")
                     .description("Project Id " + project.getId() + " created")
                     .build();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 
     //최신 릴리즈노트 이름 가져오기
@@ -323,19 +302,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     //관리자 변경하기 의외로 쉽게 될수도?
-    /*RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try
 
-    {
-        boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-        if (!available) {
-            throw new RuntimeException("Lock 획득 실패!");
-        }
-    }catch (InterruptedException e) {
-        throw new RuntimeException(e);
-    } finally {
-        lock.unlock();
-    }*/
     @Override
     @Transactional
     public ProjectUpdateRequestDTO updateProject(HttpServletRequest request, Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) throws NotAuthorizedException {
