@@ -3,10 +3,8 @@ package com.swave.urnr.user.controller;
 import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
 import com.swave.urnr.user.responsedto.UserEntityResponseDTO;
-import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.requestdto.*;
 import com.swave.urnr.user.service.UserService;
-import com.swave.urnr.util.kafka.KafkaService;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,13 +12,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Map;
 
 @Api(tags = "UserController")
@@ -64,11 +60,11 @@ public class UserController {
     }
 
 
-    @Operation(summary="사용자 소속 수정", description="로그인한 사용자로부터 받은 정보로 사용자의 계정 정보를 수정합니다.")
+    @Operation(summary="사용자 계정 일부 수정", description="로그인한 사용자로부터 받은 정보로 사용자의 계정 정보를 일부 수정합니다.")
     @PatchMapping("/user")
     @SecurityRequirement(name = "JWT 토큰")
     public  ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, @RequestBody UserDepartmentRequestDTO requestDto) {
-        return userService.initDepartment(request, requestDto);
+        return userService.patchUserInformation(request, requestDto);
     }
 
     @Operation(summary="사용자 계정 삭제", description="토큰에 해당하는 사용자의 계정을 삭제합니다.")

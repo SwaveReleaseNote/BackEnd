@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, UserDepartmentRequestDTO requestDto)  {
+    public ResponseEntity<UserEntityResponseDTO> patchUserInformation(HttpServletRequest request, UserDepartmentRequestDTO requestDto)  {
 
         RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
         try {
@@ -109,7 +109,15 @@ public class UserServiceImpl implements UserService {
                 return ResponseEntity.status(409).body(userEntityResponseDto);
             }
             User user = userRepository.findById(id).get();
-            user.setDepartment(requestDto.getDepartment());
+            if(requestDto.getDepartment() !=null){
+                user.setDepartment(requestDto.getDepartment());
+            }
+            if(requestDto.getName() !=null){
+                user.setUsername(requestDto.getName());
+            }
+            if(requestDto.getPassword() !=null){
+                user.setPassword(encoder.encode(requestDto.getPassword()));
+            }
             log.info("Final : " + user);
             userRepository.save(user);
             userRepository.flush();

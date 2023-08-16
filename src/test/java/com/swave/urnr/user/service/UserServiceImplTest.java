@@ -3,7 +3,6 @@ package com.swave.urnr.user.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swave.urnr.user.domain.User;
-import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.user.requestdto.*;
 import com.swave.urnr.user.responsedto.ManagerResponseDTO;
@@ -12,31 +11,24 @@ import com.swave.urnr.user.responsedto.UserEntityResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.json.JsonContent;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.transaction.Transactional;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -93,7 +85,7 @@ class UserServiceImplTest {
 
         UserDepartmentRequestDTO userDepartmentRequestDTO = new UserDepartmentRequestDTO("test");
 
-        ResponseEntity<UserEntityResponseDTO> result = userService.initDepartment(request,userDepartmentRequestDTO);
+        ResponseEntity<UserEntityResponseDTO> result = userService.patchUserInformation(request,userDepartmentRequestDTO);
 
         UserEntityResponseDTO userEntityResponseDTO = new UserEntityResponseDTO(200,"test");
 

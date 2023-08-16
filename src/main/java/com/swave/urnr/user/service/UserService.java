@@ -3,7 +3,6 @@ package com.swave.urnr.user.service;
 import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
 import com.swave.urnr.user.responsedto.UserEntityResponseDTO;
-import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.requestdto.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +19,7 @@ public interface UserService {
 
     ResponseEntity<String> updateUser(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto);
 
-    ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, UserDepartmentRequestDTO requestDto) ;
+    ResponseEntity<UserEntityResponseDTO> patchUserInformation(HttpServletRequest request, UserDepartmentRequestDTO requestDto) ;
 
 
     ResponseEntity<SseEmitter> getTokenByLogin(UserLoginServerRequestDTO requestDto) ;

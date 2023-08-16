@@ -62,8 +62,7 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
         emitter.onTimeout(() -> CLIENTS.remove(id));
         emitter.onCompletion(() -> CLIENTS.remove(id));
         try {
-
-            String jsonMsg = objectMapper.writeValueAsString("Token already distributed");
+            String jsonMsg = "Gained emitter";
             SSEDataDTO sseDataDTO = new SSEDataDTO(jsonMsg, SSETypeEnum.NORMAL);
             emitter.send(sseDataDTO, MediaType.APPLICATION_JSON);
         } catch (Exception e) {
@@ -132,11 +131,7 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
 
         SseEmitter emitter = CLIENTS.get(uid);
         SSEDataDTO sseDataDTO = new SSEDataDTO(message, SSETypeEnum.NORMAL);
-        log.info("PV : "+uid);
-        log.info("MSG : "+message);
             try {
-
-                log.info("id : {} TEMPORARY VALUE :  {}  Before message : {}",uid, message, message);
                 emitter.send(sseDataDTO, MediaType.APPLICATION_JSON);
             } catch (Exception e) {
                 deadIds.add(uid);
