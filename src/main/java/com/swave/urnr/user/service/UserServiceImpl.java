@@ -1,5 +1,7 @@
 package com.swave.urnr.user.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserListResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
