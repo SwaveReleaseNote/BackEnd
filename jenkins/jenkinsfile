@@ -18,6 +18,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Build') {
             steps {
             	// gralew이 있어야됨. git clone해서 project를 가져옴.
