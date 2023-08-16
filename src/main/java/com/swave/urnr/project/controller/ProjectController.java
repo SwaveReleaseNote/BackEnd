@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import com.swave.urnr.util.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,10 +38,13 @@ public class ProjectController {
 
     @Operation(summary="프로젝트 생성", description="JWT에서 유저정보를 받아 프로젝트를 생성합니다.")
     @PostMapping("/project")
-    public HttpResponse createProject(HttpServletRequest request, @RequestBody ProjectCreateRequestDTO project){;
+    public HttpResponse createProject(HttpServletRequest request, @RequestBody ProjectCreateRequestDTO project) throws InterruptedException {;
         return projectService.createProject(request, project);
     }
 
+
+
+    @Cacheable(value="loadProjectList")
     @Operation(summary="프로젝트 전체 가져오기", description="JWT에서 유저정보를 받아 해당 유저의 프로젝트 전체를 가져옵니다.")
     @GetMapping("/projects")
     public List<ProjectListResponseDTO> loadProjectList(HttpServletRequest request){
@@ -48,16 +52,16 @@ public class ProjectController {
     }
 
 
-
+    @Cacheable(value="loadProject")
     @Operation(summary="프로젝트 하나 가져오기", description="프로젝트 ID를 가져와 프로젝트를 표시합니다.")
     @GetMapping("/project/{projectId}")
     public ProjectContentResponseDTO loadProject(HttpServletRequest request, @PathVariable Long projectId) throws NotAuthorizedException {
-/*
-        //todo:권한체크 http헤더로 가져오기
-        UserRole role = getRole((Long)request.getAttribute("id"),);*/
+
         return projectService.loadProject(request, projectId);
     }
 
+
+    @Cacheable(value="loadManagementProject")
     @Operation(summary="프로젝트 하나 가져오기(관리페이지)", description="프로젝트ID를 가져와 프로젝트와 유저정보를 표시합니다.")
     @GetMapping("/project/{projectId}/manage")
     public ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request, @PathVariable Long projectId) throws NotAuthorizedException, IOException {
@@ -66,6 +70,7 @@ public class ProjectController {
         return projectService.loadManagementProject(request,projectId);
     }
 
+    @Cacheable(value="searchProject") //ㄱRedis1 캐싱이 필요한 기능에 적용후
     @Operation(summary="프로젝트 검색하기", description="프로젝트 검색결과를 표시합니다.")
     @PostMapping("/project/search")
     public ProjectSearchResultListResponseDTO searchProject(@RequestBody ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO)throws UnsupportedEncodingException {

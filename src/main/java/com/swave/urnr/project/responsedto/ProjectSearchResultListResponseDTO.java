@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 
@@ -13,7 +14,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProjectSearchResultListResponseDTO {
+public class ProjectSearchResultListResponseDTO implements Serializable { //Redis2 관련 dto에 직렬화(Serializable적용)
     @ApiModelProperty(value="프로젝트 제목 검색 결과", example = "1", required = true)
     List<ProjectSearchContentResponseDTO> titleSearch;
     @ApiModelProperty(value="프로젝트 Description 검색 결과", example = "1", required = true)

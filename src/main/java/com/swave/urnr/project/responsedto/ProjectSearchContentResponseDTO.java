@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ApiModel(value = "프로젝트 검색")
-public class ProjectSearchContentResponseDTO {
+public class ProjectSearchContentResponseDTO implements Serializable {
     @ApiModelProperty(value="프로젝트 ID", example = "1", required = true)
     Long id;
 

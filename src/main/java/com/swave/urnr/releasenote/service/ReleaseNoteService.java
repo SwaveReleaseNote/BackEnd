@@ -17,7 +17,7 @@ import java.util.List;
 public interface ReleaseNoteService {
     public HttpResponse createReleaseNote(HttpServletRequest request, Long projectId, ReleaseNoteCreateRequestDTO releaseNoteCreateRequestDTO);
     public HttpResponse updateReleaseNote(HttpServletRequest request, Long releaseNoteId, ReleaseNoteUpdateRequestDTO releaseNoteUpdateRequestDTO);
-    public HttpResponse deleteReleaseNote(Long releaseNoteId);
+    public HttpResponse deleteReleaseNote(HttpServletRequest request, Long releaseNoteId);
     public ArrayList<ReleaseNoteContentListResponseDTO> loadReleaseNoteList(Long projectId);
     public ReleaseNoteContentResponseDTO loadReleaseNote(HttpServletRequest request, Long releaseNoteId);
     public ArrayList<ReleaseNoteVersionListResponseDTO> loadProjectVersionList(HttpServletRequest request);

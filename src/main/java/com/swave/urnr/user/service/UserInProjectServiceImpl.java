@@ -10,12 +10,15 @@ import com.swave.urnr.util.http.HttpResponse;
 import com.swave.urnr.util.type.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.swave.urnr.util.type.UserRole.None;
 import static com.swave.urnr.util.type.UserRole.Subscriber;
@@ -23,7 +26,7 @@ import static com.swave.urnr.util.type.UserRole.Subscriber;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserInProjectServiceImpl implements UserInProjectService{
+public class UserInProjectServiceImpl implements UserInProjectService {
 
     private final UserInProjectRepository userInProjectRepository;
 
@@ -31,56 +34,93 @@ public class UserInProjectServiceImpl implements UserInProjectService{
 
     private final UserRepository userRepository;
 
+    private final RedissonClient redissonClient;
+
 
     @Override
     @Transactional
     public HttpResponse dropProject(HttpServletRequest request, Long projectId) {
 
-        Long userId = (Long)request.getAttribute("id");
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
 
-        int drop = userInProjectRepository.dropProject(userId,projectId);
-        userInProjectRepository.flush();
-        return HttpResponse.builder()
-                .message("User drop project")
-                .description(drop +" complete")
-                .build();
+            Long userId = (Long) request.getAttribute("id");
+
+            int drop = userInProjectRepository.dropProject(userId, projectId);
+            userInProjectRepository.flush();
+            return HttpResponse.builder()
+                    .message("User drop project")
+                    .description(drop + " complete")
+                    .build();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public HttpResponse subscribeProject(HttpServletRequest request, Long projectId) {
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
 
-        System.out.println(projectId);
-        User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
+            System.out.println(projectId);
+            User user = userRepository.findById((Long) request.getAttribute("id")).orElse(null);
 
-        Project project = projectRepository.findById(projectId).orElse(null);
+            Project project = projectRepository.findById(projectId).orElse(null);
 
-        UserInProject userInProject = UserInProject.builder()
-                .role(Subscriber)
-                .user(user)
-                .project(project)
-                .build();
+            UserInProject userInProject = UserInProject.builder()
+                    .role(Subscriber)
+                    .user(user)
+                    .project(project)
+                    .build();
 
-        userInProjectRepository.save(userInProject);
-        userInProjectRepository.flush();
+            userInProjectRepository.save(userInProject);
+            userInProjectRepository.flush();
 
-        return HttpResponse.builder()
-                .message("User subscribe project")
-                .description(userInProject.getId() +" complete")
-                .build();
+            return HttpResponse.builder()
+                    .message("User subscribe project")
+                    .description(userInProject.getId() + " complete")
+                    .build();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserRole getRole(HttpServletRequest request, Long projectId) {
-        UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long)request.getAttribute("id"),projectId);
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long) request.getAttribute("id"), projectId);
 
-        UserRole role;
-        if(userInProject==null){
-            role = None;
-        }else{
-            role = userInProject.getRole();
+            UserRole role;
+            if (userInProject == null) {
+                role = None;
+            } else {
+                role = userInProject.getRole();
+            }
+
+            return role;
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
         }
 
-        return role;
     }
 }

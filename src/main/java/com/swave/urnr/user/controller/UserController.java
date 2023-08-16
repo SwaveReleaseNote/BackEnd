@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,12 +32,16 @@ public class UserController {
 
     private final UserService userService;
 
+
+    @Cacheable(value="getUserInformationList")
     @Operation(summary="사용자 정보 리스트 반환", description="관리자의 정보와 사용자들의 정보 리스트를 반환합니다.")
     @GetMapping("/users")
     public ManagerResponseDTO getUserInformationList(HttpServletRequest request) {
         return userService.getUserInformationList(request);
     }
 
+
+    @Cacheable(value="getCurrentUserInformation")
     @Operation(summary="사용자 계정 정보 반환", description="사용자의 계정 정보를 반환합니다.")
     @GetMapping("/user")
     public ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request)  {

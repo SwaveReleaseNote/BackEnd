@@ -9,11 +9,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 
 @ApiModel(value = "사용자 멤버 정보 응답 DTO")
 @Data
 @NoArgsConstructor
-public class UserMemberInfoResponseDTO {
+public class UserMemberInfoResponseDTO implements Serializable {
 
     @ApiModelProperty(value = "사용자 ID", example = "1", required = true)
     Long userId;

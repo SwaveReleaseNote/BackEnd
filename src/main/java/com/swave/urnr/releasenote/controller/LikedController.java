@@ -6,6 +6,7 @@ import com.swave.urnr.util.http.HttpResponse;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,8 @@ public class LikedController {
         return likedService.cancelLiked(request, releaseNoteId);
     }
 
+
+    @Cacheable(value="countLike")
     @Operation(summary = "좋아요 갯수 세기", description = "releaseNoteId의 릴리즈 노트에 달린 좋아요의 갯수를 반환합니다.")
     @GetMapping("/api/project/release-note/{releaseNoteId}/liked")
     public LikedCountResponseDTO countLiked(@PathVariable Long releaseNoteId){

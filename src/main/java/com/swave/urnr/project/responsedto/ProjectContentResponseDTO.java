@@ -10,12 +10,13 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @NoArgsConstructor
 @ApiModel(value = "프로젝트 하나 가져오는 DTO")
-public class ProjectContentResponseDTO {
+public class ProjectContentResponseDTO implements Serializable {
 
     @ApiModelProperty(value="프로젝트 ID", example = "1", required = true)
     Long id;

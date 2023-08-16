@@ -26,4 +26,7 @@ public class UserOpenSearch {
 
     @Field(name = "email")
     private String email;
+
+    @Field(name = "department")
+    private String department;
 }
