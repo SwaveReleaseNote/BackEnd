@@ -121,7 +121,7 @@ pipeline {
                         }
                     }
                 }
-                stage('AgroCD Manifest Update') {
+                stage('AgroCD Manifest Update2') {
                             steps {
                                 git credentialsId: 'kjk7212',
                                         url: 'https://github.com/KEA-SWAVE-SURVEY/argocd-back',
