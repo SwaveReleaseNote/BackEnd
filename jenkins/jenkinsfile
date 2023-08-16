@@ -124,18 +124,19 @@ pipeline {
                 stage('AgroCD Manifest Update') {
                         steps {
                                git credentialsId: 'kjk7212',
-                                   url: 'https://github.com/SwaveReleaseNote/argocd-back',
-                                   branch: 'main'
+                                       url: 'https://github.com/SwaveReleaseNote/argocd-back',
+                                       branch: 'main'
 
-                               sh "sed -i 's/# build-version:.*/# build-version: ${currentBuild.number}/' back.yaml"
+                               sh "sed -i 's/# build-version:.*/# build-version: ${currentBuild.number}/g' back.yaml"
                                sh "git add back.yaml"
-                                sshagent(credentials: ['git-ssh']) {
+                               sshagent(credentials: ['git-ssh']) {
                                    sh "git commit -m '[UPDATE] v${currentBuild.number} image versioning'"
                                    sh "git remote set-url origin git@github.com:SwaveReleaseNote/argocd-back.git"
                                    sh "git push -u origin main"
-                                }
+                               }
                         }
                     }
+
         }
 
 }
