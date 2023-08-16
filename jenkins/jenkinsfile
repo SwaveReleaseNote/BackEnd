@@ -131,7 +131,7 @@ pipeline {
                                sh "git add back.yaml"
                             //    sshagent(credentials: ['git-ssh']) {
                                    sh "git commit -m '[UPDATE] v${currentBuild.number} image versioning'"
-                                   sh "git remote set-url origin https://github.com/SwaveReleaseNote/argocd-back.git"
+                                   sh "git remote set-url origin http://github.com/SwaveReleaseNote/argocd-back.git"
                                    sh "git push -u origin main"
                             //    }
                         }
