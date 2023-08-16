@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ProjectServiceTest {
@@ -93,7 +94,7 @@ class ProjectServiceTest {
     @Test
     @Transactional
     @DisplayName("프로젝트 생성 테스트")
-    void createProject() {
+    void createProject() throws InterruptedException {
 
 
         userTest1 = User.builder()
@@ -171,7 +172,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -213,7 +213,7 @@ class ProjectServiceTest {
     @Test
     @Transactional
     @DisplayName("프로젝트 리스트 로딩")
-    void loadProjectList() {
+    void loadProjectList() throws InterruptedException {
 
 
         userTest1 = User.builder()
@@ -292,7 +292,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -325,7 +324,7 @@ class ProjectServiceTest {
     @Test
     @Transactional
     @DisplayName("프로젝트 로딩 테스트")
-    void loadProject() throws NotAuthorizedException {
+    void loadProject() throws NotAuthorizedException, InterruptedException {
 
 
         userTest1 = User.builder()
@@ -405,7 +404,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -437,7 +435,7 @@ class ProjectServiceTest {
 
     @Test
     @DisplayName("프로젝트 업데이트 테스트")
-    void updateProject() throws NotAuthorizedException {
+    void updateProject() throws NotAuthorizedException, InterruptedException {
 
 
         userTest1 = User.builder()
@@ -516,7 +514,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -575,7 +572,7 @@ class ProjectServiceTest {
     @Test
     @Transactional
     @DisplayName("프로젝트 삭제 테스트")
-    void deleteProject() throws NotAuthorizedException {
+    void deleteProject() throws NotAuthorizedException, InterruptedException {
 
         userTest1 = User.builder()
                 .name("kang")
@@ -653,7 +650,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -691,7 +687,7 @@ class ProjectServiceTest {
     @Test
     @Transactional
     @DisplayName("역할 가져오기 테스트")
-    void getRole(){
+    void getRole() throws InterruptedException {
         //유저 만들고
         //프로젝트 생성
 
@@ -770,7 +766,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -804,7 +799,7 @@ class ProjectServiceTest {
     @Test
     @Transactional
     @DisplayName("프로젝트 검색 테스트")
-    void searchProject() throws UnsupportedEncodingException {
+    void searchProject() throws UnsupportedEncodingException, InterruptedException {
         //유저 만들고
         //프로젝트 생성
 
@@ -883,7 +878,6 @@ class ProjectServiceTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 

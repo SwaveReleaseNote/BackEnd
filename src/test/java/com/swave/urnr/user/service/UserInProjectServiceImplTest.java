@@ -76,7 +76,7 @@ class UserInProjectServiceImplTest {
     @Test
     @Transactional
     @DisplayName("구독 탈퇴 테스트")
-    void dropProject() {
+    void dropProject() throws InterruptedException {
 
         userTest1 = User.builder()
                 .name("kang")
@@ -153,8 +153,6 @@ class UserInProjectServiceImplTest {
 
 
         request.setAttribute("id",user.getId());
-
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -193,7 +191,7 @@ class UserInProjectServiceImplTest {
     @Test
     @Transactional
     @DisplayName("구독 테스트")
-    void subscribeProject() {
+    void subscribeProject() throws InterruptedException {
 
         userTest1 = User.builder()
                 .name("kang")
@@ -271,7 +269,6 @@ class UserInProjectServiceImplTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 
@@ -315,7 +312,7 @@ class UserInProjectServiceImplTest {
     @Test
     @Transactional
     @DisplayName("역할 검색 테스트")
-    void getRole() {
+    void getRole() throws InterruptedException {
 
         userTest1 = User.builder()
                 .name("kang")
@@ -392,7 +389,6 @@ class UserInProjectServiceImplTest {
 
         request.setAttribute("id",user.getId());
 
-        projectCreateRequestDTO.setUserId((Long)request.getAttribute("id"));
 
         user.setUserInProjectList(new ArrayList<>());
 

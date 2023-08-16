@@ -7,6 +7,7 @@ import com.swave.urnr.releasenote.service.ReleaseNoteService;
 import com.swave.urnr.util.http.HttpResponse;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,30 +34,39 @@ public class ReleaseNoteController {
         return releaseNoteService.updateReleaseNote(request, releaseNoteId, releaseNoteUpdateRequestDTO);
     }
 
+
+    @Cacheable(value="loadReleaseNote")
     @Operation(summary="릴리즈 노트 한개 받기", description="releaseNoteId의 릴리즈 노트를 읽어옵니다. 댓글이 포함됩니다.")
     @GetMapping("/api/project/release-note/{releaseNoteId}")
     public ReleaseNoteContentResponseDTO loadReleaseNote(HttpServletRequest request, @PathVariable Long releaseNoteId) {
         return releaseNoteService.loadReleaseNote(request, releaseNoteId);
     }
 
+
+    @Cacheable(value="loadReleaseNoteList")
     @Operation(summary="릴리즈 노트 리스트 받기", description="projectId의 프로젝트의 모든 릴리즈 노트를 읽어옵니다. (*GPT 요약본으로)")
     @GetMapping("/api/project/{projectId}/release-notes")
     public ArrayList<ReleaseNoteContentListResponseDTO> loadReleaseNoteList(@PathVariable Long projectId) {
         return releaseNoteService.loadReleaseNoteList(projectId);
     }
 
+
+    @Cacheable(value="loadProjectVersionList")
     @Operation(summary="릴리즈 노트 버전 리스트 받기", description="내가 소속된 모든 프로젝트의 릴리즈 노트 버전정보를 읽어옵니다. 유저 정보는 JWT로부터 가져옵니다.")
     @GetMapping("/api/project/release-note/version-list")
     public ArrayList<ReleaseNoteVersionListResponseDTO> loadProjectVersionList(HttpServletRequest request) {
         return releaseNoteService.loadProjectVersionList(request);
     }
 
+
     @Operation(summary="릴리즈 노트 삭제", description="releaseNoteId의 릴리즈노트를 삭제 합니다.")
     @DeleteMapping("/api/project/release-note/{releaseNoteId}")
-    public HttpResponse deleteReleaseNote(@PathVariable Long releaseNoteId) {
-        return releaseNoteService.deleteReleaseNote(releaseNoteId);
+    public HttpResponse deleteReleaseNote(HttpServletRequest request,@PathVariable Long releaseNoteId) {
+        return releaseNoteService.deleteReleaseNote(request, releaseNoteId);
     }
 
+
+    @Cacheable(value="loadRecentReleaseNote")
     @Operation(summary = "구독 또는 개발에 참여중인 프로젝트 내에서 가장 최근 릴리즈 노트 하나 받기", description="내가 소속된 모든 프로젝트에서 가장 최근 릴리즈 노트 하나를 읽어옵니다. 유저 정보는 JWT로부터 가져옵니다." )
     @GetMapping("/api/project/release-note/recent-release-note")
     public ReleaseNoteContentResponseDTO loadRecentReleaseNote(HttpServletRequest request){

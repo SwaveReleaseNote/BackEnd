@@ -1,7 +1,5 @@
 package com.swave.urnr.user.service;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserListResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
@@ -17,6 +15,8 @@ import com.swave.urnr.user.requestdto.*;
 import com.swave.urnr.util.sse.SSEEmitterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +46,8 @@ public class UserServiceImpl implements UserService {
     private final KafkaService kafkaService;
 
     private final SSEEmitterService sseEmitterService;
+    private final RedissonClient redissonClient;
+
 
     public PasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -58,14 +61,14 @@ public class UserServiceImpl implements UserService {
         log.info("Email : ", request.getEmail());
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            userEntityResponseDTO= new UserEntityResponseDTO(409,"The mail already exists");
+            userEntityResponseDTO = new UserEntityResponseDTO(409, "The mail already exists");
             log.info("Email already exists");
             return ResponseEntity.status(409).body(userEntityResponseDTO);
         }
 
         User user = User.builder()
                 .email(request.getEmail())
-                .password(encoder.encode( request.getPassword()))
+                .password(encoder.encode(request.getPassword()))
                 .name(request.getName())
                 .provider("email")
                 .build();
@@ -89,24 +92,33 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, UserDepartmentRequestDTO requestDto)  {
 
-        Long id = (Long) request.getAttribute("id");
-        log.info(id.toString());
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            Long id = (Long) request.getAttribute("id");
+            log.info(id.toString());
 
-        UserEntityResponseDTO userEntityResponseDto;
-        if (!userRepository.findById(id).isPresent()) {
-            userEntityResponseDto = new UserEntityResponseDTO(409,"The account does not exists.");
-            return ResponseEntity.status(409).body(userEntityResponseDto);
-        }
-        User user = userRepository.findById(id).get();
+            UserEntityResponseDTO userEntityResponseDto;
+            if (!userRepository.findById(id).isPresent()) {
+                userEntityResponseDto = new UserEntityResponseDTO(409, "The account does not exists.");
+                return ResponseEntity.status(409).body(userEntityResponseDto);
+            }
+            User user = userRepository.findById(id).get();
             user.setDepartment(requestDto.getDepartment());
             log.info("Final : " + user);
             userRepository.save(user);
             userRepository.flush();
 
-
-
-        userEntityResponseDto = new UserEntityResponseDTO(200,user.getDepartment());
+            userEntityResponseDto = new UserEntityResponseDTO(200, user.getDepartment());
             return ResponseEntity.status(200).body(userEntityResponseDto);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
 
     }
 
@@ -115,7 +127,7 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<String> getValidationCode(UserValidateEmailDTO request)  {
 
         String email = request.getEmail();
-        Boolean result =userRepository.findByEmail(email).isPresent();
+        Boolean result = userRepository.findByEmail(email).isPresent();
         String code = "The Email Already exist";
         if (result) {
             return ResponseEntity.ok().body(code);
@@ -141,19 +153,14 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request)  {
         UserResponseDTO user =null;
         try {
-
             checkInvalidToken(request);
-             user = getUser(request);
-
-        }catch(Exception e)
-        {
-
+            user = getUser(request);
+        } catch (Exception e) {
             e.printStackTrace();
             log.info(e.toString());
 
@@ -167,7 +174,6 @@ public class UserServiceImpl implements UserService {
     public void checkInvalidToken(HttpServletRequest request) {
         if (request.getHeader("Authorization") == null) {
             throw new NoSuchElementException("Authorization 토큰이 없습니다. ");
-
         }
     }
 
@@ -184,7 +190,7 @@ public class UserServiceImpl implements UserService {
                 return userListResponseDTO;
             }
         ).collect(Collectors.toList());
-        return new ManagerResponseDTO(user.getId(),user.getUsername(),user.getDepartment(),result);
+        return new ManagerResponseDTO(user.getId(), user.getUsername(), user.getDepartment(), result);
 
     }
 
@@ -235,23 +241,32 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ResponseEntity<String> updateUser(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
-        Long id = (Long) request.getAttribute("id");
-        if(!userRepository.findById(id).isPresent())
-        {
-            return ResponseEntity.status(404).body("User doesn't exist");
-        }
-        User user =  userRepository.findById(id).get();
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            Long id = (Long) request.getAttribute("id");
+            if (!userRepository.findById(id).isPresent()) {
+                return ResponseEntity.status(404).body("User doesn't exist");
+            }
+            User user = userRepository.findById(id).get();
 
 //        user.setPassword(encoder.encode(requestDto.getPassword()));
-        user.setDepartment(requestDto.getDepartment());
-        user.setUsername(requestDto.getName());
+            user.setDepartment(requestDto.getDepartment());
+            user.setUsername(requestDto.getName());
 
-        log.info("Final : " + user);
-        userRepository.save(user);
-        userRepository.flush();
+            log.info("Final : " + user);
+            userRepository.save(user);
+            userRepository.flush();
 
-        return ResponseEntity.status(204).body("Updated User data");
-
+            return ResponseEntity.status(204).body("Updated User data");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -265,26 +280,35 @@ public class UserServiceImpl implements UserService {
             return ResponseEntity.ok().body(code);
         }
         code = mailSendImp.sendCodeMessage(email);
-        User user =  userRepository.findByEmail(email).get();
+        User user = userRepository.findByEmail(email).get();
         user.setPassword(encoder.encode(code));
 
         log.info("Final : " + user);
         userRepository.save(user);
         userRepository.flush();
-
         return ResponseEntity.ok().body(code);
-
     }
     @Override
     @Transactional
-    public ResponseEntity<String> deleteUser(HttpServletRequest request)  {
-        Long id = (Long) request.getAttribute("id");
-        if(userRepository.findById(id).isPresent())
-        {userRepository.deleteById(id);
-        return ResponseEntity.ok().body("deleted account");
-        }
-        else{
-            return ResponseEntity.status(404).body("userid not found");
+       public ResponseEntity<String> deleteUser(HttpServletRequest request) {
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            Long id = (Long) request.getAttribute("id");
+            if (userRepository.findById(id).isPresent()) {
+                userRepository.deleteById(id);
+                return ResponseEntity.ok().body("deleted account");
+            } else {
+                return ResponseEntity.status(404).body("userid not found");
+
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -295,14 +319,12 @@ public class UserServiceImpl implements UserService {
         Optional<User> optionalUser = userRepository.findById(id);
 
         if (optionalUser.isPresent()) {
-
             log.info("Sucussed for Filt but fail here. " + loginState);
             User user = optionalUser.get();
             user.setOnline(loginState);
             log.info("Final : " + user);
             userRepository.save(user);
             userRepository.flush();
-
         } else {
             throw new NoSuchElementException();
 
@@ -473,20 +495,30 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
-        Long id = (Long) request.getAttribute("id");
-        if(!userRepository.findById(id).isPresent())
-        {
-            return ResponseEntity.status(404).body("User doesn't exist");
+
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            Long id = (Long) request.getAttribute("id");
+            if (!userRepository.findById(id).isPresent()) {
+                return ResponseEntity.status(404).body("User doesn't exist");
+            }
+            User user = userRepository.findById(id).get();
+
+            user.setPassword(encoder.encode(requestDto.getPassword()));
+
+            log.info("Final : " + user);
+            userRepository.save(user);
+            userRepository.flush();
+
+            return ResponseEntity.status(204).body("Updated User data");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
         }
-        User user =  userRepository.findById(id).get();
-
-        user.setPassword(encoder.encode(requestDto.getPassword()));
-
-        log.info("Final : " + user);
-        userRepository.save(user);
-        userRepository.flush();
-
-        return ResponseEntity.status(204).body("Updated User data");
-
     }
 }

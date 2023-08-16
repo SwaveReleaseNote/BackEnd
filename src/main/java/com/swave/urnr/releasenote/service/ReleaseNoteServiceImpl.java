@@ -21,6 +21,8 @@ import com.swave.urnr.util.sse.SSEEmitterService;
 import com.swave.urnr.util.sse.SSETypeEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -29,12 +31,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @EnableTransactionManagement
-public class ReleaseNoteServiceImpl implements ReleaseNoteService{
+public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     private final ReleaseNoteRepository releaseNoteRepository;
 
     private final NoteBlockService noteBlockService;
@@ -44,8 +47,9 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
     private final CommentService commentService;
     private final LikedService likedService;
 
+    private final RedissonClient redissonClient;
 
-    //todo 나중에 다른 쪽에서 구현이 끝나면 service로 갈아 끼울것
+
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final UserInProjectRepository userInProjectRepository;
@@ -59,55 +63,60 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
     @Override
     @Transactional
     public HttpResponse createReleaseNote(HttpServletRequest request, Long projectId, ReleaseNoteCreateRequestDTO releaseNoteCreateRequestDTO) {
-        Date currentDate = new Date();
-
-        User user = userRepository.findById((Long) request.getAttribute("id"))
-                .orElseThrow(NoSuchElementException::new);
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(NoSuchElementException::new);
-
-        ReleaseNote releaseNote = ReleaseNote.builder()
-                .version(releaseNoteCreateRequestDTO.getVersion())
-                .lastModifiedDate(currentDate)
-                .releaseDate(releaseNoteCreateRequestDTO.getReleaseDate())
-                .count(0)
-                .isUpdated(false)
-                .summary("Temp data until ChatGPT is OKAY")
-                .project(project)
-                .user(user)
-                .commentList(new ArrayList<Comment>())
-                .build();
-
-        releaseNoteRepository.save(releaseNote);
-
-
-
-        StringBuilder content = new StringBuilder(new String());
-        List<NoteBlock> noteBlockList = new ArrayList<>();
-
-        for(NoteBlockCreateRequestDTO noteBlockCreateRequestDTO : releaseNoteCreateRequestDTO.getBlocks()){
-            NoteBlock noteBlock = noteBlockService.createNoteBlock(noteBlockCreateRequestDTO, releaseNote);
-
-            List<BlockContext> blockContextList = new ArrayList<>();
-            for (BlockContextCreateRequestDTO blockContextCreateRequestDTO : noteBlockCreateRequestDTO.getContexts()){
-                BlockContext blockContext = blockContextService.createBlockContext(blockContextCreateRequestDTO, noteBlock);
-
-                content.append(blockContext.getContext());
-                blockContextList.add(blockContext);
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
             }
+            Date currentDate = new Date();
 
-            noteBlock.setBlockContextList(blockContextList);
-            noteBlockList.add(noteBlock);
-        }
+            User user = userRepository.findById((Long) request.getAttribute("id"))
+                    .orElseThrow(NoSuchElementException::new);
+
+            Project project = projectRepository.findById(projectId)
+                    .orElseThrow(NoSuchElementException::new);
+
+            ReleaseNote releaseNote = ReleaseNote.builder()
+                    .version(releaseNoteCreateRequestDTO.getVersion())
+                    .lastModifiedDate(currentDate)
+                    .releaseDate(releaseNoteCreateRequestDTO.getReleaseDate())
+                    .count(0)
+                    .isUpdated(false)
+                    .summary("Temp data until ChatGPT is OKAY")
+                    .project(project)
+                    .user(user)
+                    .commentList(new ArrayList<Comment>())
+                    .build();
+
+            releaseNoteRepository.save(releaseNote);
+
+
+            StringBuilder content = new StringBuilder(new String());
+            List<NoteBlock> noteBlockList = new ArrayList<>();
+
+            for (NoteBlockCreateRequestDTO noteBlockCreateRequestDTO : releaseNoteCreateRequestDTO.getBlocks()) {
+                NoteBlock noteBlock = noteBlockService.createNoteBlock(noteBlockCreateRequestDTO, releaseNote);
+
+                List<BlockContext> blockContextList = new ArrayList<>();
+                for (BlockContextCreateRequestDTO blockContextCreateRequestDTO : noteBlockCreateRequestDTO.getContexts()) {
+                    BlockContext blockContext = blockContextService.createBlockContext(blockContextCreateRequestDTO, noteBlock);
+
+                    content.append(blockContext.getContext());
+                    blockContextList.add(blockContext);
+                }
+
+                noteBlock.setBlockContextList(blockContextList);
+                noteBlockList.add(noteBlock);
+            }
 
 //        ChatGPTResultDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
 //                new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
 
-        releaseNote.setNoteBlockList(noteBlockList);
-        //releaseNote.setSummary(ChatGPTResultDTO.getText());
+            releaseNote.setNoteBlockList(noteBlockList);
+            //releaseNote.setSummary(ChatGPTResultDTO.getText());
 
-        releaseNoteRepository.flush();
+            releaseNoteRepository.flush();
 
         /*
         TODO :  Project 모든 유저의 kafka topic에 메세지 발행 / 이후 Listener가 감지하여 해당 유저들 emitter에 알림설정.
@@ -143,17 +152,23 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
                 .message("Release Note Created")
                 .description("Release Note ID : " + releaseNote.getId() + " Created")
                 .build();
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
     }
 
     //project id를 받아서 해당 project에 연결된 모든 releaseNote를 리스트로 반환 -> 전체 출력용
     @Override
     @Transactional(readOnly = true)
-    public ArrayList<ReleaseNoteContentListResponseDTO> loadReleaseNoteList(Long projectId){
+    public ArrayList<ReleaseNoteContentListResponseDTO> loadReleaseNoteList(Long projectId) {
         List<ReleaseNote> releaseNoteList = releaseNoteRepository.findByProject_Id(projectId);
 
         ArrayList<ReleaseNoteContentListResponseDTO> releaseNoteContentListDTOArrayListResponse = new ArrayList<>();
 
-        for(ReleaseNote releaseNote : releaseNoteList){
+        for (ReleaseNote releaseNote : releaseNoteList) {
             releaseNoteContentListDTOArrayListResponse.add(releaseNote.makeReleaseNoteContentListDTO());
         }
 
@@ -162,10 +177,11 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
 
     @Override
     @Transactional(readOnly = true)
-    public ReleaseNoteContentResponseDTO loadReleaseNote(HttpServletRequest request, Long releaseNoteId){
+    public ReleaseNoteContentResponseDTO loadReleaseNote(HttpServletRequest request, Long releaseNoteId) {
+
         UserInProject userInProject = releaseNoteRepository.findUserInProjectByUserIdAndReleaseNoteId((Long) request.getAttribute("id"), releaseNoteId);
 
-        if(userInProject == null){
+        if (userInProject == null) {
             throw new AccessDeniedException("해당 프로젝트의 접근 권한이 없습니다.");
         }
 
@@ -188,68 +204,79 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
 
     @Override
     @Transactional
-    public HttpResponse updateReleaseNote(HttpServletRequest request, Long releaseNoteId, ReleaseNoteUpdateRequestDTO releaseNoteUpdateRequestDTO){
-        User user = userRepository.findById((Long) request.getAttribute("id"))
-                .orElseThrow(NoSuchElementException::new);
+    public HttpResponse updateReleaseNote(HttpServletRequest request, Long releaseNoteId, ReleaseNoteUpdateRequestDTO releaseNoteUpdateRequestDTO) {
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            User user = userRepository.findById((Long) request.getAttribute("id"))
+                    .orElseThrow(NoSuchElementException::new);
 
-        ReleaseNote releaseNote = releaseNoteRepository.findById(releaseNoteId)
-                .orElseThrow(NoSuchElementException::new);
+            ReleaseNote releaseNote = releaseNoteRepository.findById(releaseNoteId)
+                    .orElseThrow(NoSuchElementException::new);
 
-        for(NoteBlock noteBlock : releaseNote.getNoteBlockList()){
-            noteBlockService.deleteNoteBlock(noteBlock.getId());
-        }
-
-        releaseNote.getNoteBlockList().clear();
-
-        StringBuilder content = new StringBuilder(new String());
-        List<NoteBlock> noteBlockList = new ArrayList<>();
-
-        for(NoteBlockUpdateRequestDTO noteBlockUpdateRequestDTO : releaseNoteUpdateRequestDTO.getBlocks()){
-            NoteBlock noteBlock = noteBlockService.updateNoteBlock(noteBlockUpdateRequestDTO, releaseNote);
-
-            List<BlockContext> blockContextList = new ArrayList<>();
-
-            for (BlockContextUpdateRequestDTO blockContextUpdateRequestDTO : noteBlockUpdateRequestDTO.getContexts()){
-                BlockContext blockContext = blockContextService.updateBlockContext(blockContextUpdateRequestDTO, noteBlock);
-
-                content.append(blockContext.getContext());
-                blockContextList.add(blockContext);
+            for (NoteBlock noteBlock : releaseNote.getNoteBlockList()) {
+                noteBlockService.deleteNoteBlock(noteBlock.getId());
             }
 
-            noteBlock.setBlockContextList(blockContextList);
-            noteBlockList.add(noteBlock);
-        }
+            releaseNote.getNoteBlockList().clear();
+
+            StringBuilder content = new StringBuilder(new String());
+            List<NoteBlock> noteBlockList = new ArrayList<>();
+
+            for (NoteBlockUpdateRequestDTO noteBlockUpdateRequestDTO : releaseNoteUpdateRequestDTO.getBlocks()) {
+                NoteBlock noteBlock = noteBlockService.updateNoteBlock(noteBlockUpdateRequestDTO, releaseNote);
+
+                List<BlockContext> blockContextList = new ArrayList<>();
+
+                for (BlockContextUpdateRequestDTO blockContextUpdateRequestDTO : noteBlockUpdateRequestDTO.getContexts()) {
+                    BlockContext blockContext = blockContextService.updateBlockContext(blockContextUpdateRequestDTO, noteBlock);
+
+                    content.append(blockContext.getContext());
+                    blockContextList.add(blockContext);
+                }
+
+                noteBlock.setBlockContextList(blockContextList);
+                noteBlockList.add(noteBlock);
+            }
 
 //        ChatGPTResultDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
 //                new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
 
-        releaseNote.setVersion(releaseNoteUpdateRequestDTO.getVersion());
-        releaseNote.setReleaseDate(releaseNoteUpdateRequestDTO.getReleaseDate());
-        releaseNote.setLastModifiedDate(new Date());
-        releaseNote.getNoteBlockList().addAll(noteBlockList);
-        releaseNote.setSummary("Temp data until ChatGPT is OKAY");
-        //releaseNote.setSummary(ChatGPTResultDTO.getText());
-        releaseNote.setUser(user);
-        releaseNote.setUpdated(true);
+            releaseNote.setVersion(releaseNoteUpdateRequestDTO.getVersion());
+            releaseNote.setReleaseDate(releaseNoteUpdateRequestDTO.getReleaseDate());
+            releaseNote.setLastModifiedDate(new Date());
+            releaseNote.getNoteBlockList().addAll(noteBlockList);
+            releaseNote.setSummary("Temp data until ChatGPT is OKAY");
+            //releaseNote.setSummary(ChatGPTResultDTO.getText());
+            releaseNote.setUser(user);
+            releaseNote.setUpdated(true);
 
-        return HttpResponse.builder()
-                .message("Release Note Updated")
-                .description("Release Note ID : " + releaseNote.getId() + " Updated")
-                .build();
+            return HttpResponse.builder()
+                    .message("Release Note Updated")
+                    .description("Release Note ID : " + releaseNote.getId() + " Updated")
+                    .build();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ArrayList<ReleaseNoteVersionListResponseDTO> loadProjectVersionList(HttpServletRequest request){
+    public ArrayList<ReleaseNoteVersionListResponseDTO> loadProjectVersionList(HttpServletRequest request) {
         ArrayList<ReleaseNoteVersionListResponseDTO> responseVersionListDTOList = new ArrayList<>();
         List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id((Long) request.getAttribute("id"));
 
-        for(UserInProject userInProject : userInProjectList){
+        for (UserInProject userInProject : userInProjectList) {
             ReleaseNoteVersionListResponseDTO releaseNoteVersionListResponseDTO = userInProject.makeReleaseNoteVersionListResponseDTO();
 
             List<ReleaseNote> releaseNoteList = userInProject.getProject().getReleaseNoteList();
             ArrayList<ReleaseNoteVersionResponseDTO> releaseNoteVersionListDTOListResponse = new ArrayList<>();
-            for(ReleaseNote releaseNote : releaseNoteList){
+            for (ReleaseNote releaseNote : releaseNoteList) {
                 releaseNoteVersionListDTOListResponse.add(releaseNote.makeReleaseNoteVersionResponseDTO());
             }
             releaseNoteVersionListResponseDTO.setReleaseNoteVersionList(releaseNoteVersionListDTOListResponse);
@@ -257,26 +284,39 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService{
             responseVersionListDTOList.add(releaseNoteVersionListResponseDTO);
         }
         return responseVersionListDTOList;
-    };
+    }
+
+
 
     @Override
     @Transactional
-    public HttpResponse deleteReleaseNote(Long releaseNoteId){
-        releaseNoteRepository.deleteById(releaseNoteId);
+    public HttpResponse deleteReleaseNote(HttpServletRequest request, Long releaseNoteId) {
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            releaseNoteRepository.deleteById(releaseNoteId);
 
-        return HttpResponse.builder()
-                .message("Release Note Deleted")
-                .description("Release Note ID : " + releaseNoteId + " Deleted")
-                .build();
+            return HttpResponse.builder()
+                    .message("Release Note Deleted")
+                    .description("Release Note ID : " + releaseNoteId + " Deleted")
+                    .build();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
-    @Transactional(readOnly=true)
-    public ReleaseNoteContentResponseDTO loadRecentReleaseNote(HttpServletRequest request){
+    @Transactional(readOnly = true)
+    public ReleaseNoteContentResponseDTO loadRecentReleaseNote(HttpServletRequest request) {
         ReleaseNote releaseNote = releaseNoteRepository.findMostRecentReleaseNote((Long) request.getAttribute("id"));
-        if(releaseNote == null){
+        if (releaseNote == null) {
             return null;
-        }else {
+        } else {
             return releaseNote.makeReleaseNoteContentDTO();
         }
     }

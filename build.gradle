@@ -54,6 +54,10 @@ dependencies {
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testImplementation 'org.projectlombok:lombok:1.18.22'
 
+    //metric
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
     // OAuth
     implementation group: 'com.auth0', name: 'java-jwt', version: '3.10.2'
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -88,6 +92,15 @@ dependencies {
     implementation 'org.opensearch.client:opensearch-rest-client:2.9.0'
     implementation 'org.opensearch.client:opensearch-java:2.4.0'
     implementation 'org.springframework.data:spring-data-elasticsearch:4.3.7'
+
+
+    //redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //redission
+    implementation 'org.redisson:redisson-spring-boot-starter:3.17.7'
+
+
 }
 
 tasks.named('test') {
@@ -113,3 +126,5 @@ sourceSets {
 compileQuerydsl{
     options.annotationProcessorPath = configurations.querydsl
 }
+
+

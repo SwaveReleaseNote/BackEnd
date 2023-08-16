@@ -408,7 +408,7 @@ class ReleaseNoteServiceImplTest {
 
         releaseNoteRepository.saveAndFlush(releaseNote);
 
-        releaseNoteService.deleteReleaseNote(releaseNote.getId());
+        releaseNoteService.deleteReleaseNote(request, releaseNote.getId());
 
         ReleaseNote releaseNoteTest = releaseNoteRepository.findById(releaseNote.getId()).orElse(null);
 

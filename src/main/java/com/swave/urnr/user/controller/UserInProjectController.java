@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +40,8 @@ public class UserInProjectController {
         return userInProjectService.subscribeProject(request, projectId);
     }
 
+
+    @Cacheable(value="getRole")
     @Operation(summary = "유저 권한 확인", description="projectID와 유저정보를 받아 권한을 확인합니다.")
     @GetMapping("/{projectId}/role")
     public UserRole getRole(HttpServletRequest request, @PathVariable Long projectId){
