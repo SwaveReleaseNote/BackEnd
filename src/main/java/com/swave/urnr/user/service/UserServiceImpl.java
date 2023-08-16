@@ -236,35 +236,35 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public ResponseEntity<SseEmitter> getTokenByOauth(String code, String provider) {
-        log.info("hi1 : "+new Date());
+        log.info("hi1 : "+new Date());//203446 191
         System.out.println("SWAVE1 :"+new Date());
         OauthToken oauthToken = oAuthService.getOauthAccessToken(code, provider);
-        log.info("hi2 : "+new Date());
+        log.info("hi2 : "+new Date());//203447
 
         System.out.println("SWAVE2 :"+new Date());
         String jwtToken = oAuthService.getTokenByOauth(oauthToken.getAccess_token(), provider);
-        log.info("hi3 : "+new Date());
+        log.info("hi3 : "+new Date());//203447
 
         System.out.println("SWAVE3 :"+new Date());
         HttpHeaders headers = new HttpHeaders();
-        log.info("hi4 : "+new Date());
+        log.info("hi4 : "+new Date());//203447
 
         System.out.println("SWAVE4 :"+new Date());
         headers.add(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + jwtToken);
-        log.info("hi5 : "+new Date());
+        log.info("hi5 : "+new Date());//203447
 
         System.out.println("SWAVE5 :"+new Date());
 
         Long id = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(jwtToken).getClaim("id").asLong();
-        log.info("hi6 : "+new Date());
+        log.info("hi6 : "+new Date());//203447
 
         System.out.println("SWAVE6 :"+new Date());
         SseEmitter sseEmitter = sseEmitterService.subscribeEmitter(String.valueOf(id), jwtToken);
-        log.info("hi7 : "+new Date());
+        log.info("hi7 : "+new Date());//203447
 
         System.out.println("SWAVE7 :"+new Date());
         kafkaService.createTopic(id.toString());
-        log.info("hi8 : "+new Date());
+        log.info("hi8 : "+new Date());//203448 179
 
         System.out.println("SWAVE8 :"+new Date());
 
