@@ -38,8 +38,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             "/api/subscribe/**," + "/api/publish/**,"+
             "/api/kafka/**,"+"/api/user/sample,/api/user/login**,"+
             "/api/sse/**,"+ "/favicon.ico**,"+
-            "/swagger-ui/**,/webjars/**,/swagger-ui.html,"+"/ws-stomp/**";
-
+            "/swagger-ui/**,/webjars/**,/swagger-ui.html,"+"/api/socket/ws-stomp/**";
+    
 
 
     private static final String Exclude_post_url="/api/user,"+
