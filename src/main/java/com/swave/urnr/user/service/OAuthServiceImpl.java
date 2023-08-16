@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.NoSuchElementException;
@@ -41,7 +42,7 @@ public class OAuthServiceImpl implements OAuthService{
             grantType = "authorization_code";
             clientId = "4646a32b25c060e42407ceb8c13ef14a";
             clientSecret = "AWyAH1M24R9EYfUjJ1KCxcsh3DwvK8F7";
-            redirectUri = "http://localhost:3000/oauth/callback/kakao";
+            redirectUri = "http://266e8974276247f4b3cad8498606fafb.kakaoiedge.com:80/oauth/callback/kakao";
         } else {
             throw new IllegalArgumentException("Invalid Provider: " + provider);
         }
