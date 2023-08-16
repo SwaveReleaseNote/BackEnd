@@ -137,6 +137,22 @@ pipeline {
                                }
                         }
                     }
+                post {
+                                success {
+                                    slackSend (
+                                            channel: '#jenkins',
+                                            color: '#00FF00',
+                                            message: "SUCCESS: Job ${env.JOB_NAME} AgroCD Manifest Update"
+                                    )
+                                }
+                                failure {
+                                    slackSend (
+                                            channel: '#jenkins',
+                                            color: '#FF0000',
+                                            message: "FAIL: Job ${env.JOB_NAME} AgroCD Manifest Update"
+                                    )
+                                }
+                            }
 
 
         }
