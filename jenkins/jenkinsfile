@@ -110,6 +110,7 @@ pipeline {
                                 sh "docker push kjk7212/release_note_back:${currentBuild.number}"
                                 }
                     }
+                    }
 
                     post {
                         success {
@@ -120,7 +121,7 @@ pipeline {
                             echo 'Docker Push failed'
                         }
                     }
-                }
+
 
                 stage('AgroCD Manifest Update') {
                         steps {
