@@ -34,7 +34,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private static final String Exclude_url="/api/test, /actuator/**," +
             "/swagger/**,/v2/api-docs/**,/configuration/ui/**," +
             "/swagger-resources/**,/configuration/security/**," +
+            "/swagger-ui/**,/webjars/**,/swagger-ui.html," +
+            "/api/subscribe/**," + "/api/publish/**,"+
+            "/api/kafka/**,"+"/api/user/sample,/api/user/login**,"+
+            "/api/sse/**,"+ "/favicon.ico**,"+
             "/swagger-ui/**,/webjars/**,/swagger-ui.html,"+"/ws-stomp/**";
+
 
 
     private static final String Exclude_post_url="/api/user,"+
@@ -58,15 +63,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
             }catch(RuntimeException e)
             {
+                log.info(" FAILED for "+ request.getRequestURI());
                 log.info(e.toString());
             }
             return;
         }
         else if(request.getHeader("Authorization") == null) {
-            //TODO: Custom exception
-            log.info("error: No Authorization token on header");
+            log.info("error: No Authorization token on header for URI " + request.getRequestURI());
             request.setAttribute(JwtProperties.HEADER_STRING, "Authorization 이 없습니다.");
-            throw new RuntimeException();
+            throw new RuntimeException("No authorization.  token name were " +request.getRequestURI());
         }
         // header 가 정상적인 형식인지 확인
         if(jwtHeader == null || !jwtHeader.startsWith(JwtProperties.TOKEN_PREFIX)) {
@@ -94,11 +99,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 e.printStackTrace();
                 request.setAttribute(JwtProperties.HEADER_STRING, "토큰이 만료되었습니다.");
                 log.info("만료된 토큰");
+
                 throw new ServletException();
+
             } catch (JWTVerificationException e) {
                 e.printStackTrace();
                 request.setAttribute(JwtProperties.HEADER_STRING, "유효하지 않은 토큰입니다.");
                 log.info("유효하지 않은 토큰");
+
                 throw new ServletException();
             }
         }
@@ -121,19 +129,26 @@ Request has now have attribute value
         AntPathMatcher pathMatcher = new AntPathMatcher();
         String[] excludeUrls = Exclude_url.split(",");
 
-        log.info(excludeUrls.toString());
+
+
+        Boolean tempSwitch = false;
+
 
         for (String excludeUrl : excludeUrls) {
+//            log.info("URLS : "+excludeUrl.toString() +" SO R : "+ pathMatcher.match(excludeUrl,requestURI));
             if (pathMatcher.match(excludeUrl, requestURI)) {
-
+//                log.info("Out of loop");
+                tempSwitch = true;
                 return true;
+
             }
         }
 
-        if(request.getMethod().toString().equals("POST")){
+        if(tempSwitch ||request.getMethod().toString().equals("POST")){
 
             String[] excludePostUrls = Exclude_post_url.split(",");
             for (String excludeUrl : excludePostUrls ) {
+
                 if (pathMatcher.match(excludeUrl, requestURI)) {
 
                     return true;

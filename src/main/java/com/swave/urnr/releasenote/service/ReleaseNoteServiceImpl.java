@@ -1,5 +1,6 @@
 package com.swave.urnr.releasenote.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swave.urnr.chatgpt.service.ChatGPTService;
 import com.swave.urnr.project.domain.Project;
 import com.swave.urnr.project.repository.ProjectRepository;
@@ -12,6 +13,12 @@ import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.repository.UserInProjectRepository;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.util.http.HttpResponse;
+import com.swave.urnr.util.kafka.KafkaSSEEmitterSentDTO;
+import com.swave.urnr.util.kafka.KafkaService;
+import com.swave.urnr.util.kafka.NotificationDTO;
+import com.swave.urnr.util.kafka.NotificationEnum;
+import com.swave.urnr.util.sse.SSEEmitterService;
+import com.swave.urnr.util.sse.SSETypeEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -46,6 +53,11 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final UserInProjectRepository userInProjectRepository;
+
+    private final KafkaService kafkaService;
+
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Override
@@ -106,10 +118,41 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
 
             releaseNoteRepository.flush();
 
-            return HttpResponse.builder()
-                    .message("Release Note Created")
-                    .description("Release Note ID : " + releaseNote.getId() + " Created")
-                    .build();
+        /*
+        TODO :  Project 모든 유저의 kafka topic에 메세지 발행 / 이후 Listener가 감지하여 해당 유저들 emitter에 알림설정.
+        */
+
+        List<UserInProject> projectUserList = project.getUserInProjectList();
+
+
+        for(UserInProject userInProject : projectUserList){
+            Long id = userInProject.getUser().getId();
+            /*
+            TODO: Releasenote DTO 채우기  / 보내기
+             */
+            NotificationDTO notificationDTO= new NotificationDTO(NotificationEnum.POST,new Date(System.currentTimeMillis()),releaseNote.getVersion(),projectId);
+
+            // User ID에 message 보내주기
+            kafkaService.produceMessage(notificationDTO,String.valueOf(id));
+            // Emitter에 UserId 보내주기
+            KafkaSSEEmitterSentDTO kafkaSSEEmitterSentDTO = new KafkaSSEEmitterSentDTO(String.valueOf(id),   project.getName()+" 프로젝트에 "+releaseNoteCreateRequestDTO.getVersion() + " 버전이 릴리즈되었습니다.", SSETypeEnum.ALARM);
+           try{
+               String message = objectMapper.writeValueAsString(kafkaSSEEmitterSentDTO);
+               kafkaService.produceMessageAsString(message, "emitter");
+           }catch(Exception e){
+               e.printStackTrace();
+           }
+
+        }
+
+
+
+
+        return HttpResponse.builder()
+                .message("Release Note Created")
+                .description("Release Note ID : " + releaseNote.getId() + " Created")
+                .build();
+
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -243,7 +286,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
         return responseVersionListDTOList;
     }
 
-    ;
+
 
     @Override
     @Transactional

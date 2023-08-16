@@ -3,7 +3,6 @@ package com.swave.urnr.user.controller;
 import com.swave.urnr.user.responsedto.ManagerResponseDTO;
 import com.swave.urnr.user.responsedto.UserResponseDTO;
 import com.swave.urnr.user.responsedto.UserEntityResponseDTO;
-import com.swave.urnr.user.exception.UserNotFoundException;
 import com.swave.urnr.user.requestdto.*;
 import com.swave.urnr.user.service.UserService;
 import io.swagger.annotations.Api;
@@ -13,17 +12,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Map;
 
 @Api(tags = "UserController")
 @RestController
-@Validated
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api")
@@ -63,11 +60,11 @@ public class UserController {
     }
 
 
-    @Operation(summary="사용자 소속 수정", description="로그인한 사용자로부터 받은 정보로 사용자의 계정 정보를 수정합니다.")
+    @Operation(summary="사용자 계정 일부 수정", description="로그인한 사용자로부터 받은 정보로 사용자의 계정 정보를 일부 수정합니다.")
     @PatchMapping("/user")
     @SecurityRequirement(name = "JWT 토큰")
-    public  ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, @RequestBody UserDepartmentRequestDTO requestDto) throws UserNotFoundException {
-        return userService.initDepartment(request, requestDto);
+    public  ResponseEntity<UserEntityResponseDTO> initDepartment(HttpServletRequest request, @RequestBody UserDepartmentRequestDTO requestDto) {
+        return userService.patchUserInformation(request, requestDto);
     }
 
     @Operation(summary="사용자 계정 삭제", description="토큰에 해당하는 사용자의 계정을 삭제합니다.")
@@ -93,25 +90,40 @@ public class UserController {
 
     @Operation(summary="이메일 로그인을 통한 토큰 반환", description="입력된 이메일 계정과 비밀번호가 동일하면 토큰값을 반환합니다.")
     @PostMapping("/user/login-by-email")
-    public  ResponseEntity<String> getTokenByLogin( @RequestBody UserLoginServerRequestDTO requestDto) throws UserNotFoundException {
+    public  ResponseEntity<SseEmitter> getTokenByLogin(@RequestBody UserLoginServerRequestDTO requestDto)  {
         return userService.getTokenByLogin(requestDto);
     }
     @Operation(summary="oAuth 로그인을 통한 토큰 반환", description="Oauth 기능을 기반으로 사용자의 계정을 로그인합니다.")
     @PostMapping("/user/login-by-oauth")
-    public ResponseEntity getTokenByOauth(@RequestParam("code") String code, @RequestParam("provider") String provider) {
+    public ResponseEntity<SseEmitter> getTokenByOauth(@RequestParam("code") String code, @RequestParam("provider") String provider) {
         return userService.getTokenByOauth(code, provider);
     }
     @Operation(summary="사용자 로그인 여부 확인", description="현재 사용자가 로그인하고 있으면 true 아니면 false가 나옵니다")
-    @PatchMapping("/user/status")
-    public boolean updateStatus(HttpServletRequest request,  @RequestBody Map<String, Object> requestBody) throws UserNotFoundException {
+    @PatchMapping("ㅣ/user/status")
+    public boolean updateStatus(HttpServletRequest request,  @RequestBody Map<String, Object> requestBody)  {
         return userService.updateLoginState(request, (Boolean) requestBody.get("loginState"));
+    }
+
+
+    @Operation(summary="샘플 계정 생성", description="(테스트 전용 코드) 임시 사용자 계정 6개를 생성합니다. ")
+    @PostMapping("/user/sample")
+    public void createSampleAccount() {
+        userService.createSampleAccount();
+    }
+
+
+    @Operation(summary="샘플 계정 삭제", description="(테스트 전용 코드) 임시 사용자 계정 6개를 삭제시킵니다. ")
+    @DeleteMapping("/user/sample")
+    public void deleteSampleAccount() {
+        userService.deleteSampleAccount();
     }
 
     @Operation(summary="사용자 password 변경", description="사용자 password 변경합니다.")
     @PatchMapping("/user/password")
     @SecurityRequirement(name = "JWT 토큰")
-    public ResponseEntity<String> updatePassword(HttpServletRequest request, @RequestBody UserUpdateAccountRequestDTO requestDto) throws UserNotFoundException {
+    public ResponseEntity<String> updatePassword(HttpServletRequest request, @RequestBody UserUpdateAccountRequestDTO requestDto)  {
         return userService.updatePassword(request, requestDto);
+        
     }
 
 }

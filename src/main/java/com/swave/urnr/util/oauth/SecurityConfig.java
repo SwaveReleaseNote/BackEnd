@@ -37,31 +37,38 @@ public class SecurityConfig{
 
     @Bean
     @Order(SecurityProperties.BASIC_AUTH_ORDER)
-    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http.csrf().disable()
-                .sessionManagement()  // session 을 사용하지 않음
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .httpBasic().disable()
-                .formLogin().disable()
-                .addFilter(corsFilter); // @CrossOrigin(인증X), 시큐리티 필터에 등록 인증(O)
-
-        http.headers().frameOptions().sameOrigin();
-
-        http.authorizeRequests()
-                .antMatchers(FRONT_URL+"/main/**")
-                .authenticated()
-                .anyRequest().permitAll()
-                .and()
-                .exceptionHandling()
-                .authenticationEntryPoint(new CustomAuthenticationEntryPoint());
+    protected SecurityFilterChain filterChain(HttpSecurity http)  {
+        try{
 
 
+            http.csrf().disable()
+                    .sessionManagement()  // session 을 사용하지 않음
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .and()
+                    .httpBasic().disable()
+                    .formLogin().disable()
+                    .addFilter(corsFilter); // @CrossOrigin(인증X), 시큐리티 필터에 등록 인증(O)
+
+            http.headers().frameOptions().sameOrigin();
+
+            http.authorizeRequests()
+                    .antMatchers(FRONT_URL+"/main/**")
+                    .authenticated()
+                    .anyRequest().permitAll()
+                    .and()
+                    .exceptionHandling()
+                    .authenticationEntryPoint(new CustomAuthenticationEntryPoint());
 
 
-        http.addFilterBefore(new JwtRequestFilter(), UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+
+
+            http.addFilterBefore(new JwtRequestFilter(), UsernamePasswordAuthenticationFilter.class);
+            return http.build();
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+
+        }
     }
 
 }

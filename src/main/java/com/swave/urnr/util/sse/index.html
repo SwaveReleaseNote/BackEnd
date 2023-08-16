@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<input id="input"/>
+<button id="send">send</button>
+<pre id="messages"></pre>
+<script>
+    const eventSource = new EventSource(`http://localhost:8080/api/sse/emitter/1/message/start`);
+
+    eventSource.onopen = (e) => {
+        console.log(e);
+    };
+
+    eventSource.onerror = (e) => {
+        console.log(e);
+    };
+
+    eventSource.onmessage = (e) => {
+        document.querySelector("#messages").appendChild(document.createTextNode(e.data + "\n"));
+    };
+
+    document.querySelector("#send").addEventListener("click", () => {
+        fetch(`http://localhost:8080/api/publish/${document.querySelector("#input").value}`);
+    });
+</script>
+<p> "Hellow, World!"</p>
+</body>
+</html>
