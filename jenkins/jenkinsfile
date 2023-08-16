@@ -38,11 +38,6 @@ pipeline {
                 }
             }
         }
-        stage('Test') {
-            steps {
-                echo  '테스트 단계와 관련된 몇 가지 단계를 수행합니다.'
-            }
-        }
         stage('Prune Docker data') {
                     steps {
                         sh 'echo "Prune Docker data"'
@@ -127,14 +122,14 @@ pipeline {
                                             slackSend (
                                                     channel: '#jenkins',
                                                     color: '#00FF00',
-                                                    message: "SUCCESS: Job ${env.JOB_NAME} Build User"
+                                                    message: "SUCCESS: Job ${env.JOB_NAME} Build Backend"
                                             )
                                         }
                                         failure {
                                             slackSend (
                                                     channel: '#jenkins',
                                                     color: '#FF0000',
-                                                    message: "FAIL: Job ${env.JOB_NAME} Build User"
+                                                    message: "FAIL: Job ${env.JOB_NAME} Build Backend"
                                             )
                                         }
                                     }
@@ -148,14 +143,14 @@ pipeline {
                             slackSend (
                                     channel: '#jenkins',
                                     color: '#00FF00',
-                                    message: "SUCCESS: Job ${env.JOB_NAME} Build User"
+                                    message: "SUCCESS: Job ${env.JOB_NAME} Build Whole Backend"
                             )
                         }
                         failure {
                             slackSend (
                                     channel: '#jenkins',
                                     color: '#FF0000',
-                                    message: "FAIL: Job ${env.JOB_NAME} Build User"
+                                    message: "FAIL: Job ${env.JOB_NAME} Build Whole User"
                             )
                         }
                     }
