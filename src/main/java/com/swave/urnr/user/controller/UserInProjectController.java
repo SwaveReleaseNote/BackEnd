@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 @Api(tags = "UserInProjectController")
 @RequestMapping("/api/project")
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://266e8974276247f4b3cad8498606fafb.kakaoiedge.com:80", allowedHeaders = "*", allowCredentials = "true")
 @Slf4j
 @RequiredArgsConstructor
 public class UserInProjectController {
