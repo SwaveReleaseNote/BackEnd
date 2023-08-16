@@ -22,7 +22,7 @@ public interface UserService {
     ResponseEntity<UserEntityResponseDTO> patchUserInformation(HttpServletRequest request, UserDepartmentRequestDTO requestDto) ;
 
 
-    ResponseEntity<SseEmitter> getTokenByLogin(UserLoginServerRequestDTO requestDto) ;
+    ResponseEntity<String> getTokenByLogin(UserLoginServerRequestDTO requestDto) ;
 
     ResponseEntity<String> setTemporaryPassword(UserValidateEmailDTO request) ;
 
@@ -31,7 +31,7 @@ public interface UserService {
 
     ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request) ;
 
-    ResponseEntity<SseEmitter> getTokenByOauth(String code, String provider) ;
+    ResponseEntity<String> getTokenByOauth(String code, String provider) ;
 
     void checkInvalidToken(HttpServletRequest request) ;
 
