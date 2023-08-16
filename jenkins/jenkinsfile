@@ -83,12 +83,7 @@ pipeline {
                         }
                     }
                 }
-                //stage('Tag Docker Image') {
-                  //          steps {
-                                // Tag the Docker image with the desired repository name and tag
-                    //            sh 'docker tag release_note_back:latest kjk7212/release_note_back:${currentBuild.number}'
-                    //        }
-                    //    }
+
                 stage('Docker Push') {
                      steps {
             // Specify the correct credentials type ('Username with password')
@@ -115,6 +110,11 @@ pipeline {
                                        url: 'https://github.com/SwaveReleaseNote/argocd-back',
                                        branch: 'main'
                                sh "sed -i 's/# build-version:.*/# build-version: ${currentBuild.number}/g' back.yaml"
+
+
+                               sh "sed -i 's/release_note_back.*/release_note_back:${currentBuild.number}/g' front.yaml"
+                               //sh "sed -i 's/image: kjk7212\/release_note_back*/image: kjk7212\/release_note_back: \${currentBuild.number}/Ig' back.yaml"
+                               //sh "sed -i 's/image: kjk7212/release_note_back*/image: kjk7212/release_note_back: ${currentBuild.number}/g' back.yaml"
                                sh "git add back.yaml"
                                sshagent(credentials: ['git-ssh']) {
                                    sh "git commit -m '[UPDATE] v${currentBuild.number} image versioning'"
