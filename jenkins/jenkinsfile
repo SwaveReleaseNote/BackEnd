@@ -96,7 +96,7 @@ pipeline {
                                 // Use the correct credentials variables in the 'docker login' command
                                 sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
                                 // Use the correct repository name for tagging and pushing
-                                sh "docker tag release_note_back:latest kjk7212/release_note_back:latest"
+                                sh "docker tag release_note_back:latest kjk7212/release_note_back:${currentBuild.number} "
                                 sh "docker push kjk7212/release_note_back:latest"
                                 }
                     }
