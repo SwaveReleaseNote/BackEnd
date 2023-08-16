@@ -7,5 +7,8 @@ WORKDIR /app
 # Copy the JAR file into the container at /app
 COPY build/libs/ReleaseNoteShareSystem-0.0.1-SNAPSHOT.jar docker-springboot.jar
 
+#server
+CMD ["java","-jar","-Dspring.profiles.active=prod","./build/libs/ReleaseNoteShareSystem-0.0.1-SNAPSHOT.jar"]
+
 # Define the entry point for the container
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "docker-springboot.jar"]
+#ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "docker-springboot.jar"]
