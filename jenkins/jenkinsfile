@@ -1,0 +1,143 @@
+pipeline {
+    agent any 	// 사용 가능한 에이전트에서 이 파이프라인 또는 해당 단계를 실행
+
+    tools{
+        jdk 'jdk17'
+    }
+    stages {
+        stage('Prepare') {
+            steps {
+                git branch: 'develop',
+                    url: 'https://github.com/SwaveReleaseNote/BackEnd.git'
+            }
+
+            post {
+                success {
+                    sh 'echo "Successfully Cloned Repository"'
+                }
+                failure {
+                    sh 'echo "Fail Cloned Repository"'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+            	// gralew이 있어야됨. git clone해서 project를 가져옴.
+                sh 'chmod +x gradlew'
+                //sh './gradlew clean'
+                //sh './gradlew compileQuerydsl'
+                //sh './gradlew compileJava'
+                //sh  './gradlew clean build'
+                sh  './gradlew bootJar'
+
+
+                sh 'ls -al ./build'
+            }
+            post {
+                success {
+                    echo 'gradle build success'
+                }
+
+                failure {
+                    echo 'gradle build failed'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                echo  '테스트 단계와 관련된 몇 가지 단계를 수행합니다.'
+            }
+        }
+        stage('Prune Docker data') {
+                    steps {
+                        sh 'echo "Prune Docker data"'
+                        sh 'docker system prune -a --volumes -f'
+                            script {
+                                            def workspacePath = pwd()
+                                            echo "Workspace Path: ${workspacePath}"
+                                        }
+                    }
+
+                    post {
+                        success {
+                            sh 'echo "Prune Docker data Success"'
+                        }
+                        failure {
+                            sh 'echo "Prune Docker data Fail"'
+                        }
+                    }
+                }
+
+                stage('Docker Build'){
+                    steps{
+                        dir("/var/jenkins_home/workspace/Backend"){
+                            script {
+                                            def workspacePath = pwd()
+                                            echo "Workspace Path: ${workspacePath}"
+                                        }
+                            // Run the docker build command with the appropriate arguments
+                            sh "docker build -t release_note_back:latest -f Dockerfile ."
+                                                                           }
+                        sh 'echo " Image Bulid Start"'
+                        sh 'docker build . -t kjk7212/release_note_back'
+                    }
+                    post {
+                        success {
+                            sh 'echo "Bulid Docker Image Success"'
+                        }
+
+                        failure {
+                            sh 'echo "Bulid Docker Image Fail"'
+                        }
+                    }
+                }
+                stage('Tag Docker Image') {
+                            steps {
+                                // Tag the Docker image with the desired repository name and tag
+                                sh 'docker tag release_note_back:latest kjk7212/release_note_back'
+                            }
+                        }
+
+                stage('Docker Push') {
+                     steps {
+            // Specify the correct credentials type ('Username with password')
+                            withCredentials([usernamePassword(credentialsId: 'dockerHubPwd', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                                // Use the correct credentials variables in the 'docker login' command
+                                sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
+                                // Use the correct repository name for tagging and pushing
+                                sh "docker tag release_note_back:latest kjk7212/release_note_back:latest"
+                                sh "docker push kjk7212/release_note_back:latest"
+                                }
+                    }
+
+                    post {
+                        success {
+                            echo 'Docker Push success'
+                        }
+
+                        failure {
+                            echo 'Docker Push failed'
+                        }
+                    }
+                }
+
+                stage('AgroCD Manifest Update') {
+                        steps {
+                               git credentialsId: 'kjk7212',
+                                       url: 'https://github.com/SwaveReleaseNote/argocd-back',
+                                       branch: 'main'
+
+                               sh "sed -i 's/# build-version:.*/# build-version: ${currentBuild.number}/g' back.yaml"
+                               sh "git add back.yaml"
+                               sshagent(credentials: ['git-ssh']) {
+                                   sh "git commit -m '[UPDATE] v${currentBuild.number} image versioning'"
+                                   sh "git remote set-url origin git@github.com:SwaveReleaseNote/argocd-back.git"
+                                   sh "git push -u origin main"
+                               }
+                        }
+                    }
+
+        }
+
+}

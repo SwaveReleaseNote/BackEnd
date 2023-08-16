@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 
 @Controller
+@Slf4j
+@CrossOrigin(origins = "http://266e8974276247f4b3cad8498606fafb.kakaoiedge.com:80", allowedHeaders = "*", allowCredentials = "true")
 public class RedisController {
 //레디스 테스트
 
