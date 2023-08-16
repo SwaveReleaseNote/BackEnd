@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 @Slf4j
-@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
+@CrossOrigin(origins = "http://266e8974276247f4b3cad8498606fafb.kakaoiedge.com:80", allowedHeaders = "*", allowCredentials = "true")
 public class JwtRequestFilter extends OncePerRequestFilter {
 
 
