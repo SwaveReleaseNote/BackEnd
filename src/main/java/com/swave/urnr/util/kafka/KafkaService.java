@@ -11,9 +11,12 @@ public interface KafkaService {
 
     Boolean isPresentTopic(String topicName);
 
-    String createEmitterTopic();
 
     void produceMessage(NotificationDTO notificationDTO , String topic) ;
+
+
+    void produceMessageAsString(String message, String topic) ;
+    void produceMessageS(String message, String topic) ;
 
     KafkaMessageListDTO getMessageListFromKafka(String topic);
 
@@ -26,6 +29,6 @@ public interface KafkaService {
 
     List<String> getNewMessagesFromKafkaTopic(String topic);
 
-    @KafkaListener(topics = "my-topic", groupId = "my-group")
-    void listenToMyTopic(String message);
+    @KafkaListener(topics = "emitter", groupId = "urnremitter")
+    void sentToEmitter(String message);
 }

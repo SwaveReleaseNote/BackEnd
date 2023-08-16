@@ -103,7 +103,9 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             userRepository.flush();
 
-            userEntityResponseDto = new UserEntityResponseDTO(200,user.getDepartment());
+
+
+        userEntityResponseDto = new UserEntityResponseDTO(200,user.getDepartment());
             return ResponseEntity.status(200).body(userEntityResponseDto);
 
     }
@@ -224,6 +226,7 @@ public class UserServiceImpl implements UserService {
 
         Long id = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(jwtToken).getClaim("id").asLong();
         SseEmitter sseEmitter = sseEmitterService.subscribeEmitter(String.valueOf(id), jwtToken);
+        kafkaService.createTopic(id.toString());
 
         return  ResponseEntity.ok().body(sseEmitter);
     }
@@ -327,6 +330,12 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
+
+        userRepository.flush();
+
+        Long userId = userRepository.findByEmail(user.getEmail()).get().getId();
+        log.info("Excepted Topic : "+userId.toString());
+        kafkaService.createTopic(userId.toString());
         user = User.builder()
                 .email("rlarlgus@xptmxm.com")
                 .password(encoder.encode("123456"))
@@ -343,6 +352,11 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
+        userRepository.flush();
+
+        userId = userRepository.findByEmail(user.getEmail()).get().getId();
+        log.info("Excepted Topic : "+userId.toString());
+        kafkaService.createTopic(userId.toString());
         user = User.builder()
                 .email("wjsrkdgns@xptmxm.com")
                 .password(encoder.encode("admin"))
@@ -358,6 +372,11 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
+        userRepository.flush();
+
+        userId = userRepository.findByEmail(user.getEmail()).get().getId();
+        log.info("Excepted Topic : "+userId.toString());
+        kafkaService.createTopic(userId.toString());
         user = User.builder()
                 .email("gkarjsdnr@xptmxm.com")
                 .password(encoder.encode("admin"))
@@ -375,6 +394,11 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
+        userRepository.flush();
+
+         userId = userRepository.findByEmail(user.getEmail()).get().getId();
+        log.info("Excepted Topic : "+userId.toString());
+        kafkaService.createTopic(userId.toString());
 
         user = User.builder()
                 .email("rlatjdrnr@xptmxm.com")
@@ -391,6 +415,11 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(user);
 
+        userRepository.flush();
+
+        userId = userRepository.findByEmail(user.getEmail()).get().getId();
+        log.info("Excepted Topic : "+userId.toString());
+        kafkaService.createTopic(userId.toString());
         user = User.builder()
                 .email("dltmdtjq@xptmxm.com")
                 .password(encoder.encode("admin"))
@@ -407,6 +436,10 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(user);
         userRepository.flush();
+
+        userId = userRepository.findByEmail(user.getEmail()).get().getId();
+        log.info("Excepted Topic : "+userId.toString());
+        kafkaService.createTopic(userId.toString());
 
     }
 

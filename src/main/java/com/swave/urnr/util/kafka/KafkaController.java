@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Api(tags = "UserController")
+@Api(tags = "Kafka Controller")
 @RestController
 @Validated
 @RequiredArgsConstructor
@@ -27,6 +27,21 @@ public class KafkaController {
 
     }
 
+
+    @PostMapping("/produce/t/{topic}")
+    public void produceMessage(@RequestBody String message , @PathVariable String topic) {
+
+        kafkaService.produceMessageAsString(message, topic);
+
+    }
+
+
+    @PostMapping("/produce/te/{topic}")
+    public void produceSampleMessage(@RequestBody String message , @PathVariable String topic) {
+
+        kafkaService.produceMessageS(message, topic);
+
+    }
     @PostMapping("/create-topic")
     public String createTopic(@RequestBody String topicName) {
         return kafkaService.createTopic(topicName);

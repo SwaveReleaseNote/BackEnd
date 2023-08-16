@@ -131,7 +131,7 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
         Set<String> deadIds = new HashSet<>();
 
         SseEmitter emitter = CLIENTS.get(uid);
-        SSEDataDTO sseDataDTO = new SSEDataDTO(message, SSETypeEnum.TOKEN);
+        SSEDataDTO sseDataDTO = new SSEDataDTO(message, SSETypeEnum.NORMAL);
         log.info("PV : "+uid);
         log.info("MSG : "+message);
             try {
@@ -145,6 +145,29 @@ public class SSEEmitterServiceImpl implements SSEEmitterService{
             }
         deadIds.forEach(CLIENTS::remove);
     }
+
+
+
+    @Override
+    public void publishAlarmToEmitter(String uid, String message, SSETypeEnum type) {
+        Set<String> deadIds = new HashSet<>();
+
+        SseEmitter emitter = CLIENTS.get(uid);
+        SSEDataDTO sseDataDTO = new SSEDataDTO(message, type);
+        log.info("PV : "+uid);
+        log.info("MSG : "+message);
+        try {
+
+            log.info("id : {} TEMPORARY VALUE :  {}  Before message : {}",uid, message, message);
+            emitter.send(sseDataDTO, MediaType.APPLICATION_JSON);
+        } catch (Exception e) {
+            deadIds.add(uid);
+            log.warn("disconnected id : {} ", uid);
+            log.warn("Exception  : {}", e.toString());
+        }
+        deadIds.forEach(CLIENTS::remove);
+    }
+
 
 
 

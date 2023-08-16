@@ -1,14 +1,20 @@
 package com.swave.urnr.util.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swave.urnr.user.repository.UserRepository;
+import com.swave.urnr.util.sse.SSEDataDTO;
+import com.swave.urnr.util.sse.SSEEmitterService;
+import com.swave.urnr.util.sse.SSETypeEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -16,7 +22,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,11 +34,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class KafkaServiceImpl implements  KafkaService{
 
     private final UserRepository userRepository;
+    private final SSEEmitterService sseEmitterService;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Map<String, AnnotationConfigApplicationContext> LISTENER = new ConcurrentHashMap<>();
 
 
-    private String hostLocation = "loaclhost:9092";
+
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String hostLocation ;
     @Override
     public String createTopic(String topicName) {
         try {
@@ -74,55 +84,16 @@ public class KafkaServiceImpl implements  KafkaService{
     }
 
 
-    @Override
-    public String createEmitterTopic() {
-        try {
-            /*
-            TODO(ASAP) : List형태로 모두 받는지 확인할것, 또한, List 이전 작업 역시 확인할것.
-            kafka 통신 사례  :
-            1. 알림 시스템 ( 릴리즈노트 생성 직전 프로젝트 전 이해관계자들에게 / 작성자가 아닌 댓글 달릴시 작성자에게
-            /  멘션 관련자에게.  즉 총3가지)
-            -> Topic 메세지 발행하면서 2개 채널에 메세지 발행(1. emitter / 2. userId)
-            emitter는 간단하게 userId만
-            userId는 풀로
-            ->  메세지 받은 곳 중
-             emitter에는 userId에 맞는 emitter에 api 유도 알림 보냄
-             userId에는 userId에 맞도록 ( 타입 | 날짜 | 알림내용 | 릴리즈노트 Id ) 4가지를 넣어줌(NotificationDTO)
-             이를 통해 클라이언트는 알림 내용을 요구하는 api(all)를 요구가능.
-            ->  받은 client는 종에 알림 생성(붉은 동그라미) / 유저는 종 누르면 api 눌러서 알림리스트 받아옴
-            ->  진행...
-
-             */
-            Properties properties = new Properties();
-            properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, hostLocation);
-
-            String topicName = "emitter";
-
-            try (AdminClient adminClient = AdminClient.create(properties)) {
-                NewTopic newTopic = new NewTopic(topicName, 1, (short) 1);
-                adminClient.createTopics(Collections.singleton(newTopic));
-
-                String message = "start";
-                KafkaTemplate<String, String> temp = new KafkaTemplate<>(producerFactory());
-                temp.send(topicName, message);
-
-                return "Topic created successfully: " + topicName;
-            }
-        } catch (Exception e) {
-            return "Failed to create topic: " + e.getMessage();
-        }
-    }
-
 
 
     @Override
     public void produceMessage(NotificationDTO notificationDTO, String topic) {
         KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(producerFactory());
         ObjectMapper objectMapper = new ObjectMapper();
-        log.info(notificationDTO.getContent().toString());
-        log.info(String.valueOf(notificationDTO.getReleaseNoteId()));
-        log.info(notificationDTO.getDate().toString());
-        log.info(notificationDTO.getType().toString());
+//        log.info(notificationDTO.getContent().toString());
+//        log.info(String.valueOf(notificationDTO.getReleaseNoteId()));
+//        log.info(notificationDTO.getDate().toString());
+//        log.info(notificationDTO.getType().toString());
 
         try {
             String jsonMessage = objectMapper.writeValueAsString(notificationDTO);
@@ -132,7 +103,35 @@ public class KafkaServiceImpl implements  KafkaService{
         }
     }
 
+    @Override
+    public void produceMessageAsString(String message, String topic){
+        KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(producerFactory());
+            kafkaTemplate.send(topic, message);
+    }
 
+    @Override
+    public void produceMessageS(String message, String topic) {
+
+        log.info("temp {} , topic {}", message,topic);
+
+        /*
+        Mocking for release note, so will not used in produce phase.
+         */
+        KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(producerFactory());
+
+
+        for(int i=1;i<Integer.valueOf(message)+1;i++){
+
+            try{
+                KafkaSSEEmitterSentDTO kafkaSSEEmitterSentDTO = new KafkaSSEEmitterSentDTO(String.valueOf(i), "0.12.34" , SSETypeEnum.ALARM);
+                String messageForSend = objectMapper.writeValueAsString(kafkaSSEEmitterSentDTO);
+                log.info("MFS : {}, topic : {}", messageForSend, topic);
+                kafkaTemplate.send(topic , messageForSend);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
     @Override
     public KafkaMessageListDTO getMessageListFromKafka(String topic){
         List<String> newMessage = getNewMessagesFromKafkaTopic(topic);
@@ -151,7 +150,6 @@ public class KafkaServiceImpl implements  KafkaService{
         properties.put("auto.offset.reset", "earliest");
 
 
-
         KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(properties);
         kafkaConsumer.subscribe(Collections.singletonList(topic));
 
@@ -164,32 +162,21 @@ public class KafkaServiceImpl implements  KafkaService{
         for (ConsumerRecord<String, String> record : records) {
             messages.add(record.value());
         }
-        log.info("BM : {}", messages.size());
         messages.remove("start");
-        log.info("AM L : {}", messages.size());
 
         userRepository.findById(Long.valueOf(topic)).orElseThrow(NoSuchElementException::new).setKafka_count(Long.valueOf(messages.size()));
         userRepository.flush();
-        log.info("HELP! {}", userRepository.findById(Long.valueOf(topic)).get().getKafka_count().toString() );
         if( n < messages.size()){
 
-
-            for(int i=messages.size()-n;i<messages.size();i++){
-                System.out.println("MES : "+ messages.get(i)+"  NUM : "+ i);
-                log.info( "MES : {}  , {}", messages.get(i), i);
-            }
 
 
             int messageSize = messages.size();
             for(int i=0;i<messageSize-n;i++){
-                log.info("BM : {}", messages.size());
                 messages.remove(0);
-                log.info("AM : {}", messages.size());
             }
 
         }
         kafkaConsumer.close();
-        log.info("Consumer START     : Message size : {} , n : {},  {}", messages.size() , n, messages.size() -1> n);
 
         return messages;
     }
@@ -197,6 +184,7 @@ public class KafkaServiceImpl implements  KafkaService{
     @Override
     public Boolean getCountFromSpecificTopic(String topic) {
         Properties properties = new Properties();
+
         properties.put("bootstrap.servers", hostLocation);
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
@@ -264,8 +252,33 @@ public class KafkaServiceImpl implements  KafkaService{
 
     @Override
     @KafkaListener(topics = "emitter", groupId = "urnremitter")
-    public void listenToMyTopic(String message) {
-        System.out.println("Received message On Emitter (Should sent) : " + message);
+    public void sentToEmitter(String message) {
+
+
+        log.info(" YOUGOT : {} on emitter", message);
+        Long currentTime = System.currentTimeMillis();
+        Date currentDate = new Date(currentTime);
+        SSEDataDTO sseDataDTO = new SSEDataDTO(message, SSETypeEnum.ALARM);
+
+        try{
+
+            Map<String, String> jsonMap = objectMapper.readValue(message, new TypeReference<Map<String, String>>() {});
+
+            String userId = jsonMap.get("userId");
+            String content = jsonMap.get("content");
+            String type = jsonMap.get("type");
+
+            System.out.println("We got :" + userId+ " "+ content + " "+type);
+
+            System.out.println("Received message On Emitter (Should sent) : " + message);
+            sseEmitterService.publishAlarmToEmitter(userId,content, SSETypeEnum.fromString(type));
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+
+        }
+
     }
 
 

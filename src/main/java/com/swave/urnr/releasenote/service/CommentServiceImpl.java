@@ -1,5 +1,6 @@
 package com.swave.urnr.releasenote.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swave.urnr.releasenote.domain.Comment;
 import com.swave.urnr.releasenote.domain.ReleaseNote;
 import com.swave.urnr.releasenote.repository.CommentRepository;
@@ -8,8 +9,14 @@ import com.swave.urnr.releasenote.requestdto.CommentCreateRequestDTO;
 import com.swave.urnr.releasenote.responsedto.CommentContentResponseDTO;
 import com.swave.urnr.releasenote.responsedto.CommentContentListResponseDTO;
 import com.swave.urnr.user.domain.User;
+import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.repository.UserRepository;
 import com.swave.urnr.util.http.HttpResponse;
+import com.swave.urnr.util.kafka.KafkaSSEEmitterSentDTO;
+import com.swave.urnr.util.kafka.KafkaService;
+import com.swave.urnr.util.kafka.NotificationDTO;
+import com.swave.urnr.util.kafka.NotificationEnum;
+import com.swave.urnr.util.sse.SSETypeEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +38,9 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final ReleaseNoteRepository releaseNoteRepository;
+
+    private final KafkaService kafkaService;
+    private ObjectMapper objectMapper = new ObjectMapper();
     @Override
     @Transactional
     public HttpResponse createComment(HttpServletRequest request, Long releaseNoteId , CommentCreateRequestDTO commentCreateRequestDTO){
@@ -52,6 +62,33 @@ public class CommentServiceImpl implements CommentService {
 
         releaseNote.getCommentList().add(comment);
         releaseNoteRepository.save(releaseNote);
+
+
+        /*
+        comment : 작성자에게 알림이 갈 예정.
+         */
+            Long id = releaseNote.getUser().getId();
+
+
+            /*
+            TODO: Releasenote DTO 채우기  / 보내기
+             */
+            NotificationDTO notificationDTO= new NotificationDTO(NotificationEnum.COMMENT,new Date(System.currentTimeMillis()),releaseNote.getVersion(),id);
+
+            // User ID에 message 보내주기
+            kafkaService.produceMessage(notificationDTO,String.valueOf(id));
+            // Emitter에 UserId 보내주기
+            KafkaSSEEmitterSentDTO kafkaSSEEmitterSentDTO = new KafkaSSEEmitterSentDTO(String.valueOf(id),   releaseNote.getProject().getName()+" 프로젝트의 "+ releaseNote.getVersion()+" 버전 게시글에 "+ comment.getCommentContext() + " 댓글이 등록되었습니다.", SSETypeEnum.ALARM);
+            try{
+                String message = objectMapper.writeValueAsString(kafkaSSEEmitterSentDTO);
+                kafkaService.produceMessageAsString(message, "emitter");
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
+
+
+
 
         return HttpResponse.builder()
                 .message("Comment Created")

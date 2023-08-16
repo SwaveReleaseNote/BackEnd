@@ -17,5 +17,7 @@ public interface SSEEmitterService {
 
 
 
-    void publishMessageToSpeficEmitter(String message, String uid);
+    void publishMessageToSpeficEmitter(String uid, String message);
+
+    void publishAlarmToEmitter(String uid, String message, SSETypeEnum type);
 }
