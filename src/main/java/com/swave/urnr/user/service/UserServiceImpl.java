@@ -122,7 +122,7 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             userRepository.flush();
 
-            userEntityResponseDto = new UserEntityResponseDTO(200, user.getDepartment());
+            userEntityResponseDto = new UserEntityResponseDTO(200,"User Information patched.");
             return ResponseEntity.status(200).body(userEntityResponseDto);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -271,7 +271,7 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             userRepository.flush();
 
-            return ResponseEntity.status(204).body("Updated User data");
+            return ResponseEntity.status(204).body("user data updated.");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -310,7 +310,7 @@ public class UserServiceImpl implements UserService {
             Long id = (Long) request.getAttribute("id");
             if (userRepository.findById(id).isPresent()) {
                 userRepository.deleteById(id);
-                return ResponseEntity.ok().body("deleted account");
+                return ResponseEntity.ok().body("account deleted");
             } else {
                 return ResponseEntity.status(404).body("userid not found");
 

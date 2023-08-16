@@ -27,7 +27,6 @@ public interface UserService {
     ResponseEntity<String> setTemporaryPassword(UserValidateEmailDTO request) ;
 
     ResponseEntity<String> deleteUser(HttpServletRequest request);
-
     UserResponseDTO getUser(HttpServletRequest request) ;
 
     ResponseEntity<UserResponseDTO> getCurrentUserInformation(HttpServletRequest request) ;

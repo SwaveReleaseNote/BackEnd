@@ -26,7 +26,4 @@ public class UserResponseDTO {
     @Column(name = "username")
     private String username;
 
-
-
-
 }
