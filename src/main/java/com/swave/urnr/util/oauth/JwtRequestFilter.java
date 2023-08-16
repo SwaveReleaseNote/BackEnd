@@ -31,7 +31,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     // 인증에서 제외할 url
     // 3번째줄 부터는 swagger
-    private static final String Exclude_url="/api/test," +
+    private static final String Exclude_url="/api/test, /actuator/**," +
             "/swagger/**,/v2/api-docs/**,/configuration/ui/**," +
             "/swagger-resources/**,/configuration/security/**," +
             "/swagger-ui/**,/webjars/**,/swagger-ui.html,"+"/ws-stomp/**";
@@ -45,7 +45,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
                     Arrays.asList(
-                            "/api/user/prelogin/login-by-oauth"
+                            "/api/user/prelogin/login-by-oauth",
+                            "/actuator/prometheus"
                     ));
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
