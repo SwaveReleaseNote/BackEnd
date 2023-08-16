@@ -73,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
             /*
             TODO: Releasenote DTO 채우기  / 보내기
              */
-            NotificationDTO notificationDTO= new NotificationDTO(NotificationEnum.COMMENT,new Date(System.currentTimeMillis()),releaseNote.getVersion(),id);
+            NotificationDTO notificationDTO= new NotificationDTO(NotificationEnum.COMMENT,new Date(System.currentTimeMillis()),releaseNote.getVersion(),releaseNoteId);
 
             // User ID에 message 보내주기
             kafkaService.produceMessage(notificationDTO,String.valueOf(id));

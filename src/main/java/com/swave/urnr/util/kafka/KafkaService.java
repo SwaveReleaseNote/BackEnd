@@ -16,7 +16,6 @@ public interface KafkaService {
 
 
     void produceMessageAsString(String message, String topic) ;
-    void produceMessageS(String message, String topic) ;
 
     KafkaMessageListDTO getMessageListFromKafka(String topic);
 

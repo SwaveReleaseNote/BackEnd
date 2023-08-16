@@ -110,29 +110,6 @@ public class KafkaServiceImpl implements  KafkaService{
     }
 
     @Override
-    public void produceMessageS(String message, String topic) {
-
-        log.info("temp {} , topic {}", message,topic);
-
-        /*
-        Mocking for release note, so will not used in produce phase.
-         */
-        KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(producerFactory());
-
-
-        for(int i=1;i<Integer.valueOf(message)+1;i++){
-
-            try{
-                KafkaSSEEmitterSentDTO kafkaSSEEmitterSentDTO = new KafkaSSEEmitterSentDTO(String.valueOf(i), "0.12.34" , SSETypeEnum.ALARM);
-                String messageForSend = objectMapper.writeValueAsString(kafkaSSEEmitterSentDTO);
-                log.info("MFS : {}, topic : {}", messageForSend, topic);
-                kafkaTemplate.send(topic , messageForSend);
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
-    @Override
     public KafkaMessageListDTO getMessageListFromKafka(String topic){
         List<String> newMessage = getNewMessagesFromKafkaTopic(topic);
         List<String> oldMessage = getMessagesFromKafkaTopic(topic, 10);
