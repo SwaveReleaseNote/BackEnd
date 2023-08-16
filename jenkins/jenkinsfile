@@ -95,7 +95,7 @@ pipeline {
                 stage('Tag Docker Image') {
                             steps {
                                 // Tag the Docker image with the desired repository name and tag
-                                sh 'docker tag release_note_back:latest kjk7212/release_note_back'
+                                sh 'docker tag release_note_back kjk7212/release_note_back:${currentBuild.number}'
                             }
                         }
 
@@ -131,6 +131,8 @@ pipeline {
                                        branch: 'main'
 
                                sh "sed -i 's/# build-version:.*/# build-version: ${currentBuild.number}/g' back.yaml"
+
+                               sh "sed -i 's/image: kjk7212/release_note_back.*/image: kjk7212/release_note_back:${currentBuild.number}/g' back.yaml"
                                sh "git add back.yaml"
                                sshagent(credentials: ['git-ssh']) {
                                    sh "git commit -m '[UPDATE] v${currentBuild.number} image versioning'"
