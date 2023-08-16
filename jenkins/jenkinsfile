@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Prepare') {
             steps {
-                git branch: 'feature_project_cicd',
+                git branch: 'develop',
                     url: 'https://github.com/SwaveReleaseNote/BackEnd.git'
             }
 
