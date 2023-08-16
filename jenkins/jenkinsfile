@@ -1,6 +1,5 @@
 pipeline {
     agent any 	// 사용 가능한 에이전트에서 이 파이프라인 또는 해당 단계를 실행
-
     tools{
         jdk 'jdk17'
     }
@@ -10,7 +9,6 @@ pipeline {
                 git branch: 'develop',
                     url: 'https://github.com/SwaveReleaseNote/BackEnd.git'
             }
-
             post {
                 success {
                     sh 'echo "Successfully Cloned Repository"'
@@ -20,7 +18,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build') {
             steps {
             	// gralew이 있어야됨. git clone해서 project를 가져옴.
@@ -30,15 +27,12 @@ pipeline {
                 //sh './gradlew compileJava'
                 //sh  './gradlew clean build'
                 sh  './gradlew bootJar'
-
-
                 sh 'ls -al ./build'
             }
             post {
                 success {
                     echo 'gradle build success'
                 }
-
                 failure {
                     echo 'gradle build failed'
                 }
@@ -58,7 +52,6 @@ pipeline {
                                             echo "Workspace Path: ${workspacePath}"
                                         }
                     }
-
                     post {
                         success {
                             sh 'echo "Prune Docker data Success"'
@@ -68,7 +61,6 @@ pipeline {
                         }
                     }
                 }
-
                 stage('Docker Build'){
                     steps{
                         dir("/var/jenkins_home/workspace/Backend"){
@@ -86,7 +78,6 @@ pipeline {
                         success {
                             sh 'echo "Bulid Docker Image Success"'
                         }
-
                         failure {
                             sh 'echo "Bulid Docker Image Fail"'
                         }
@@ -95,10 +86,9 @@ pipeline {
                 stage('Tag Docker Image') {
                             steps {
                                 // Tag the Docker image with the desired repository name and tag
-                                sh 'docker tag release_note_back kjk7212/release_note_back:${currentBuild.number}'
+                                sh 'docker tag release_note_back:latest kjk7212/release_note_back'
                             }
                         }
-
                 stage('Docker Push') {
                      steps {
             // Specify the correct credentials type ('Username with password')
@@ -106,33 +96,25 @@ pipeline {
                                 // Use the correct credentials variables in the 'docker login' command
                                 sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
                                 // Use the correct repository name for tagging and pushing
-                                sh "docker tag release_note_back:${currentBuild.number} kjk7212/release_note_back:${currentBuild.number}"
-                                sh "docker push kjk7212/release_note_back:${currentBuild.number}"
+                                sh "docker tag release_note_back:latest kjk7212/release_note_back:latest"
+                                sh "docker push kjk7212/release_note_back:latest"
                                 }
                     }
-
-
                     post {
                         success {
                             echo 'Docker Push success'
                         }
-
                         failure {
                             echo 'Docker Push failed'
                         }
                     }
-                    }
-
-
+                }
                 stage('AgroCD Manifest Update') {
                         steps {
                                git credentialsId: 'kjk7212',
                                        url: 'https://github.com/SwaveReleaseNote/argocd-back',
                                        branch: 'main'
-
                                sh "sed -i 's/# build-version:.*/# build-version: ${currentBuild.number}/g' back.yaml"
-
-                               sh "sed -i 's/image: kjk7212/release_note_back.*/image: kjk7212/release_note_back:${currentBuild.number}/g' back.yaml"
                                sh "git add back.yaml"
                                sshagent(credentials: ['git-ssh']) {
                                    sh "git commit -m '[UPDATE] v${currentBuild.number} image versioning'"
@@ -140,42 +122,10 @@ pipeline {
                                    sh "git push -u origin main"
                                }
                         }
-                        post {
-                                        success {
-                                            slackSend (
-                                                    channel: '#jenkins',
-                                                    color: '#00FF00',
-                                                    message: "SUCCESS: Job ${env.JOB_NAME} AgroCD Manifest Update"
-                                            )
-                                        }
-                                        failure {
-                                            slackSend (
-                                                    channel: '#jenkins',
-                                                    color: '#FF0000',
-                                                    message: "FAIL: Job ${env.JOB_NAME} AgroCD Manifest Update"
-                                            )
-                                        }
-                                    }
-                }
-                }
-                post {
-                                                success {
-                                                    slackSend (
-                                                            channel: '#jenkins',
-                                                            color: '#00FF00',
-                                                            message: "SUCCESS: Job ${env.JOB_NAME} AgroCD Manifest Update"
-                                                    )
-                                                }
-                                                failure {
-                                                    slackSend (
-                                                            channel: '#jenkins',
-                                                            color: '#FF0000',
-                                                            message: "FAIL: Job ${env.JOB_NAME} AgroCD Manifest Update"
-                                                    )
-                                                }
-                                            }
+                    }
 
 
 
+        }
 
 }

@@ -1,6 +1,8 @@
 package com.swave.urnr.releasenote.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swave.urnr.chatgpt.requestdto.ChatGPTQuestionRequestDTO;
+import com.swave.urnr.chatgpt.responsedto.ChatGPTResultResponseDTO;
 import com.swave.urnr.chatgpt.service.ChatGPTService;
 import com.swave.urnr.project.domain.Project;
 import com.swave.urnr.project.repository.ProjectRepository;
@@ -110,11 +112,11 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
                 noteBlockList.add(noteBlock);
             }
 
-//        ChatGPTResultDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
-//                new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
+            ChatGPTResultResponseDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
+                new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
 
             releaseNote.setNoteBlockList(noteBlockList);
-            //releaseNote.setSummary(ChatGPTResultDTO.getText());
+            releaseNote.setSummary(ChatGPTResultDTO.getText());
 
             releaseNoteRepository.flush();
 
