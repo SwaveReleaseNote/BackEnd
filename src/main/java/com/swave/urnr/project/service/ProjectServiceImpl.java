@@ -9,6 +9,7 @@ import com.swave.urnr.project.requestdto.ProjectKeywordRequestContentDTO;
 import com.swave.urnr.project.requestdto.ProjectUpdateRequestDTO;
 import com.swave.urnr.project.responsedto.*;
 import com.swave.urnr.redis.RedisLockRepository;
+import com.swave.urnr.redis.RedisService;
 import com.swave.urnr.releasenote.repository.ReleaseNoteRepository;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.domain.UserInProject;
@@ -20,6 +21,9 @@ import com.swave.urnr.util.type.UserRole;
 import lombok.RequiredArgsConstructor;
 import com.swave.urnr.util.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,18 +58,32 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final RedisLockRepository redisLockRepository;
 
-    //private final RedissonClient redissonClient;
+    private final RedissonClient redissonClient;
 
 
+    /*RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try
+
+    {
+        boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+        if (!available) {
+            throw new RuntimeException("Lock 획득 실패!");
+        }
+    }catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    } finally {
+        lock.unlock();
+    }*/
     @Override
     @Transactional
     public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto) throws InterruptedException {
-        while (!redisLockRepository.lock((Long)request.getAttribute("id"))) {
-            Thread.sleep(100);
-        }
-
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
         try {
-
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            log.info("hi");
             //빌더로 프로젝트생성
             Project project = Project.builder()
                     .name(projectCreateRequestDto.getProjectName())
@@ -155,10 +173,10 @@ public class ProjectServiceImpl implements ProjectService {
                     .message("Project Created")
                     .description("Project Id " + project.getId() + " created")
                     .build();
-        }
-        finally {
-            redisLockRepository.unlock((Long)request.getAttribute("id"));
-            // 락 해제
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -169,17 +187,17 @@ public class ProjectServiceImpl implements ProjectService {
 
 
         List<ProjectListResponseDTO> projectList = new ArrayList<>();
-        List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id((Long)request.getAttribute("id"));
+        List<UserInProject> userInProjectList = userInProjectRepository.findByUser_Id((Long) request.getAttribute("id"));
 
-        for(UserInProject userInProject: userInProjectList){
+        for (UserInProject userInProject : userInProjectList) {
             Project project = projectRepository.findById(userInProject.getProject().getId())
                     .orElseThrow(NoSuchFieldError::new);
             //List<ReleaseNote> releaseNoteList = releaseNoteRepository.findByProject_Id(project.getId());
             int count = userInProjectRepository.countMember(project.getId());
             String version = releaseNoteRepository.latestReleseNote(project.getId());
             log.info(version);
-            System.out.println(version+(Long)request.getAttribute("id")+project.getId());
-            projectList.add(new ProjectListResponseDTO(project.getId(),userInProject.getRole(),project.getName(),project.getDescription(),project.getCreateDate(),count,version));
+            System.out.println(version + (Long) request.getAttribute("id") + project.getId());
+            projectList.add(new ProjectListResponseDTO(project.getId(), userInProject.getRole(), project.getName(), project.getDescription(), project.getCreateDate(), count, version));
         }
         /*
         List<ProjectRequestDto> loadAll = new ArrayList<>();
@@ -224,12 +242,12 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional(readOnly = true)
     public UserRole getRole(HttpServletRequest request, Long projectId) {
-        UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long)request.getAttribute("id"),projectId);
+        UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id((Long) request.getAttribute("id"), projectId);
 
         UserRole role;
-        if(userInProject==null){
+        if (userInProject == null) {
             role = None;
-        }else{
+        } else {
             role = userInProject.getRole();
         }
 
@@ -238,7 +256,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) throws NotAuthorizedException {
+    public ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
         //todo:권한체크
         UserRole role = getRole(request, projectId);
         if (role != UserRole.Manager) {
@@ -247,7 +265,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 
         Project project = projectRepository.findById(projectId).get();
-        User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
+        User user = userRepository.findById((Long) request.getAttribute("id")).orElse(null);
         List<UserMemberInfoResponseDTO> getMembers = userInProjectRepository.getMembers(projectId);
         log.info(getMembers.toString());
         System.out.println(getMembers);
@@ -260,7 +278,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .name(project.getName())
                 .description(project.getDescription())
                 .createDate(project.getCreateDate())
-                .managerId((Long)request.getAttribute("id"))
+                .managerId((Long) request.getAttribute("id"))
                 .managerName(user.getUsername())
                 .managerDepartment(user.getDepartment())
                 .teamMembers(getMembers)
@@ -274,15 +292,15 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
         Project project = projectRepository.findById(projectId).get();
-        User user = userRepository.findById((Long)request.getAttribute("id")).orElse(null);
-        List<UserMemberInfoResponseDTO> getMembers  = new ArrayList<>();
+        User user = userRepository.findById((Long) request.getAttribute("id")).orElse(null);
+        List<UserMemberInfoResponseDTO> getMembers = new ArrayList<>();
         //todo:권한체크
         UserRole role = getRole(request, projectId);
         if (role != UserRole.Manager) {
             throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
         }
 
-        for(UserInProject userInProject:project.getUserInProjectList()){
+        for (UserInProject userInProject : project.getUserInProjectList()) {
             UserMemberInfoResponseDTO userMemberInfoResponseDTO = new UserMemberInfoResponseDTO();
             userMemberInfoResponseDTO.setUserId(userInProject.getId());
             userMemberInfoResponseDTO.setUsername(userInProject.getUser().getUsername());
@@ -295,7 +313,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .name(project.getName())
                 .description(project.getDescription())
                 .createDate(project.getCreateDate())
-                .managerId((Long)request.getAttribute("id"))
+                .managerId((Long) request.getAttribute("id"))
                 .managerName(user.getUsername())
                 .managerDepartment(user.getDepartment())
                 .teamMembers(getMembers)
@@ -305,76 +323,112 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     //관리자 변경하기 의외로 쉽게 될수도?
+    /*RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try
+
+    {
+        boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+        if (!available) {
+            throw new RuntimeException("Lock 획득 실패!");
+        }
+    }catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    } finally {
+        lock.unlock();
+    }*/
     @Override
     @Transactional
     public ProjectUpdateRequestDTO updateProject(HttpServletRequest request, Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) throws NotAuthorizedException {
 
-        //todo:권한체크
-        UserRole role = getRole(request, projectId);
-        if (role != UserRole.Manager) {
-            throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
-        }
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            //todo:권한체크
+            UserRole role = getRole(request, projectId);
+            if (role != UserRole.Manager) {
+                throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
+            }
 
-        System.out.println(projectId);
-        Project project = projectRepository.findById(projectId).orElseThrow(null);
+            System.out.println(projectId);
+            Project project = projectRepository.findById(projectId).orElseThrow(null);
 
-        project.setName(projectUpdateRequestDto.getName());
-        project.setDescription(projectUpdateRequestDto.getDescription());
+            project.setName(projectUpdateRequestDto.getName());
+            project.setDescription(projectUpdateRequestDto.getDescription());
 
-        //dto에 유저 추가하면 되는데 관리자를 개발자리스트나 구독자에선 빼야함
+            //dto에 유저 추가하면 되는데 관리자를 개발자리스트나 구독자에선 빼야함
 
-        //project.setUserInProjectList(projectUpdateRequestDto.getUsers());
-        //기존에있는 리스트를 가져와서
-        //프로젝트에 있는 유저리스트를 불러와서 삭제
-        //querydsl 사용하기
+            //project.setUserInProjectList(projectUpdateRequestDto.getUsers());
+            //기존에있는 리스트를 가져와서
+            //프로젝트에 있는 유저리스트를 불러와서 삭제
+            //querydsl 사용하기
 
 
-        for (Long deleteUserId : projectUpdateRequestDto.getDeleteUsers()){
-            int delete = userInProjectRepository.deleteUser(deleteUserId,projectId);
+            for (Long deleteUserId : projectUpdateRequestDto.getDeleteUsers()) {
+                int delete = userInProjectRepository.deleteUser(deleteUserId, projectId);
+                userInProjectRepository.flush();
+            }
+
+            for (Long userId : projectUpdateRequestDto.getUpdateUsers()) {
+                UserInProject userInProject = new UserInProject();
+                userInProject.setRole(UserRole.Developer);
+                userInProject.setProject(project);
+
+                User user = userRepository.findById(userId).get();
+                userInProject.setUser(user);
+                userInProjectRepository.save(userInProject);
+
+                List<UserInProject> userInProjectList = user.getUserInProjectList();
+                userInProjectList.add(userInProject);
+                user.setUserInProjectList(userInProjectList);
+                userRepository.flush();
+                userInProjectRepository.flush();
+                project.getUserInProjectList().add(userInProject);
+            }
+            projectRepository.flush();
             userInProjectRepository.flush();
+
+            return projectUpdateRequestDto;
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
         }
-
-        for (Long userId : projectUpdateRequestDto.getUpdateUsers()){
-            UserInProject userInProject = new UserInProject();
-            userInProject.setRole(UserRole.Developer);
-            userInProject.setProject(project);
-
-            User user = userRepository.findById(userId).get();
-            userInProject.setUser(user);
-            userInProjectRepository.save(userInProject);
-
-            List<UserInProject> userInProjectList = user.getUserInProjectList();
-            userInProjectList.add(userInProject);
-            user.setUserInProjectList(userInProjectList);
-            userRepository.flush();
-            userInProjectRepository.flush();
-            project.getUserInProjectList().add(userInProject);
-        }
-        projectRepository.flush();
-        userInProjectRepository.flush();
-
-        return projectUpdateRequestDto;
     }
 
     @Override
     @Transactional
     public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
-        //todo:권한체크
-        UserRole role = getRole(request, projectId);
-        if (role != UserRole.Manager) {
-            throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
-        }
+        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
+            //todo:권한체크
+            UserRole role = getRole(request, projectId);
+            if (role != UserRole.Manager) {
+                throw new NotAuthorizedException("해당 프로젝트의 매니저만 접근할 수 있습니다.");
+            }
 
-        List<UserInProject> userInProjectList = userInProjectRepository.findByProject_Id(projectId);
-        for(UserInProject userInProject:userInProjectList) {
-            userInProjectRepository.delete(userInProject);
+            List<UserInProject> userInProjectList = userInProjectRepository.findByProject_Id(projectId);
+            for (UserInProject userInProject : userInProjectList) {
+                userInProjectRepository.delete(userInProject);
+            }
+            projectRepository.deleteById(projectId);
+            return HttpResponse.builder()
+                    .message("Project Deleted")
+                    .description("Project Id " + projectId + " deleted")
+                    .build();
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
         }
-        projectRepository.deleteById(projectId);
-        return HttpResponse.builder()
-                .message("Project Deleted")
-                .description("Project Id "+ projectId +" deleted")
-                .build();
 
     }
 
@@ -408,7 +462,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     }
-
 
 
     @Override

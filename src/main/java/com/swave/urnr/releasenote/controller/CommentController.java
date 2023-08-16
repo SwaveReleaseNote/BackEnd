@@ -7,6 +7,7 @@ import com.swave.urnr.util.http.HttpResponse;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +25,8 @@ public class CommentController {
         return commentService.createComment(request, releaseNoteId , commentCreateRequestDTO);
     }
 
+
+    @Cacheable(value="loadRecentComment")
     @Operation(summary="최근 댓글 5개 읽기", description="projectId의 프로젝트에서 최근에 달린 댓글 5개를 보여줍니다.")
     @GetMapping("/api/project/{projectId}/release-note/recent-comments")
     public CommentContentListResponseDTO loadRecentComment(@PathVariable Long projectId){
