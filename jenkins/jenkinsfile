@@ -150,7 +150,7 @@ pipeline {
                             slackSend (
                                     channel: '#jenkins',
                                     color: '#FF0000',
-                                    message: "FAIL: Job ${env.JOB_NAME} Build Whole User"
+                                    message: "FAIL: Job ${env.JOB_NAME} Build Whole Backend"
                             )
                         }
                     }
