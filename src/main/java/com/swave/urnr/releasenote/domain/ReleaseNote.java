@@ -128,6 +128,7 @@ public class ReleaseNote {
         releaseNoteContentListResponseDTO.setLastModified(this.lastModifiedDate);
         releaseNoteContentListResponseDTO.setVersion(this.version);
         releaseNoteContentListResponseDTO.setSummary(this.summary);
+        releaseNoteContentListResponseDTO.setReleaseNoteId(this.getId());
 
         return releaseNoteContentListResponseDTO;
     }
