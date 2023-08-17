@@ -260,7 +260,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ResponseEntity<String> updateUser(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
-        RLock lock = redissonClient.getLock("User");
+        RLock lock = redissonClient.getLock("updateUser");
         try {
             boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
             if (!available) {
@@ -310,7 +310,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
        public ResponseEntity<String> deleteUser(HttpServletRequest request) {
-        RLock lock = redissonClient.getLock("User");
+        RLock lock = redissonClient.getLock("deleteUser");
         try {
             boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
             if (!available) {
@@ -515,7 +515,7 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
 
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        RLock lock = redissonClient.getLock("updatePassword");
         try {
             boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
             if (!available) {

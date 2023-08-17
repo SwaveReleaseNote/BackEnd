@@ -198,7 +198,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     @Override
     @Transactional
     public HttpResponse updateReleaseNote(HttpServletRequest request, Long releaseNoteId, ReleaseNoteUpdateRequestDTO releaseNoteUpdateRequestDTO) {
-        RLock lock = redissonClient.getLock("R"+releaseNoteId);
+        RLock lock = redissonClient.getLock("updateRel"+releaseNoteId);
         try {
             boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
             if (!available) {
@@ -284,7 +284,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     @Override
     @Transactional
     public HttpResponse deleteReleaseNote(HttpServletRequest request, Long releaseNoteId) {
-        RLock lock = redissonClient.getLock("R"+releaseNoteId);
+        RLock lock = redissonClient.getLock("deleteRel"+releaseNoteId);
         try {
             boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
             if (!available) {
