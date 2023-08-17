@@ -307,12 +307,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectUpdateRequestDTO updateProject(HttpServletRequest request, Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) throws NotAuthorizedException {
 
-        RLock lock = redissonClient.getLock("update" + projectId);
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             //todo:권한체크
             UserRole role = getRole(request, projectId);
             if (role != UserRole.Manager) {
@@ -358,23 +353,14 @@ public class ProjectServiceImpl implements ProjectService {
             userInProjectRepository.flush();
 
             return projectUpdateRequestDto;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+        
     }
 
     @Override
     @Transactional
     public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
-        RLock lock = redissonClient.getLock("delete" + projectId);
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             //todo:권한체크
             UserRole role = getRole(request, projectId);
             if (role != UserRole.Manager) {
@@ -391,11 +377,6 @@ public class ProjectServiceImpl implements ProjectService {
                     .description("Project Id " + projectId + " deleted")
                     .build();
 
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
 
     }
 
