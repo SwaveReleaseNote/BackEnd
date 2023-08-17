@@ -172,9 +172,9 @@ public class OpenSearchServiceImpl implements OpenSearchService{
                 .withQuery(
                         QueryBuilders.boolQuery()
                                 .must(QueryBuilders.matchQuery("is_deleted", false))
-                                .must(QueryBuilders.matchQuery("username", name))
-                                .must(QueryBuilders.matchQuery("username.nori", name))
-                                .must(QueryBuilders.matchQuery("username.ngram", name)))
+                                .should(QueryBuilders.matchQuery("username", name))
+                                .should(QueryBuilders.matchQuery("username.nori", name))
+                                .should(QueryBuilders.matchQuery("username.ngram", name)))
 
                 .build();
 
