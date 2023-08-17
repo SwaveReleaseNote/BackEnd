@@ -95,12 +95,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ResponseEntity<UserEntityResponseDTO> patchUserInformation(HttpServletRequest request, UserDepartmentRequestDTO requestDto)  {
 
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             Long id = (Long) request.getAttribute("id");
             log.info(id.toString());
 
@@ -125,11 +120,7 @@ public class UserServiceImpl implements UserService {
 
             userEntityResponseDto = new UserEntityResponseDTO(200,"User Information patched.");
             return ResponseEntity.status(200).body(userEntityResponseDto);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
 
     }
 
