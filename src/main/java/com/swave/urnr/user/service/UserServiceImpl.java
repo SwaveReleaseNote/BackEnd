@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
     private final KafkaService kafkaService;
 
     private final SSEEmitterService sseEmitterService;
-    private final RedissonClient redissonClient;
+
 
 
     public PasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -260,12 +260,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ResponseEntity<String> updateUser(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
-        RLock lock = redissonClient.getLock("User");
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             Long id = (Long) request.getAttribute("id");
             if (!userRepository.findById(id).isPresent()) {
                 return ResponseEntity.status(404).body("User doesn't exist");
@@ -281,11 +276,7 @@ public class UserServiceImpl implements UserService {
             userRepository.flush();
 
             return ResponseEntity.status(204).body("user data updated.");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 
     @Override
@@ -310,12 +301,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
        public ResponseEntity<String> deleteUser(HttpServletRequest request) {
-        RLock lock = redissonClient.getLock("User");
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             Long id = (Long) request.getAttribute("id");
             if (userRepository.findById(id).isPresent()) {
                 userRepository.deleteById(id);
@@ -324,11 +310,7 @@ public class UserServiceImpl implements UserService {
                 return ResponseEntity.status(404).body("userid not found");
 
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 
     @Override
@@ -515,12 +497,7 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<String> updatePassword(HttpServletRequest request, UserUpdateAccountRequestDTO requestDto) {
 
 
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             Long id = (Long) request.getAttribute("id");
             if (!userRepository.findById(id).isPresent()) {
                 return ResponseEntity.status(404).body("User doesn't exist");
@@ -534,10 +511,6 @@ public class UserServiceImpl implements UserService {
             userRepository.flush();
 
             return ResponseEntity.status(204).body("Updated User data");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 }

@@ -25,7 +25,11 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,6 +51,7 @@ import static com.swave.urnr.util.type.UserRole.None;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@EnableTransactionManagement
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
 
@@ -56,9 +61,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ReleaseNoteRepository releaseNoteRepository;
 
-    private final RedisLockRepository redisLockRepository;
-
-    private final RedissonClient redissonClient;
 
 
 
@@ -307,12 +309,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectUpdateRequestDTO updateProject(HttpServletRequest request, Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) throws NotAuthorizedException {
 
-        RLock lock = redissonClient.getLock("P" + projectId);
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
+
             //todo:권한체크
             UserRole role = getRole(request, projectId);
             if (role != UserRole.Manager) {
@@ -358,23 +356,16 @@ public class ProjectServiceImpl implements ProjectService {
             userInProjectRepository.flush();
 
             return projectUpdateRequestDto;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
+
+
     }
 
     @Override
     @Transactional
     public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
-        RLock lock = redissonClient.getLock("P" + projectId);
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             //todo:권한체크
             UserRole role = getRole(request, projectId);
             if (role != UserRole.Manager) {
@@ -391,11 +382,7 @@ public class ProjectServiceImpl implements ProjectService {
                     .description("Project Id " + projectId + " deleted")
                     .build();
 
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
 
     }
 
@@ -438,14 +425,17 @@ public class ProjectServiceImpl implements ProjectService {
         List<UserMemberInfoResponseDTO> getMemberLists = userInProjectRepository.getLoginMembers(projectId);
         log.info(String.valueOf(getMemberLists.get(0)));
         for (UserMemberInfoResponseDTO getMember : getMemberLists) {
-            User user = userRepository.getReferenceById(getMember.getUserId());
-            ProjectUserCheckDTO projectUserCheck = ProjectUserCheckDTO.builder()
-                    .memberId(user.getId())
-                    .memberName(user.getUsername())
-                    .isOnline(user.isOnline())
-                    .build();
-            projectUserCheckList.add(projectUserCheck);
-
+            UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id(getMember.getUserId(),projectId);
+            UserRole role = userInProject.getRole();
+            if(role != UserRole.Subscriber) {
+                User user = userRepository.getReferenceById(getMember.getUserId());
+                ProjectUserCheckDTO projectUserCheck = ProjectUserCheckDTO.builder()
+                        .memberId(user.getId())
+                        .memberName(user.getUsername())
+                        .isOnline(user.isOnline())
+                        .build();
+                projectUserCheckList.add(projectUserCheck);
+            }
         }
         return projectUserCheckList;
     }

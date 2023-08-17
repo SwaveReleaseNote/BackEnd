@@ -1,6 +1,7 @@
 package com.swave.urnr.user.service;
 
 import com.swave.urnr.project.domain.Project;
+import com.swave.urnr.project.exception.NotAuthorizedException;
 import com.swave.urnr.project.repository.ProjectRepository;
 import com.swave.urnr.user.domain.User;
 import com.swave.urnr.user.domain.UserInProject;
@@ -34,14 +35,11 @@ public class UserInProjectServiceImpl implements UserInProjectService {
 
     private final UserRepository userRepository;
 
-    private final RedissonClient redissonClient;
 
 
     @Override
     @Transactional
     public HttpResponse dropProject(HttpServletRequest request, Long projectId) {
-
-
 
             Long userId = (Long) request.getAttribute("id");
 
@@ -55,10 +53,16 @@ public class UserInProjectServiceImpl implements UserInProjectService {
     }
 
     @Override
-    public HttpResponse subscribeProject(HttpServletRequest request, Long projectId) {
+    public HttpResponse subscribeProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
+            UserRole role = getRole(request, projectId);
+            if (role == Subscriber) {
+                throw new NotAuthorizedException("이미 구독한 프로젝트 입니다.");
+            } else if (role != None) {
+                throw new NotAuthorizedException("이미 참여중인 프로젝트 입니다.");
+            }
 
-            System.out.println(projectId);
+        System.out.println(projectId);
             User user = userRepository.findById((Long) request.getAttribute("id")).orElse(null);
 
             Project project = projectRepository.findById(projectId).orElse(null);

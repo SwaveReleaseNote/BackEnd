@@ -32,8 +32,4 @@ public class RedisService {
 
     public Set getSets(String key){
         return redisTemplate.opsForSet().members(key);
-    }
-
-
-
-}
+    }}
