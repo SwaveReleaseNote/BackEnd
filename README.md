@@ -34,7 +34,7 @@
  
  <img src="https://img.shields.io/badge/OpenSearch-005EB8?style=flat&logo=OpenSearch&logoColor=white" />
  
- <img src="https://img.shields.io/badge/Kafka-231F20?style=flat&logo=Kafka&logoColor=white" />
+ <img src="https://img.shields.io/badge/Apache Kafka-231F20?style=flat&logo=Apache Kafka&logoColor=white" />
 
 
  </div>
