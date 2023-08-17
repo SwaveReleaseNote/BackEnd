@@ -134,7 +134,7 @@ public class KafkaServiceImpl implements  KafkaService{
         kafkaConsumer.seekToBeginning(kafkaConsumer.assignment());
 
         List<String> messages = new ArrayList<>();
-        ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(10000));
+        ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(5000));
 
         for (ConsumerRecord<String, String> record : records) {
             messages.add(record.value());
@@ -175,7 +175,7 @@ public class KafkaServiceImpl implements  KafkaService{
         kafkaConsumer.seekToBeginning(kafkaConsumer.assignment());
 
         List<String> messages = new ArrayList<>();
-        ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(10000));
+        ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(5000));
 
         for (ConsumerRecord<String, String> record : records) {
             messages.add(record.value());
@@ -206,7 +206,7 @@ public class KafkaServiceImpl implements  KafkaService{
         kafkaConsumer.seekToBeginning(kafkaConsumer.assignment());
 
         List<String> messages = new ArrayList<>();
-            ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(10000));
+            ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(5000));
 
             for (ConsumerRecord<String, String> record : records) {
                 messages.add(record.value());
