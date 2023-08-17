@@ -90,12 +90,12 @@ public class UserController {
 
     @Operation(summary="이메일 로그인을 통한 토큰 반환", description="입력된 이메일 계정과 비밀번호가 동일하면 토큰값을 반환합니다.")
     @PostMapping("/user/login-by-email")
-    public  ResponseEntity<SseEmitter> getTokenByLogin(@RequestBody UserLoginServerRequestDTO requestDto)  {
+    public  ResponseEntity<String> getTokenByLogin(@RequestBody UserLoginServerRequestDTO requestDto)  {
         return userService.getTokenByLogin(requestDto);
     }
     @Operation(summary="oAuth 로그인을 통한 토큰 반환", description="Oauth 기능을 기반으로 사용자의 계정을 로그인합니다.")
     @PostMapping("/user/login-by-oauth")
-    public ResponseEntity<SseEmitter> getTokenByOauth(@RequestParam("code") String code, @RequestParam("provider") String provider) {
+    public ResponseEntity<String> getTokenByOauth(@RequestParam("code") String code, @RequestParam("provider") String provider) {
         return userService.getTokenByOauth(code, provider);
     }
     @Operation(summary="사용자 로그인 여부 확인", description="현재 사용자가 로그인하고 있으면 true 아니면 false가 나옵니다")

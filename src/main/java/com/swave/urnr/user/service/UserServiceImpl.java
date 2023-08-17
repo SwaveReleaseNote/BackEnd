@@ -209,33 +209,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<SseEmitter> getTokenByLogin(UserLoginServerRequestDTO requestDto)  {
+    public ResponseEntity<String> getTokenByLogin(UserLoginServerRequestDTO requestDto)  {
 
 
         String email = requestDto.getEmail();
         Optional<User> optionalUser = userRepository.findByEmail(email);
-        String result = "Information Not valid";
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (encoder.matches( requestDto.getPassword(),user.getPassword())){
 
                 String token = tokenService.createToken(user);
-                log.info("TOKEN AQUIRED : {}", token);
-                log.info("UI AQUIRED : {}", user.getId().toString());
-                SseEmitter sseEmitter = sseEmitterService.subscribeEmitter(String.valueOf(user.getId()), token);
 
-                log.info(" SSE AQUIRED? ");
-
-                return  ResponseEntity.ok().body(sseEmitter);
+                return  ResponseEntity.ok().body(token);
             }
         }
 
-        return ResponseEntity.status(409).body(null);
+        return ResponseEntity.status(409).body("Information Not valid");
     }
 
     @Override
     @Transactional
-    public ResponseEntity<SseEmitter> getTokenByOauth(String code, String provider) {
+    public ResponseEntity<String> getTokenByOauth(String code, String provider) {
         log.info("hi1 : "+new Date());//203446 191
         System.out.println("SWAVE1 :"+new Date());
         OauthToken oauthToken = oAuthService.getOauthAccessToken(code, provider);
@@ -268,7 +262,7 @@ public class UserServiceImpl implements UserService {
 
         System.out.println("SWAVE8 :"+new Date());
 
-        return  ResponseEntity.ok().body(sseEmitter);
+        return  ResponseEntity.ok().body(jwtToken);
     }
 
     @Override
