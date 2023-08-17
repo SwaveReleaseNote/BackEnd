@@ -67,9 +67,6 @@ public class StompHandler extends ChannelInterceptorAdapter {
                     log.info("Final : " + user);
                     userRepository.save(user);
                     userRepository.flush();
-                } else {
-                    throw new UserNotFoundException();
-
                 }
                 log.info(onlineUser.toString());
                 log.info("Welcome connect"+sessionId);
@@ -89,9 +86,6 @@ public class StompHandler extends ChannelInterceptorAdapter {
                     log.info("Final : " + user);
                     userRepository.save(user);
                     userRepository.flush();
-                } else {
-                    throw new UserNotFoundException();
-
                 }
                 onlineUser.remove(sessionId);
 

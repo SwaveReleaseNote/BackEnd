@@ -53,7 +53,7 @@ public class OpenSearchController {
     }
 
     @Operation(summary="프로젝트 총검색 쿼리 테스트", description="테스트용 코드입니다.")
-    @PostMapping("/test/search/{keyword}")
+    @PostMapping("/api/search/{keyword}/open")
     public ProjectSearchResultListResponseDTO searchProject(@PathVariable String keyword){
         return openSearchService.searchProject(keyword);
     }
