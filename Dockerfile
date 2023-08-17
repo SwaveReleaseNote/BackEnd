@@ -8,9 +8,8 @@ WORKDIR /app
 COPY build/libs/ReleaseNoteShareSystem-0.0.1-SNAPSHOT.jar docker-springboot.jar
 
 
-CMD ["-Djasypt.encryptor.password=Popcon"]
 #server
-CMD ["java","-jar","-Dspring.profiles.active=prod","docker-springboot.jar"]
+CMD ["java","-jar","-Dspring.profiles.active=prod","-Djasypt.encryptor.password=Popcon","docker-springboot.jar"]
 
 
 
