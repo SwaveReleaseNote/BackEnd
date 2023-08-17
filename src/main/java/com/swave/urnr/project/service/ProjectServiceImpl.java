@@ -25,7 +25,11 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,6 +51,7 @@ import static com.swave.urnr.util.type.UserRole.None;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@EnableTransactionManagement
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
 
@@ -59,6 +64,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final RedisLockRepository redisLockRepository;
 
     private final RedissonClient redissonClient;
+
+    private final PlatformTransactionManager transactionManager;
 
 
 
@@ -304,8 +311,22 @@ public class ProjectServiceImpl implements ProjectService {
     //관리자 변경하기 의외로 쉽게 될수도?
 
     @Override
-    @Transactional
     public ProjectUpdateRequestDTO updateProject(HttpServletRequest request, Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) throws NotAuthorizedException {
+
+        RLock lock = redissonClient.getLock("update" + projectId);
+
+        TransactionStatus status = null;
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            log.info(Thread.currentThread().getName() + " lock 획득 시도!");
+
+            status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+            log.info(Thread.currentThread().getName() + " Transaction 시작");
+
+
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
 
 
             //todo:권한체크
@@ -353,14 +374,30 @@ public class ProjectServiceImpl implements ProjectService {
             userInProjectRepository.flush();
 
             return projectUpdateRequestDto;
-        
+
+
+        } catch (InterruptedException e) {
+            // 로직 실행 중 예외가 발생하면 롤백
+            transactionManager.rollback(status);
+            log.info(Thread.currentThread().getName() + " 로직 실행 실패");
+            throw new RuntimeException(e);
+
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     @Transactional
     public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
-
+        RLock lock = redissonClient.getLock("delete" + projectId);
+        try {
+            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
+            if (!available) {
+                throw new RuntimeException("Lock 획득 실패!");
+            }
             //todo:권한체크
             UserRole role = getRole(request, projectId);
             if (role != UserRole.Manager) {
@@ -377,6 +414,11 @@ public class ProjectServiceImpl implements ProjectService {
                     .description("Project Id " + projectId + " deleted")
                     .build();
 
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
 
     }
 
