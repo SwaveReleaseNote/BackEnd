@@ -72,4 +72,12 @@ public class ReleaseNoteController {
     public ReleaseNoteContentResponseDTO loadRecentReleaseNote(HttpServletRequest request){
         return releaseNoteService.loadRecentReleaseNote(request);
     }
+
+
+    @Cacheable(value="loadReleaseNoteLastestVersion")
+    @Operation(summary = "프로젝트 내에서 가장 최근 릴리즈 노트 버전 받기", description="프로젝트에서 가장 최근 릴리즈 노트 하나의 버전을 읽어옵니다." )
+    @GetMapping("/api/project/{projectId}/last-release-note")
+    public ReleaseNoteLastestVersionResponeDTO loadReleaseNoteLastestVersion(@PathVariable Long projectId){
+        return releaseNoteService.loadReleaseNoteLastestVersion(projectId);
+    }
 }

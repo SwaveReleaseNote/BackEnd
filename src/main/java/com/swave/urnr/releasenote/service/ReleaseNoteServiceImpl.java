@@ -295,4 +295,17 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ReleaseNoteLastestVersionResponeDTO loadReleaseNoteLastestVersion(Long projectId){
+        List<ReleaseNote> releaseNoteList = releaseNoteRepository.findByProject_Id(projectId);
+        ReleaseNoteLastestVersionResponeDTO releaseNoteLastestVersionResponeDTO = new ReleaseNoteLastestVersionResponeDTO();
+        if(releaseNoteList != null){
+            releaseNoteLastestVersionResponeDTO.setVersion(releaseNoteList.get(releaseNoteList.size()-1).getVersion());
+        }else{
+            releaseNoteLastestVersionResponeDTO.setVersion(null);
+        }
+        return releaseNoteLastestVersionResponeDTO;
+    }
+
 }
