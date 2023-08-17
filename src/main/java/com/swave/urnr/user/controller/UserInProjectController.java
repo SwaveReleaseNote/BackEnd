@@ -1,5 +1,6 @@
 package com.swave.urnr.user.controller;
 
+import com.swave.urnr.project.exception.NotAuthorizedException;
 import com.swave.urnr.user.domain.UserInProject;
 import com.swave.urnr.user.service.UserInProjectService;
 import com.swave.urnr.util.http.HttpResponse;
@@ -36,7 +37,7 @@ public class UserInProjectController {
 
     @Operation(summary = "프로젝트 구독", description="projectID와 유저정보를 받아 프로젝트를 구독합니다.")
     @PostMapping("/{projectId}/subscribe")
-    public HttpResponse subscribeProject(HttpServletRequest request, @PathVariable Long projectId){
+    public HttpResponse subscribeProject(HttpServletRequest request, @PathVariable Long projectId) throws NotAuthorizedException {
         return userInProjectService.subscribeProject(request, projectId);
     }
 
