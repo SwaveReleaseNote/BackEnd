@@ -198,12 +198,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     @Override
     @Transactional
     public HttpResponse updateReleaseNote(HttpServletRequest request, Long releaseNoteId, ReleaseNoteUpdateRequestDTO releaseNoteUpdateRequestDTO) {
-        RLock lock = redissonClient.getLock("updateRel"+releaseNoteId);
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             User user = userRepository.findById((Long) request.getAttribute("id"))
                     .orElseThrow(NoSuchElementException::new);
 
@@ -251,11 +246,7 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
                     .message("Release Note Updated")
                     .description("Release Note ID : " + releaseNote.getId() + " Updated")
                     .build();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 
     @Override
@@ -284,23 +275,14 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     @Override
     @Transactional
     public HttpResponse deleteReleaseNote(HttpServletRequest request, Long releaseNoteId) {
-        RLock lock = redissonClient.getLock("deleteRel"+releaseNoteId);
-        try {
-            boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
-            if (!available) {
-                throw new RuntimeException("Lock 획득 실패!");
-            }
+
             releaseNoteRepository.deleteById(releaseNoteId);
 
             return HttpResponse.builder()
                     .message("Release Note Deleted")
                     .description("Release Note ID : " + releaseNoteId + " Deleted")
                     .build();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
+
     }
 
     @Override
