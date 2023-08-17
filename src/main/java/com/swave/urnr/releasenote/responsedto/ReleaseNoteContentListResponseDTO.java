@@ -20,14 +20,21 @@ public class ReleaseNoteContentListResponseDTO {
 
     @ApiModelProperty(value="글쓴이", example = "함건욱", required = true)
     private String creator;
+
     @ApiModelProperty(value="릴리즈 노트 버전", example = "1.0.1", required = true)
     private String version;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     @ApiModelProperty(value="최종 수정 시", example = "2023-07-10", required = true)
     private Date lastModified;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     @ApiModelProperty(value="릴리즈 날짜", example = "2023-07-11", required = true)
     private Date releaseDate;
+
     @ApiModelProperty(value="세 줄 요약", example = "lenovo를 상향했습니다.", required = true)
     private String summary;
+
+    @ApiModelProperty(value = "릴리즈 노트 id", example = "2", required = true)
+    private Long releaseNoteId;
 }
