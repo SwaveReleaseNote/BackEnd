@@ -31,6 +31,10 @@
  <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=GitHub&logoColor=white" />
 
  <img src="https://img.shields.io/badge/Jenkins-D24939?style=flat&logo=Jenkins&logoColor=white" />
+ 
+ <img src="https://img.shields.io/badge/OpenSearch-005EB8?style=flat&logo=OpenSearch&logoColor=white" />
+ 
+ <img src="https://img.shields.io/badge/Kafka-231F20?style=flat&logo=Kafka&logoColor=white" />
 
 
  </div>
