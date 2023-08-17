@@ -307,7 +307,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectUpdateRequestDTO updateProject(HttpServletRequest request, Long projectId, ProjectUpdateRequestDTO projectUpdateRequestDto) throws NotAuthorizedException {
 
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        RLock lock = redissonClient.getLock("P" + projectId);
         try {
             boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
             if (!available) {
@@ -369,7 +369,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public HttpResponse deleteProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException {
 
-        RLock lock = redissonClient.getLock(String.valueOf((Long) request.getAttribute("id")));
+        RLock lock = redissonClient.getLock("P" + projectId);
         try {
             boolean available = lock.tryLock(100, 2, TimeUnit.SECONDS);
             if (!available) {
