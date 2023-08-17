@@ -41,6 +41,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.projectlombok:lombok:1.18.20'
+
     implementation 'org.jetbrains:annotations:24.0.0'
     annotationProcessor 'org.projectlombok:lombok'
     compileOnly 'org.projectlombok:lombok'
@@ -101,6 +102,8 @@ dependencies {
     //redission
     implementation 'org.redisson:redisson-spring-boot-starter:3.17.7'
 
+    //jasypt
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.4'
 
 }
 

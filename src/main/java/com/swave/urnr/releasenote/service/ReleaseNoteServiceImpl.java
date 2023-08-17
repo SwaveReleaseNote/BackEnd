@@ -106,11 +106,11 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
                 noteBlockList.add(noteBlock);
             }
 
-            /*ChatGPTResultResponseDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
+            ChatGPTResultResponseDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
                 new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
-*/
+
             releaseNote.setNoteBlockList(noteBlockList);
-            //releaseNote.setSummary(ChatGPTResultDTO.getText());
+            releaseNote.setSummary(ChatGPTResultDTO.getText());
 
             releaseNoteRepository.flush();
 
@@ -229,15 +229,15 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
                 noteBlockList.add(noteBlock);
             }
 
-//        ChatGPTResultDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
-//                new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
+            ChatGPTResultResponseDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
+                new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
 
             releaseNote.setVersion(releaseNoteUpdateRequestDTO.getVersion());
             releaseNote.setReleaseDate(releaseNoteUpdateRequestDTO.getReleaseDate());
             releaseNote.setLastModifiedDate(new Date());
             releaseNote.getNoteBlockList().addAll(noteBlockList);
             releaseNote.setSummary("Temp data until ChatGPT is OKAY");
-            //releaseNote.setSummary(ChatGPTResultDTO.getText());
+            releaseNote.setSummary(ChatGPTResultDTO.getText());
             releaseNote.setUser(user);
             releaseNote.setUpdated(true);
 
