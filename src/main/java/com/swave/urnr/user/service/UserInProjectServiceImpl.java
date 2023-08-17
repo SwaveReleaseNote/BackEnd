@@ -34,7 +34,6 @@ public class UserInProjectServiceImpl implements UserInProjectService {
 
     private final UserRepository userRepository;
 
-    private final RedissonClient redissonClient;
 
 
     @Override

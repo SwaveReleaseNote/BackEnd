@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
     private final KafkaService kafkaService;
 
     private final SSEEmitterService sseEmitterService;
-    private final RedissonClient redissonClient;
+
 
 
     public PasswordEncoder encoder = new BCryptPasswordEncoder();
