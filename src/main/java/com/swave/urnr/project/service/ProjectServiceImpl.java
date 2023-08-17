@@ -438,14 +438,17 @@ public class ProjectServiceImpl implements ProjectService {
         List<UserMemberInfoResponseDTO> getMemberLists = userInProjectRepository.getLoginMembers(projectId);
         log.info(String.valueOf(getMemberLists.get(0)));
         for (UserMemberInfoResponseDTO getMember : getMemberLists) {
-            User user = userRepository.getReferenceById(getMember.getUserId());
-            ProjectUserCheckDTO projectUserCheck = ProjectUserCheckDTO.builder()
-                    .memberId(user.getId())
-                    .memberName(user.getUsername())
-                    .isOnline(user.isOnline())
-                    .build();
-            projectUserCheckList.add(projectUserCheck);
-
+            UserInProject userInProject = userInProjectRepository.findByUser_IdAndProject_Id(getMember.getUserId(),projectId);
+            UserRole role = userInProject.getRole();
+            if(role != UserRole.Subscriber) {
+                User user = userRepository.getReferenceById(getMember.getUserId());
+                ProjectUserCheckDTO projectUserCheck = ProjectUserCheckDTO.builder()
+                        .memberId(user.getId())
+                        .memberName(user.getUsername())
+                        .isOnline(user.isOnline())
+                        .build();
+                projectUserCheckList.add(projectUserCheck);
+            }
         }
         return projectUserCheckList;
     }
