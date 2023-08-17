@@ -49,7 +49,6 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
     private final CommentService commentService;
     private final LikedService likedService;
 
-    private final RedissonClient redissonClient;
 
 
     private final ProjectRepository projectRepository;
