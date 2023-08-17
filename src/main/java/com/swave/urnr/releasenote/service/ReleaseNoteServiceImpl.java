@@ -107,11 +107,11 @@ public class ReleaseNoteServiceImpl implements ReleaseNoteService {
                 noteBlockList.add(noteBlock);
             }
 
-            ChatGPTResultResponseDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
+            /*ChatGPTResultResponseDTO ChatGPTResultDTO =  chatGPTService.chatGptResult(
                 new ChatGPTQuestionRequestDTO(content.toString() + "의 내용을 세줄로 요약해줘"));
-
+*/
             releaseNote.setNoteBlockList(noteBlockList);
-            releaseNote.setSummary(ChatGPTResultDTO.getText());
+            //releaseNote.setSummary(ChatGPTResultDTO.getText());
 
             releaseNoteRepository.flush();
 

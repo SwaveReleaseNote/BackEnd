@@ -4,14 +4,12 @@ import com.swave.urnr.opensearch.domain.ProjectOpenSearch;
 import com.swave.urnr.opensearch.domain.UserOpenSearch;
 import com.swave.urnr.opensearch.service.OpenSearchIndexService;
 import com.swave.urnr.opensearch.service.OpenSearchService;
+import com.swave.urnr.project.responsedto.ProjectSearchResultListResponseDTO;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -52,5 +50,11 @@ public class OpenSearchController {
     @GetMapping("/api/opensearch/index/project")
     public String createProjectIndex() throws IOException {
         return openSearchIndexService.createProjectIndex();
+    }
+
+    @Operation(summary="프로젝트 총검색 쿼리 테스트", description="테스트용 코드입니다.")
+    @PostMapping("/test/search/{keyword}")
+    public ProjectSearchResultListResponseDTO searchProject(@PathVariable String keyword){
+        return openSearchService.searchProject(keyword);
     }
 }
