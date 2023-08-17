@@ -58,9 +58,11 @@ public class UserInProjectServiceImpl implements UserInProjectService {
             UserRole role = getRole(request, projectId);
             if (role == Subscriber) {
                 throw new NotAuthorizedException("이미 구독한 프로젝트 입니다.");
+            } else if (role != None) {
+                throw new NotAuthorizedException("이미 참여중인 프로젝트 입니다.");
             }
 
-            System.out.println(projectId);
+        System.out.println(projectId);
             User user = userRepository.findById((Long) request.getAttribute("id")).orElse(null);
 
             Project project = projectRepository.findById(projectId).orElse(null);
