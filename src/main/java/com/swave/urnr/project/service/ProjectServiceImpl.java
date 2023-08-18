@@ -66,7 +66,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto) throws InterruptedException {
+    public HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectCreateRequestDto){
 
             log.info("hi");
             //빌더로 프로젝트생성
@@ -387,7 +387,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException {
+    public ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) {
 
         //todo:권한체크
 

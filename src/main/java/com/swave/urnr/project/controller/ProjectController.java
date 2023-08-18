@@ -37,7 +37,7 @@ public class ProjectController {
 
     @Operation(summary="프로젝트 생성", description="JWT에서 유저정보를 받아 프로젝트를 생성합니다.")
     @PostMapping("/project")
-    public HttpResponse createProject(HttpServletRequest request, @RequestBody ProjectCreateRequestDTO project) throws InterruptedException {;
+    public HttpResponse createProject(HttpServletRequest request, @RequestBody ProjectCreateRequestDTO project)  {;
         return projectService.createProject(request, project);
     }
 
@@ -72,7 +72,7 @@ public class ProjectController {
     @Cacheable(value="searchProject") //ㄱRedis1 캐싱이 필요한 기능에 적용후
     @Operation(summary="프로젝트 검색하기", description="프로젝트 검색결과를 표시합니다.")
     @PostMapping("/project/search")
-    public ProjectSearchResultListResponseDTO searchProject(@RequestBody ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO)throws UnsupportedEncodingException {
+    public ProjectSearchResultListResponseDTO searchProject(@RequestBody ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) {
         //System.out.println(projectKeywordRequestContentDTO.getKeyword());
         return projectService.searchProject(projectKeywordRequestContentDTO);
     }

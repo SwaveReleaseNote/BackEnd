@@ -17,13 +17,13 @@ import java.util.List;
 
 public interface ProjectService {
 
-    HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectRequestDto) throws InterruptedException;
+    HttpResponse createProject(HttpServletRequest request, ProjectCreateRequestDTO projectRequestDto) ;
 
     List<ProjectListResponseDTO> loadProjectList(HttpServletRequest request);
 
     ProjectContentResponseDTO loadProject(HttpServletRequest request, Long projectId) throws NotAuthorizedException;
 
-    ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) throws IOException, NotAuthorizedException;
+    ProjectManagementContentResponseDTO loadManagementProject(HttpServletRequest request,Long projectId) throws NotAuthorizedException;
 
     ProjectManagementContentResponseDTO loadManagementProjectJPA(HttpServletRequest request, Long projectId) throws NotAuthorizedException;
 
@@ -31,7 +31,7 @@ public interface ProjectService {
 
     HttpResponse deleteProject(HttpServletRequest request,Long projectId) throws NotAuthorizedException;
 
-    ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO) throws UnsupportedEncodingException;
+    ProjectSearchResultListResponseDTO searchProject(ProjectKeywordRequestContentDTO projectKeywordRequestContentDTO);
 
     List<ProjectUserCheckDTO> checkUser(Long projectId);
 
