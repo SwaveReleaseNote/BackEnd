@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 @Api(tags = "CommentController")
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://61.109.214.110", allowedHeaders = "*", allowCredentials = "true")
+@CrossOrigin
 public class CommentController {
     private final CommentService commentService;
 

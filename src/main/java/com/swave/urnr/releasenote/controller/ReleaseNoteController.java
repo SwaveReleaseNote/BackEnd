@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @Api(tags = "ReleaseNoteController")
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://61.109.214.110", allowedHeaders = "*", allowCredentials = "true")
+@CrossOrigin
 public class ReleaseNoteController {
     private final ReleaseNoteService releaseNoteService;
 
