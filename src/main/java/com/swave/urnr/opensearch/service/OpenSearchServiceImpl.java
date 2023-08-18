@@ -175,7 +175,7 @@ public class OpenSearchServiceImpl implements OpenSearchService{
                                 .should(QueryBuilders.matchQuery("username", name))
                                 .should(QueryBuilders.matchQuery("username.nori", name))
                                 .should(QueryBuilders.matchQuery("username.ngram", name)))
-
+                .withMinScore(0.3F)
                 .build();
 
         SearchHits<UserOpenSearch> searchResult =  elasticsearchOperations.search(searchQuery, UserOpenSearch.class);
