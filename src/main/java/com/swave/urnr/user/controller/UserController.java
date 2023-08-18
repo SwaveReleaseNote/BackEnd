@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://61.109.214.110:80", allowedHeaders = "*", allowCredentials = "true")
+@CrossOrigin(origins = "http://61.109.214.110", allowedHeaders = "*", allowCredentials = "true")
 public class UserController {
 
     private final UserService userService;
