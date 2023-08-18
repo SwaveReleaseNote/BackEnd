@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 @Controller
 @Slf4j
-@CrossOrigin(origins = "http://61.109.214.110:80", allowedHeaders = "*", allowCredentials = "true")
+@CrossOrigin(origins = "http://61.109.214.110", allowedHeaders = "*", allowCredentials = "true")
 public class RedisController {
 //레디스 테스트
 
